@@ -1,0 +1,194 @@
+---
+import { business, services } from '../../data/business'
+
+const phoneHref = `tel:${business.phone.replace(/\s/g, '')}`
+const emailHref = `mailto:${business.email}`
+const currentYear = new Date().getFullYear()
+
+const serviceLinks = services.slice(0, 6).map((s) => ({
+  label: s.name,
+  href: `/services/${s.id}`,
+}))
+
+const companyLinks = [
+  { label: 'About Us', href: '/about' },
+  { label: 'Reviews', href: '/reviews' },
+  { label: 'Blog', href: '/blog' },
+  { label: 'Contact', href: '/contact' },
+]
+
+const areaLinks = business.serviceAreas.slice(0, 6).map((area) => ({
+  label: area,
+  href: `/service-areas/${area.toLowerCase().replace(/[()]/g, '').replace(/\s+/g, '-')}`,
+}))
+---
+
+<footer
+  style="background-color: var(--color-footer-bg); color: var(--color-footer-text);"
+>
+  <div class="max-w-7xl mx-auto px-4 py-12 sm:py-16">
+    <!-- Grid: 1 col mobile, 2 col sm, 4 col lg -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
+      <!-- Brand column -->
+      <div class="sm:col-span-2 lg:col-span-1 flex flex-col gap-4">
+        <img
+          src="/logo/logo.png"
+          alt={`${business.name} logo`}
+          class="brightness-0 invert"
+          width="27"
+          height="40"
+          style="height: 40px; width: auto; max-height: 40px; object-fit: contain; display: block;"
+          style="object-fit: contain;"
+        />
+        <p class="text-sm opacity-70 leading-relaxed">
+          {business.description}
+        </p>
+
+        <!-- Contact info -->
+        <div class="flex flex-col gap-3 text-sm">
+          <a
+            href={phoneHref}
+            class="flex items-center gap-2.5 opacity-80 hover:opacity-100 transition-opacity"
+            style="min-height: 44px;"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="shrink-0">
+              <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z" />
+            </svg>
+            {business.phone}
+          </a>
+          <a
+            href={emailHref}
+            class="flex items-center gap-2.5 opacity-80 hover:opacity-100 transition-opacity min-w-0"
+            style="min-height: 44px;"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="shrink-0">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+              <path d="M22 6l-10 7L2 6" />
+            </svg>
+            <span class="break-all">{business.email}</span>
+          </a>
+          <div class="flex items-start gap-2.5 opacity-80 min-w-0">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="shrink-0 mt-0.5">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
+              <circle cx="12" cy="10" r="3" />
+            </svg>
+            <span class="break-words">{business.address.full}</span>
+          </div>
+        </div>
+
+        <!-- Social links -->
+        <div class="flex items-center gap-3 pt-2">
+          <a
+            href={business.socialMedia.facebook}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="opacity-70 hover:opacity-100 transition-opacity flex items-center justify-center"
+            aria-label="Facebook"
+            style="min-width: 44px; min-height: 44px;"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z" />
+            </svg>
+          </a>
+          <a
+            href={business.socialMedia.twitter}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="opacity-70 hover:opacity-100 transition-opacity flex items-center justify-center"
+            aria-label="Twitter"
+            style="min-width: 44px; min-height: 44px;"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5 0-.28-.03-.56-.08-.83A7.72 7.72 0 0023 3z" />
+            </svg>
+          </a>
+        </div>
+      </div>
+
+      <!-- Services links -->
+      <div>
+        <h4
+          class="text-sm font-bold uppercase tracking-wider mb-4 opacity-90"
+          style="color: var(--color-footer-text);"
+        >
+          Services
+        </h4>
+        <ul class="flex flex-col gap-1">
+          {serviceLinks.map((link) => (
+            <li>
+              <a
+                href={link.href}
+                class="text-sm opacity-70 hover:opacity-100 transition-opacity inline-flex items-center"
+                style="min-height: 44px;"
+              >
+                {link.label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <!-- Company links -->
+      <div>
+        <h4
+          class="text-sm font-bold uppercase tracking-wider mb-4 opacity-90"
+          style="color: var(--color-footer-text);"
+        >
+          Company
+        </h4>
+        <ul class="flex flex-col gap-1">
+          {companyLinks.map((link) => (
+            <li>
+              <a
+                href={link.href}
+                class="text-sm opacity-70 hover:opacity-100 transition-opacity inline-flex items-center"
+                style="min-height: 44px;"
+              >
+                {link.label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <!-- Service Areas links -->
+      <div>
+        <h4
+          class="text-sm font-bold uppercase tracking-wider mb-4 opacity-90"
+          style="color: var(--color-footer-text);"
+        >
+          Service Areas
+        </h4>
+        <ul class="flex flex-col gap-1">
+          {areaLinks.map((link) => (
+            <li>
+              <a
+                href={link.href}
+                class="text-sm opacity-70 hover:opacity-100 transition-opacity inline-flex items-center"
+                style="min-height: 44px;"
+              >
+                {link.label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom bar: stacks on mobile -->
+  <div style="border-top: 1px solid rgba(255,255,255,0.1);">
+    <div class="max-w-7xl mx-auto px-4 py-5 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs sm:text-sm opacity-60">
+      <div class="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-x-2 gap-y-1 text-center">
+        <span>&copy; {currentYear} {business.name}.</span>
+        <span class="hidden sm:inline">&bull;</span>
+        <span>Gas Safe: {business.gasSafeNumber}</span>
+      </div>
+      <div class="flex items-center gap-3 sm:gap-4 flex-wrap justify-center">
+        <a href="/privacy" class="hover:opacity-100 transition-opacity inline-flex items-center" style="min-height: 44px;">Privacy Policy</a>
+        <a href="/terms" class="hover:opacity-100 transition-opacity inline-flex items-center" style="min-height: 44px;">Terms</a>
+        <a href="/sitemap.xml" class="hover:opacity-100 transition-opacity inline-flex items-center" style="min-height: 44px;">Sitemap</a>
+      </div>
+    </div>
+  </div>
+</footer>

@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 600" fill="none">
+  <rect width="500" height="600" rx="20" fill="#F8FAFC"/>
+  <!-- Engineer figure -->
+  <circle cx="250" cy="180" r="60" fill="#1E40AF"/>
+  <!-- Face -->
+  <circle cx="250" cy="165" r="45" fill="#FCD6AD"/>
+  <!-- Hard hat -->
+  <path d="M200 145 C200 120, 300 120, 300 145 L295 155 L205 155 Z" fill="#FBBF24"/>
+  <rect x="195" y="148" width="110" height="10" rx="3" fill="#F59E0B"/>
+  <!-- Eyes -->
+  <circle cx="235" cy="160" r="4" fill="#1E293B"/>
+  <circle cx="265" cy="160" r="4" fill="#1E293B"/>
+  <!-- Smile -->
+  <path d="M237 175 C243 183, 257 183, 263 175" stroke="#1E293B" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <!-- Body / uniform -->
+  <rect x="200" y="240" width="100" height="140" rx="10" fill="#1E40AF"/>
+  <rect x="215" y="240" width="70" height="140" rx="8" fill="#2563EB"/>
+  <!-- Gas Safe badge on chest -->
+  <rect x="228" y="265" width="44" height="24" rx="4" fill="white"/>
+  <text x="250" y="280" text-anchor="middle" fill="#1E40AF" font-family="system-ui" font-size="7" font-weight="700">GAS SAFE</text>
+  <!-- Arms -->
+  <rect x="170" y="250" width="30" height="90" rx="8" fill="#1E40AF"/>
+  <rect x="300" y="250" width="30" height="90" rx="8" fill="#1E40AF"/>
+  <!-- Tool in hand -->
+  <rect x="310" y="320" width="50" height="8" rx="4" fill="#64748B"/>
+  <!-- Toolbox -->
+  <rect x="160" y="400" width="180" height="80" rx="8" fill="#DC2626"/>
+  <rect x="170" y="380" width="160" height="20" rx="6" fill="#B91C1C"/>
+  <rect x="230" y="375" width="40" height="10" rx="5" fill="#991B1B"/>
+  <!-- Tools sticking out -->
+  <rect x="200" y="370" width="6" height="30" rx="3" fill="#64748B"/>
+  <rect x="280" y="365" width="6" height="35" rx="3" fill="#F59E0B"/>
+  <!-- Text -->
+  <text x="250" y="520" text-anchor="middle" fill="#1E293B" font-family="system-ui" font-size="18" font-weight="700">Meet Lee</text>
+  <text x="250" y="545" text-anchor="middle" fill="#64748B" font-family="system-ui" font-size="12">Your Gas Safe Registered Engineer</text>
+  <text x="250" y="565" text-anchor="middle" fill="#64748B" font-family="system-ui" font-size="12">18+ Years Experience | Ex-British Gas</text>
+</svg>

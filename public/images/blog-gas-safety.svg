@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 340" fill="none">
+  <rect width="600" height="340" rx="12" fill="#FEF2F2"/>
+  <!-- Certificate -->
+  <rect x="170" y="30" width="260" height="240" rx="8" fill="white" stroke="#E5E7EB" stroke-width="2"/>
+  <!-- Header stripe -->
+  <rect x="170" y="30" width="260" height="45" rx="8" fill="#1E40AF"/>
+  <rect x="170" y="55" width="260" height="20" fill="#1E40AF"/>
+  <text x="300" y="58" text-anchor="middle" fill="white" font-family="system-ui" font-size="14" font-weight="700">GAS SAFETY CERTIFICATE</text>
+  <!-- Gas Safe logo area -->
+  <rect x="350" y="85" width="60" height="30" rx="4" fill="#1E40AF"/>
+  <text x="380" y="104" text-anchor="middle" fill="white" font-family="system-ui" font-size="8" font-weight="700">GAS SAFE</text>
+  <!-- Certificate lines -->
+  <rect x="195" y="90" width="130" height="6" rx="3" fill="#E2E8F0"/>
+  <rect x="195" y="106" width="100" height="6" rx="3" fill="#E2E8F0"/>
+  <rect x="195" y="130" width="90" height="5" rx="2.5" fill="#F1F5F9"/>
+  <rect x="300" y="130" width="110" height="5" rx="2.5" fill="#F1F5F9"/>
+  <rect x="195" y="145" width="110" height="5" rx="2.5" fill="#F1F5F9"/>
+  <rect x="195" y="160" width="80" height="5" rx="2.5" fill="#F1F5F9"/>
+  <rect x="300" y="160" width="100" height="5" rx="2.5" fill="#F1F5F9"/>
+  <!-- Checkmarks -->
+  <circle cx="210" cy="190" r="8" fill="#059669"/>
+  <path d="M206 190 L209 193 L215 187" stroke="white" stroke-width="2" fill="none"/>
+  <text x="225" y="194" fill="#374151" font-family="system-ui" font-size="9">All appliances safe</text>
+  <circle cx="210" cy="212" r="8" fill="#059669"/>
+  <path d="M206 212 L209 215 L215 209" stroke="white" stroke-width="2" fill="none"/>
+  <text x="225" y="216" fill="#374151" font-family="system-ui" font-size="9">Flue test passed</text>
+  <circle cx="210" cy="234" r="8" fill="#059669"/>
+  <path d="M206 234 L209 237 L215 231" stroke="white" stroke-width="2" fill="none"/>
+  <text x="225" y="238" fill="#374151" font-family="system-ui" font-size="9">Ventilation adequate</text>
+  <!-- Stamp -->
+  <circle cx="380" cy="220" r="28" fill="none" stroke="#DC2626" stroke-width="2.5" opacity="0.7"/>
+  <text x="380" y="217" text-anchor="middle" fill="#DC2626" font-family="system-ui" font-size="8" font-weight="700" opacity="0.7">CERTIFIED</text>
+  <text x="380" y="228" text-anchor="middle" fill="#DC2626" font-family="system-ui" font-size="7" opacity="0.7">636427</text>
+  <!-- Shield icon -->
+  <path d="M490 100 L490 150 C490 185, 530 200, 530 200 C530 200, 570 185, 570 150 L570 100 L530 85 Z" fill="#1E40AF" opacity="0.1" stroke="#1E40AF" stroke-width="2"/>
+  <path d="M518 140 L527 149 L545 128" stroke="#1E40AF" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="300" y="305" text-anchor="middle" fill="#1E293B" font-family="system-ui" font-size="15" font-weight="600">Gas Safety Certificates</text>
+  <text x="300" y="325" text-anchor="middle" fill="#6B7280" font-family="system-ui" font-size="11">CP12 for landlords — legal requirement</text>
+</svg>

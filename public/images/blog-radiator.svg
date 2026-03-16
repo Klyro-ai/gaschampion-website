@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 340" fill="none">
+  <rect width="600" height="340" rx="12" fill="#FFF7ED"/>
+  <!-- Radiator -->
+  <rect x="150" y="60" width="300" height="180" rx="8" fill="white" stroke="#D6D3D1" stroke-width="2"/>
+  <!-- Radiator panels -->
+  <rect x="170" y="75" width="22" height="150" rx="6" fill="#FED7AA"/>
+  <rect x="200" y="75" width="22" height="150" rx="6" fill="#FDBA74"/>
+  <rect x="230" y="75" width="22" height="150" rx="6" fill="#FB923C"/>
+  <rect x="260" y="75" width="22" height="150" rx="6" fill="#F97316"/>
+  <rect x="290" y="75" width="22" height="150" rx="6" fill="#EA580C"/>
+  <rect x="320" y="75" width="22" height="150" rx="6" fill="#DC2626" opacity="0.8"/>
+  <rect x="350" y="75" width="22" height="150" rx="6" fill="#DC2626" opacity="0.6"/>
+  <rect x="380" y="75" width="22" height="150" rx="6" fill="#DC2626" opacity="0.4"/>
+  <rect x="410" y="75" width="22" height="150" rx="6" fill="#FEE2E2"/>
+  <!-- Bleed valve (top right) -->
+  <circle cx="430" cy="65" r="10" fill="#64748B"/>
+  <rect x="426" y="55" width="8" height="6" rx="2" fill="#475569"/>
+  <!-- Bleed key -->
+  <rect x="460" y="40" width="60" height="12" rx="4" fill="#F59E0B"/>
+  <rect x="510" y="36" width="16" height="20" rx="3" fill="#D97706"/>
+  <!-- Arrow pointing to valve -->
+  <path d="M455 55 L440 60" stroke="#F59E0B" stroke-width="2" stroke-linecap="round"/>
+  <path d="M455 55 L450 48 M455 55 L448 58" stroke="#F59E0B" stroke-width="2" stroke-linecap="round"/>
+  <!-- Water drops -->
+  <path d="M433 80 C433 76, 438 76, 438 80 C438 84, 433 84, 433 80Z" fill="#3B82F6" opacity="0.6"/>
+  <path d="M440 90 C440 87, 444 87, 444 90 C444 93, 440 93, 440 90Z" fill="#3B82F6" opacity="0.4"/>
+  <!-- Heat waves -->
+  <path d="M180 45 C185 35, 190 45, 195 35" stroke="#F97316" stroke-width="1.5" opacity="0.5" fill="none"/>
+  <path d="M250 45 C255 35, 260 45, 265 35" stroke="#F97316" stroke-width="1.5" opacity="0.5" fill="none"/>
+  <path d="M320 45 C325 35, 330 45, 335 35" stroke="#F97316" stroke-width="1.5" opacity="0.5" fill="none"/>
+  <!-- Towel below -->
+  <rect x="350" y="245" width="80" height="20" rx="4" fill="#BFDBFE"/>
+  <text x="300" y="300" text-anchor="middle" fill="#1E293B" font-family="system-ui" font-size="15" font-weight="600">How to Bleed Radiators</text>
+  <text x="300" y="320" text-anchor="middle" fill="#6B7280" font-family="system-ui" font-size="11">Fix cold spots & restore full heating</text>
+</svg>

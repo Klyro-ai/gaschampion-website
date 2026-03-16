@@ -1,0 +1,75 @@
+---
+import Base from '../../layouts/Base.astro'
+import { MobileNavIsland, ContactFormIsland, FAQIsland } from '../../components/interactive/AppIslands'
+import TopBar from '../../components/static/TopBar.astro'
+import Header from '../../components/static/Header.astro'
+import CTABanner from '../../components/static/CTABanner.astro'
+import Footer from '../../components/static/Footer.astro'
+
+
+
+
+
+import { services, business } from '../../data/business'
+
+export function getStaticPaths() {
+  return services.map(s => ({ params: { slug: s.id }, props: { service: s } }))
+}
+
+const { service } = Astro.props
+---
+
+<Base title={service.name} description={service.description}>
+  
+    <TopBar />
+    <Header><MobileNavIsland client:only="react" /></Header>
+
+    <section class="py-16 md:py-24" style="background-color: var(--color-hero-bg); color: var(--color-hero-text)">
+      <div class="max-w-7xl mx-auto px-4">
+        <div class="max-w-3xl">
+          <h1 class="font-heading text-3xl sm:text-4xl md:text-5xl font-bold mb-4">{service.name}</h1>
+          <p class="text-base sm:text-lg" style="color: var(--color-foreground-muted)">{service.description}</p>
+          <div class="mt-6 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+            <span class="font-heading text-2xl sm:text-3xl font-bold" style="color: var(--color-primary)">From {service.fromPrice}</span>
+            <a href={`tel:${business.phone.replace(/\s/g, '')}`} class="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-theme-full font-semibold" style="background-color: var(--color-cta-bg); color: var(--color-cta-text); min-height: 48px;">Book Now</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="py-16 md:py-24">
+      <div class="max-w-7xl mx-auto px-4">
+        <div class="grid lg:grid-cols-2 gap-12">
+          <div>
+            <h2 class="font-heading text-2xl font-bold mb-6">What's Included</h2>
+            <div class="space-y-4">
+              {service.features.map((f: string) => (
+                <div class="flex items-start gap-3 p-4 rounded-theme-lg border" style="background-color: var(--color-card-bg); border-color: var(--color-card-border)">
+                  <svg class="w-5 h-5 text-green-500 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 6L9 17l-5-5" /></svg>
+                  <span>{f}</span>
+                </div>
+              ))}
+            </div>
+            <div class="mt-8 space-y-4">
+              <h3 class="font-heading text-xl font-bold">Why choose Gas Champion?</h3>
+              <ul class="space-y-2">
+                {business.guarantees.map((g) => (
+                  <li class="flex items-start gap-2 text-sm" style="color: var(--color-foreground-muted)">
+                    <svg class="w-4 h-4 text-green-500 mt-1 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 6L9 17l-5-5" /></svg>
+                    {g}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+          <ContactFormIsland client:only="react" />
+        </div>
+      </div>
+    </section>
+
+    <FAQIsland client:only="react" />
+    <CTABanner />
+    <Footer />
+    
+  
+</Base>

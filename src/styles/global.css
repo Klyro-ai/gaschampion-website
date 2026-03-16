@@ -1,0 +1,242 @@
+@import "tailwindcss";
+
+/* Champion Blueprint — colours matched to Gas Champion logo */
+:root {
+  --color-primary: #1B4B8A;
+  --color-primary-light: #2E6FBB;
+  --color-primary-dark: #13365F;
+  --color-secondary: #2E8BC0;
+  --color-secondary-light: #5BA8D9;
+  --color-accent: #C41E2A;
+  --color-accent-light: #E8434D;
+  --color-surface: #FFFFFF;
+  --color-surface-alt: #F5F7FA;
+  --color-background: #FFFFFF;
+  --color-foreground: #111827;
+  --color-foreground-muted: #5B6577;
+  --color-border: #E2E6ED;
+  --color-success: #059669;
+  --color-warning: #D97706;
+  --color-error: #DC2626;
+  --color-cta-bg: #C41E2A;
+  --color-cta-text: #FFFFFF;
+  --color-cta-hover: #A8131D;
+  --color-nav-bg: #FFFFFF;
+  --color-nav-text: #111827;
+  --color-hero-bg: #F0F4FA;
+  --color-hero-text: #111827;
+  --color-card-bg: #FFFFFF;
+  --color-card-border: #E2E6ED;
+  --color-footer-bg: #13365F;
+  --color-footer-text: #B8C9DE;
+  --font-heading: 'Inter', system-ui, sans-serif;
+  --font-body: 'Inter', system-ui, sans-serif;
+  --font-ui: 'Inter', system-ui, sans-serif;
+  --radius: 10px;
+  --radius-lg: 14px;
+  --radius-full: 9999px;
+  --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-lg: 0 10px 25px rgba(27,75,138,0.08), 0 4px 10px rgba(0,0,0,0.04);
+  --shadow-glow: none;
+}
+
+html { scroll-behavior: smooth; overflow-x: hidden; }
+body { background-color: var(--color-background); color: var(--color-foreground); font-family: var(--font-body); overflow-x: hidden; overflow-wrap: break-word; word-wrap: break-word; }
+h1, h2, h3, h4, h5, h6 { font-family: var(--font-heading); }
+
+.font-heading { font-family: var(--font-heading); }
+.font-body { font-family: var(--font-body); }
+.font-ui { font-family: var(--font-ui); }
+.rounded-theme { border-radius: var(--radius); }
+.rounded-theme-lg { border-radius: var(--radius-lg); }
+.rounded-theme-full { border-radius: var(--radius-full); }
+.shadow-theme { box-shadow: var(--shadow); }
+.shadow-theme-lg { box-shadow: var(--shadow-lg); }
+.shadow-theme-glow { box-shadow: var(--shadow-glow); }
+.text-primary { color: var(--color-primary); }
+.bg-primary { background-color: var(--color-primary); }
+.fill-yellow-400 { fill: #facc15; }
+
+*:not(img):not(svg):not(video):not(canvas) {
+  transition-property: background-color, border-color, color, box-shadow, border-radius;
+  transition-duration: 0.3s;
+  transition-timing-function: ease;
+}
+
+/* Prevent horizontal overflow from any element */
+img, video, iframe, embed, object {
+  max-width: 100%;
+  height: auto;
+}
+
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: var(--color-surface-alt); }
+::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-foreground-muted); }
+
+/* ══════════════════════════════════════════════
+   Liquid Glass — Apple iOS-inspired theme
+   ══════════════════════════════════════════════ */
+
+html[data-theme="liquid-glass"] {
+  --glass-blur: 40px;
+  --glass-blur-heavy: 60px;
+  --glass-saturation: 200%;
+}
+
+/* Gradient mesh background */
+html[data-theme="liquid-glass"] body {
+  background:
+    radial-gradient(ellipse 80% 60% at 15% 40%, rgba(0,122,255,0.08) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 80% at 85% 15%, rgba(88,86,214,0.07) 0%, transparent 55%),
+    radial-gradient(ellipse 70% 50% at 50% 90%, rgba(255,159,10,0.05) 0%, transparent 50%),
+    radial-gradient(ellipse 50% 50% at 60% 50%, rgba(48,209,88,0.03) 0%, transparent 50%),
+    #F2F2F7;
+  background-attachment: fixed;
+}
+
+/* ── Navigation — heavy frosted glass ── */
+html[data-theme="liquid-glass"] header {
+  background: rgba(255,255,255,0.65) !important;
+  backdrop-filter: blur(var(--glass-blur-heavy)) saturate(var(--glass-saturation));
+  -webkit-backdrop-filter: blur(var(--glass-blur-heavy)) saturate(var(--glass-saturation));
+  border-bottom: 0.5px solid rgba(0,0,0,0.1) !important;
+}
+
+/* ── Top bar — solid for readability ── */
+html[data-theme="liquid-glass"] header + *,
+html[data-theme="liquid-glass"] [style*="--color-primary"] {
+  /* Keep top bar solid — handled by inline styles */
+}
+
+/* ── Cards and panels — frosted glass with high contrast ── */
+html[data-theme="liquid-glass"] .rounded-theme-lg {
+  background: rgba(255,255,255,0.55) !important;
+  backdrop-filter: blur(var(--glass-blur)) saturate(180%);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(180%);
+  border: 0.5px solid rgba(255,255,255,0.5) !important;
+  box-shadow:
+    0 2px 16px rgba(0,0,0,0.04),
+    0 0 0 0.5px rgba(0,0,0,0.05),
+    inset 0 0.5px 0 rgba(255,255,255,0.9);
+}
+
+html[data-theme="liquid-glass"] .rounded-theme {
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+}
+
+/* ── Shadows — soft, diffused, Apple-style ── */
+html[data-theme="liquid-glass"] .shadow-theme {
+  box-shadow:
+    0 1px 4px rgba(0,0,0,0.03),
+    0 0 0 0.5px rgba(0,0,0,0.04),
+    inset 0 0.5px 0 rgba(255,255,255,0.7);
+}
+
+html[data-theme="liquid-glass"] .shadow-theme-lg {
+  box-shadow:
+    0 8px 40px rgba(0,0,0,0.07),
+    0 2px 8px rgba(0,0,0,0.03),
+    0 0 0 0.5px rgba(0,0,0,0.04),
+    inset 0 0.5px 0 rgba(255,255,255,0.9);
+}
+
+/* ── Buttons — pill shape with subtle glass ── */
+html[data-theme="liquid-glass"] .rounded-theme-full {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* ── Mobile menu and drawers — heavy frost for readability ── */
+html[data-theme="liquid-glass"] [class*="fixed"][class*="z-50"] {
+  backdrop-filter: blur(var(--glass-blur-heavy)) saturate(var(--glass-saturation));
+  -webkit-backdrop-filter: blur(var(--glass-blur-heavy)) saturate(var(--glass-saturation));
+}
+
+/* ── Sections with alt backgrounds — subtle glass tint ── */
+html[data-theme="liquid-glass"] section[style*="surface-alt"] {
+  background: rgba(245,245,247,0.6) !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* ── Hero section — extra depth ── */
+html[data-theme="liquid-glass"] section:first-of-type {
+  background:
+    radial-gradient(ellipse at 30% 0%, rgba(0,122,255,0.06) 0%, transparent 50%),
+    rgba(242,242,247,0.8) !important;
+}
+
+/* ── Inputs — frosted glass ── */
+html[data-theme="liquid-glass"] input,
+html[data-theme="liquid-glass"] textarea,
+html[data-theme="liquid-glass"] select {
+  background: rgba(255,255,255,0.5) !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 0.5px solid rgba(0,0,0,0.08) !important;
+}
+
+html[data-theme="liquid-glass"] input:focus,
+html[data-theme="liquid-glass"] textarea:focus {
+  box-shadow: 0 0 0 4px rgba(0,122,255,0.15);
+  border-color: rgba(0,122,255,0.4) !important;
+}
+
+/* ── Footer stays solid ── */
+html[data-theme="liquid-glass"] footer {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+/* ── Reduce blur intensity on small screens for performance ── */
+@media (max-width: 640px) {
+  html[data-theme="liquid-glass"] {
+    --glass-blur: 20px;
+    --glass-blur-heavy: 30px;
+  }
+  html[data-theme="liquid-glass"] .rounded-theme-lg {
+    background: rgba(255,255,255,0.7) !important;
+  }
+}
+
+/* ══════════════════════════════════════════════
+   Dark themes — ensure text contrast
+   ══════════════════════════════════════════════ */
+
+/* Bold High-Energy: ensure form inputs are readable */
+html[data-theme="bold-high-energy"] input,
+html[data-theme="bold-high-energy"] textarea,
+html[data-theme="bold-high-energy"] select {
+  color: #F1F5F9 !important;
+}
+
+html[data-theme="bold-high-energy"] input::placeholder,
+html[data-theme="bold-high-energy"] textarea::placeholder {
+  color: #94A3B8 !important;
+}
+
+/* Premium Luxurious: ensure form inputs are readable */
+html[data-theme="premium-luxurious"] input,
+html[data-theme="premium-luxurious"] textarea,
+html[data-theme="premium-luxurious"] select {
+  color: #F5F0E8 !important;
+}
+
+html[data-theme="premium-luxurious"] input::placeholder,
+html[data-theme="premium-luxurious"] textarea::placeholder {
+  color: #A89F8F !important;
+}
+
+/* ══════════════════════════════════════════════
+   Mobile-specific responsive fixes
+   ══════════════════════════════════════════════ */
+
+/* Ensure no horizontal overflow from any element at 320px */
+@media (max-width: 374px) {
+  .prose img, .prose pre, .prose table {
+    max-width: 100%;
+    overflow-x: auto;
+  }
+}

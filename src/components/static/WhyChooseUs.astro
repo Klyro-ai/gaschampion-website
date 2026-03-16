@@ -1,0 +1,86 @@
+---
+import { business } from '../../data/business'
+
+const reasons = [
+  {
+    title: 'Gas Safe Registered',
+    desc: `Fully registered with Gas Safe (${business.gasSafeNumber}). All work meets the highest safety standards.`,
+    icon: 'M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10zM9 12l2 2 4-4',
+  },
+  {
+    title: 'Same-Day Service',
+    desc: 'Emergency callouts available 7 days a week. No heating or hot water? We\'ll be there fast.',
+    icon: 'M12 22a10 10 0 100-20 10 10 0 000 20zM12 6v6l4 2',
+  },
+  {
+    title: '5-Star Rated',
+    desc: `${business.stats.reviewCount}+ reviews with a perfect ${business.stats.averageRating} rating. Trusted by homeowners and landlords.`,
+    icon: 'M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z',
+  },
+  {
+    title: '18+ Years Experience',
+    desc: 'Former British Gas engineer with over 18 years of hands-on experience across all boiler brands.',
+    icon: 'M21.71 20.29l-1.42 1.42a1 1 0 01-1.42 0l-5.66-5.66a6.5 6.5 0 01-7.07-1.07 6.5 6.5 0 01-.84-8.2l3.54 3.53 2.12-2.12-3.54-3.54a6.5 6.5 0 018.2.84 6.5 6.5 0 011.07 7.07l5.66 5.66a1 1 0 010 1.42z',
+  },
+  {
+    title: 'No Fix, No Fee',
+    desc: 'If we can\'t fix it, you don\'t pay. Straightforward, honest pricing with no hidden costs.',
+    icon: 'M20 6L9 17l-5-5',
+  },
+  {
+    title: 'All Work Guaranteed',
+    desc: 'Every job comes with a 12-month guarantee. Peace of mind as standard.',
+    icon: 'M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10zM9 12l2 2 4-4',
+  },
+]
+---
+
+<section class="py-14 sm:py-16 md:py-24 px-4" style="background-color: var(--color-surface-alt);">
+  <div class="max-w-7xl mx-auto">
+    <!-- Section heading -->
+    <div class="text-center mb-10 sm:mb-12">
+      <h2
+        class="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 sm:mb-4"
+        style="color: var(--color-foreground);"
+      >
+        Why Choose <span style="color: var(--color-primary);">Gas Champion</span>?
+      </h2>
+      <p
+        class="text-base sm:text-lg max-w-2xl mx-auto leading-relaxed"
+        style="color: var(--color-foreground-muted);"
+      >
+        Trusted by homeowners and landlords across Haverhill and surrounding areas.
+      </p>
+    </div>
+
+    <!-- Grid: 1 col mobile, 2 col sm, 3 col lg -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+      {reasons.map((reason) => (
+        <div
+          class="rounded-xl p-5 sm:p-6 flex flex-col gap-3"
+          style="background-color: var(--color-card-bg); border: 1px solid var(--color-card-border);"
+        >
+          <!-- Icon -->
+          <div
+            class="w-12 h-12 rounded-lg flex items-center justify-center"
+            style="background-color: color-mix(in srgb, var(--color-primary) 12%, transparent);"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d={reason.icon} />
+            </svg>
+          </div>
+
+          <!-- Title -->
+          <h3 class="text-base sm:text-lg font-bold" style="color: var(--color-foreground);">
+            {reason.title}
+          </h3>
+
+          <!-- Description -->
+          <p class="text-sm leading-relaxed" style="color: var(--color-foreground-muted);">
+            {reason.desc}
+          </p>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>

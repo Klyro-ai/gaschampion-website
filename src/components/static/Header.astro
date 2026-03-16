@@ -1,0 +1,61 @@
+---
+import { business } from '../../data/business'
+
+const phoneHref = `tel:${business.phone.replace(/\s/g, '')}`
+
+const navLinks = [
+  { label: 'Home', href: '/' },
+  { label: 'Services', href: '/services' },
+  { label: 'About', href: '/about' },
+  { label: 'Reviews', href: '/reviews' },
+  { label: 'Blog', href: '/blog' },
+  { label: 'Areas', href: '/service-areas' },
+  { label: 'Contact', href: '/contact' },
+]
+---
+
+<header
+  class="sticky top-0 z-50 w-full"
+  style="background-color: var(--color-nav-bg); color: var(--color-nav-text); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid var(--color-border);"
+>
+  <div class="max-w-7xl mx-auto px-4 py-2 flex items-center justify-between">
+    <!-- Logo — constrained to fixed height, auto width -->
+    <a href="/" class="flex-shrink-0 flex items-center" style="min-height: 44px;">
+      <img
+        src="/logo/logo.png"
+        alt={`${business.name} logo`}
+        width="27"
+        height="40"
+        style="height: 40px; width: auto; max-height: 40px; object-fit: contain; display: block;"
+      />
+    </a>
+
+    <!-- Desktop Nav -->
+    <nav class="hidden lg:flex items-center gap-6">
+      {navLinks.map((link) => (
+        <a
+          href={link.href}
+          class="text-sm font-medium transition-colors hover:opacity-80 inline-flex items-center"
+          style="color: var(--color-nav-text); min-height: 44px;"
+        >
+          {link.label}
+        </a>
+      ))}
+    </nav>
+
+    <!-- Right: CTA + mobile menu slot -->
+    <div class="flex items-center gap-3">
+      <a
+        href={phoneHref}
+        class="hidden sm:inline-flex items-center gap-2 px-5 rounded-lg text-sm font-semibold text-white transition-opacity hover:opacity-90"
+        style="background-color: var(--color-cta-bg); min-height: 44px;"
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z" /></svg>
+        Call Now
+      </a>
+      <div class="flex items-center justify-center" style="min-width: 44px; min-height: 44px;">
+        <slot />
+      </div>
+    </div>
+  </div>
+</header>

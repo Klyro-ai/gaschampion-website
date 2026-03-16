@@ -1,0 +1,93 @@
+---
+import Base from '../layouts/Base.astro'
+import TopBar from '../components/static/TopBar.astro'
+import Header from '../components/static/Header.astro'
+import Hero from '../components/static/Hero.astro'
+import ServiceCard from '../components/static/ServiceCard.astro'
+import ReviewCard from '../components/static/ReviewCard.astro'
+import WhyChooseUs from '../components/static/WhyChooseUs.astro'
+import ServicePlans from '../components/static/ServicePlans.astro'
+import CTABanner from '../components/static/CTABanner.astro'
+import Footer from '../components/static/Footer.astro'
+import { MobileNavIsland, ContactFormIsland, FAQIsland } from '../components/interactive/AppIslands'
+import { services, reviews, business } from '../data/business'
+---
+
+<Base>
+  <TopBar />
+  <Header>
+    <MobileNavIsland client:only="react" />
+  </Header>
+
+  <Hero />
+
+  <section class="py-16 md:py-24">
+    <div class="max-w-7xl mx-auto px-4">
+      <div class="text-center mb-12">
+        <h2 class="font-heading text-2xl sm:text-3xl md:text-4xl font-bold mb-4">Our Services</h2>
+        <p style="color: var(--color-foreground-muted)">From emergency boiler repairs to smart thermostat installations — we've got your home heating covered.</p>
+      </div>
+      <div class="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {services.slice(0, 8).map((s) => (
+          <ServiceCard id={s.id} name={s.name} shortDesc={s.shortDesc} icon={s.icon} fromPrice={s.fromPrice} features={[...s.features]} />
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <WhyChooseUs />
+
+  <section class="py-16 md:py-24" style="background-color: var(--color-surface-alt)">
+    <div class="max-w-7xl mx-auto px-4">
+      <div class="text-center mb-12">
+        <div class="flex justify-center gap-1 mb-4">
+          {Array.from({ length: 5 }).map(() => (
+            <svg class="w-6 h-6 fill-yellow-400 text-yellow-400" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" /></svg>
+          ))}
+        </div>
+        <h2 class="font-heading text-2xl sm:text-3xl md:text-4xl font-bold mb-4">What Our Customers Say</h2>
+        <p style="color: var(--color-foreground-muted)">{business.stats.reviewCount}+ five-star reviews across Google, MyBuilder, and Local Heroes</p>
+      </div>
+      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {reviews.slice(0, 6).map((r) => (
+          <ReviewCard name={r.name} rating={r.rating} text={r.text} source={r.source} />
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <ServicePlans />
+
+  <section class="py-16 md:py-24">
+    <div class="max-w-7xl mx-auto px-4">
+      <div class="grid lg:grid-cols-2 gap-12 items-start">
+        <div>
+          <h2 class="font-heading text-2xl sm:text-3xl md:text-4xl font-bold mb-4">Get a Free Quote</h2>
+          <p class="mb-6" style="color: var(--color-foreground-muted)">Tell us what you need and we'll get back to you with a transparent, no-obligation quote within 2 hours.</p>
+          <div class="space-y-4 mb-8">
+            {business.guarantees.map((g) => (
+              <div class="flex items-start gap-3">
+                <div class="w-6 h-6 rounded-full flex items-center justify-center shrink-0 mt-0.5" style="background-color: color-mix(in srgb, var(--color-success) 20%, transparent)">
+                  <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="color: var(--color-success)"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" /></svg>
+                </div>
+                <span class="text-sm">{g}</span>
+              </div>
+            ))}
+          </div>
+          <div class="rounded-theme-lg overflow-hidden" style="border: 1px solid var(--color-border)">
+            <img src="/images/service-map.svg" alt="Gas Champion service area — Haverhill and surrounding areas" class="w-full h-auto" width="800" height="400" />
+          </div>
+        </div>
+        <ContactFormIsland client:only="react" />
+      </div>
+    </div>
+  </section>
+
+  <FAQIsland client:only="react" />
+
+  <CTABanner />
+
+  <Footer />
+
+  
+</Base>

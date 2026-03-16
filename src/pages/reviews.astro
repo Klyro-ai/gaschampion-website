@@ -1,0 +1,66 @@
+---
+import Base from '../layouts/Base.astro'
+import { MobileNavIsland } from '../components/interactive/AppIslands'
+import TopBar from '../components/static/TopBar.astro'
+import Header from '../components/static/Header.astro'
+import ReviewCard from '../components/static/ReviewCard.astro'
+import CTABanner from '../components/static/CTABanner.astro'
+import Footer from '../components/static/Footer.astro'
+
+
+
+import { reviews, business } from '../data/business'
+---
+
+<Base title="Reviews" description={`${business.stats.reviewCount}+ five-star reviews. See what customers say about Gas Champion.`}>
+  
+    <TopBar />
+    <Header><MobileNavIsland client:only="react" /></Header>
+
+    <section class="py-16 md:py-24" style="background-color: var(--color-hero-bg); color: var(--color-hero-text)">
+      <div class="max-w-4xl mx-auto px-4 text-center">
+        <div class="flex justify-center gap-1 mb-4">
+          {Array.from({ length: 5 }).map(() => (
+            <svg class="w-8 h-8 fill-yellow-400 text-yellow-400" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" /></svg>
+          ))}
+        </div>
+        <h1 class="font-heading text-3xl sm:text-4xl md:text-5xl font-bold mb-4">{business.stats.reviewCount}+ Five-Star Reviews</h1>
+        <p class="text-lg" style="color: var(--color-foreground-muted)">Don't just take our word for it — here's what our customers say about Gas Champion.</p>
+        <div class="grid grid-cols-3 gap-3 sm:gap-6 mt-12 max-w-lg mx-auto">
+          <div><div class="font-heading text-2xl sm:text-3xl font-bold" style="color: var(--color-primary)">{business.stats.averageRating}</div><div class="text-xs sm:text-sm" style="color: var(--color-foreground-muted)">Average Rating</div></div>
+          <div><div class="font-heading text-2xl sm:text-3xl font-bold" style="color: var(--color-primary)">{business.stats.reviewCount}+</div><div class="text-xs sm:text-sm" style="color: var(--color-foreground-muted)">Total Reviews</div></div>
+          <div><div class="font-heading text-2xl sm:text-3xl font-bold" style="color: var(--color-primary)">100%</div><div class="text-xs sm:text-sm" style="color: var(--color-foreground-muted)">Would Recommend</div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="py-16 md:py-24">
+      <div class="max-w-7xl mx-auto px-4">
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {reviews.map((r) => <ReviewCard name={r.name} rating={r.rating} text={r.text} source={r.source} />)}
+        </div>
+
+        <div class="mt-16">
+          <h2 class="font-heading text-xl sm:text-2xl font-bold text-center mb-8">Straight From Google, MyBuilder & Local Heroes</h2>
+          <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[1,2,3,4,5,6].map((n) => (
+              <div class="rounded-theme-lg overflow-hidden border shadow-theme" style="border-color: var(--color-card-border)">
+                <img src={`/images/google-review-${n}.png`} alt={`Google Review ${n}`} class="w-full h-auto" width="400" height="300" loading="lazy" />
+              </div>
+            ))}
+            <div class="rounded-theme-lg overflow-hidden border shadow-theme" style="border-color: var(--color-card-border)">
+              <img src="/images/mybuilder-review.png" alt="MyBuilder Review" class="w-full h-auto" width="400" height="300" loading="lazy" />
+            </div>
+            <div class="rounded-theme-lg overflow-hidden border shadow-theme" style="border-color: var(--color-card-border)">
+              <img src="/images/local-heroes-review.png" alt="Local Heroes Review" class="w-full h-auto" width="400" height="300" loading="lazy" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <CTABanner />
+    <Footer />
+    
+  
+</Base>
