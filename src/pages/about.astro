@@ -1,6 +1,6 @@
 ---
 import Base from '../layouts/Base.astro'
-import { MobileNavIsland } from '../components/interactive/AppIslands'
+import MobileNav from '../components/static/MobileNav.astro'
 import TopBar from '../components/static/TopBar.astro'
 import Header from '../components/static/Header.astro'
 import WhyChooseUs from '../components/static/WhyChooseUs.astro'
@@ -15,7 +15,7 @@ import { business } from '../data/business'
 <Base title="About" description={`Meet ${business.owner}, your local Gas Safe registered engineer in Haverhill.`}>
   
     <TopBar />
-    <Header><MobileNavIsland client:only="react" /></Header>
+    <Header><MobileNav /></Header>
 
     <section class="py-16 md:py-24" style="background-color: var(--color-hero-bg); color: var(--color-hero-text)">
       <div class="max-w-7xl mx-auto px-4">

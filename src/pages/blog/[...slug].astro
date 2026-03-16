@@ -1,6 +1,6 @@
 ---
 import Base from '../../layouts/Base.astro'
-import { MobileNavIsland } from '../../components/interactive/AppIslands'
+import MobileNav from '../../components/static/MobileNav.astro'
 import TopBar from '../../components/static/TopBar.astro'
 import Header from '../../components/static/Header.astro'
 import CTABanner from '../../components/static/CTABanner.astro'
@@ -22,7 +22,7 @@ const { Content } = await render(post)
 <Base title={post.data.title} description={post.data.description}>
   
     <TopBar />
-    <Header><MobileNavIsland client:only="react" /></Header>
+    <Header><MobileNav /></Header>
 
     <article class="py-16 md:py-24">
       <div class="max-w-3xl mx-auto px-4">
