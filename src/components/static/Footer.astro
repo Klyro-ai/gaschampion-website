@@ -38,9 +38,8 @@ const areaLinks = business.serviceAreas.slice(0, 6).map((area) => ({
           width="27"
           height="40"
           style="height: 40px; width: auto; max-height: 40px; object-fit: contain; display: block;"
-          style="object-fit: contain;"
         />
-        <p class="text-sm opacity-70 leading-relaxed">
+        <p class="text-sm opacity-90 leading-relaxed">
           {business.description}
         </p>
 
@@ -48,7 +47,7 @@ const areaLinks = business.serviceAreas.slice(0, 6).map((area) => ({
         <div class="flex flex-col gap-3 text-sm">
           <a
             href={phoneHref}
-            class="flex items-center gap-2.5 opacity-80 hover:opacity-100 transition-opacity"
+            class="flex items-center gap-2.5 opacity-90 hover:opacity-100 transition-opacity"
             style="min-height: 44px;"
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="shrink-0">
@@ -58,7 +57,7 @@ const areaLinks = business.serviceAreas.slice(0, 6).map((area) => ({
           </a>
           <a
             href={emailHref}
-            class="flex items-center gap-2.5 opacity-80 hover:opacity-100 transition-opacity min-w-0"
+            class="flex items-center gap-2.5 opacity-90 hover:opacity-100 transition-opacity min-w-0"
             style="min-height: 44px;"
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="shrink-0">
@@ -67,7 +66,7 @@ const areaLinks = business.serviceAreas.slice(0, 6).map((area) => ({
             </svg>
             <span class="break-all">{business.email}</span>
           </a>
-          <div class="flex items-start gap-2.5 opacity-80 min-w-0">
+          <div class="flex items-start gap-2.5 opacity-90 min-w-0">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="shrink-0 mt-0.5">
               <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
               <circle cx="12" cy="10" r="3" />
@@ -82,7 +81,7 @@ const areaLinks = business.serviceAreas.slice(0, 6).map((area) => ({
             href={business.socialMedia.facebook}
             target="_blank"
             rel="noopener noreferrer"
-            class="opacity-70 hover:opacity-100 transition-opacity flex items-center justify-center"
+            class="opacity-90 hover:opacity-100 transition-opacity flex items-center justify-center"
             aria-label="Facebook"
             style="min-width: 44px; min-height: 44px;"
           >
@@ -94,7 +93,7 @@ const areaLinks = business.serviceAreas.slice(0, 6).map((area) => ({
             href={business.socialMedia.twitter}
             target="_blank"
             rel="noopener noreferrer"
-            class="opacity-70 hover:opacity-100 transition-opacity flex items-center justify-center"
+            class="opacity-90 hover:opacity-100 transition-opacity flex items-center justify-center"
             aria-label="Twitter"
             style="min-width: 44px; min-height: 44px;"
           >
@@ -112,13 +111,13 @@ const areaLinks = business.serviceAreas.slice(0, 6).map((area) => ({
           style="color: var(--color-footer-text);"
         >
           Services
-        </h4>
+        </h3>
         <ul class="flex flex-col gap-1">
           {serviceLinks.map((link) => (
             <li>
               <a
                 href={link.href}
-                class="text-sm opacity-70 hover:opacity-100 transition-opacity inline-flex items-center"
+                class="text-sm opacity-90 hover:opacity-100 transition-opacity inline-flex items-center"
                 style="min-height: 44px;"
               >
                 {link.label}
@@ -135,13 +134,13 @@ const areaLinks = business.serviceAreas.slice(0, 6).map((area) => ({
           style="color: var(--color-footer-text);"
         >
           Company
-        </h4>
+        </h3>
         <ul class="flex flex-col gap-1">
           {companyLinks.map((link) => (
             <li>
               <a
                 href={link.href}
-                class="text-sm opacity-70 hover:opacity-100 transition-opacity inline-flex items-center"
+                class="text-sm opacity-90 hover:opacity-100 transition-opacity inline-flex items-center"
                 style="min-height: 44px;"
               >
                 {link.label}
@@ -158,13 +157,13 @@ const areaLinks = business.serviceAreas.slice(0, 6).map((area) => ({
           style="color: var(--color-footer-text);"
         >
           Service Areas
-        </h4>
+        </h3>
         <ul class="flex flex-col gap-1">
           {areaLinks.map((link) => (
             <li>
               <a
                 href={link.href}
-                class="text-sm opacity-70 hover:opacity-100 transition-opacity inline-flex items-center"
+                class="text-sm opacity-90 hover:opacity-100 transition-opacity inline-flex items-center"
                 style="min-height: 44px;"
               >
                 {link.label}
