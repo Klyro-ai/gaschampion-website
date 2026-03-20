@@ -1,4 +1,4 @@
-import type { Review, InstagramPost, BlogPost, GalleryImage } from '../types';
+import type { Client, Review, InstagramPost, BlogPost, GalleryImage } from '../types';
 
 export class ClientDB {
   constructor(
@@ -262,4 +262,156 @@ export async function getActiveClients(db: D1Database): Promise<Array<{ id: stri
     .prepare('SELECT id, business_name, telegram_chat_id, google_place_id, instagram_user_id, facebook_page_id FROM clients WHERE is_active = 1')
     .all();
   return result.results as any;
+}
+
+/** Create a new client (admin operation) */
+export async function createClient(
+  db: D1Database,
+  client: {
+    id: string;
+    business_name: string;
+    pages_project_name: string;
+    r2_bucket_prefix: string;
+  }
+): Promise<string> {
+  await db
+    .prepare(
+      `INSERT INTO clients (id, business_name, telegram_chat_id, pages_project_name, r2_bucket_prefix)
+       VALUES (?, ?, 'UNCLAIMED', ?, ?)`
+    )
+    .bind(client.id, client.business_name, client.pages_project_name, client.r2_bucket_prefix)
+    .run();
+  return client.id;
+}
+
+/** Create an invite token for a client */
+export async function createInviteToken(db: D1Database, clientId: string): Promise<string> {
+  const token = crypto.randomUUID() + crypto.randomUUID().replace(/-/g, '');
+  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+  await db
+    .prepare('INSERT INTO invite_tokens (token, client_id, expires_at) VALUES (?, ?, ?)')
+    .bind(token, clientId, expiresAt)
+    .run();
+  return token;
+}
+
+/** Claim an invite token — returns client_id or null if invalid/expired */
+export async function claimInvite(
+  db: D1Database,
+  token: string,
+  chatId: string
+): Promise<string | null> {
+  const invite = await db
+    .prepare("SELECT * FROM invite_tokens WHERE token = ? AND claimed_by IS NULL AND expires_at > datetime('now')")
+    .bind(token)
+    .first<{ client_id: string }>();
+
+  if (!invite) return null;
+
+  // Claim the invite
+  await db
+    .prepare("UPDATE invite_tokens SET claimed_by = ? WHERE token = ?")
+    .bind(chatId, token)
+    .run();
+
+  // Update client's telegram_chat_id
+  await db
+    .prepare("UPDATE clients SET telegram_chat_id = ?, updated_at = datetime('now') WHERE id = ?")
+    .bind(chatId, invite.client_id)
+    .run();
+
+  // Add as authorized user with admin role
+  const userId = crypto.randomUUID();
+  await db
+    .prepare('INSERT OR IGNORE INTO authorized_users (id, client_id, telegram_chat_id, role) VALUES (?, ?, ?, ?)')
+    .bind(userId, invite.client_id, chatId, 'admin')
+    .run();
+
+  return invite.client_id;
+}
+
+/** Find a client by their primary telegram_chat_id */
+export async function getClientByChatId(
+  db: D1Database,
+  chatId: string
+): Promise<Client | null> {
+  return db
+    .prepare('SELECT * FROM clients WHERE telegram_chat_id = ?')
+    .bind(chatId)
+    .first<Client>();
+}
+
+/** Find a client by an authorized user's chat_id */
+export async function getClientByAuthorizedUser(
+  db: D1Database,
+  chatId: string
+): Promise<{ client: Client; role: string } | null> {
+  const row = await db
+    .prepare(
+      `SELECT c.*, au.role FROM authorized_users au
+       JOIN clients c ON c.id = au.client_id
+       WHERE au.telegram_chat_id = ?`
+    )
+    .bind(chatId)
+    .first<Client & { role: string }>();
+
+  if (!row) return null;
+  const { role, ...client } = row;
+  return { client: client as Client, role };
+}
+
+/** Get all clients with basic status info (admin) */
+export async function getAllClients(
+  db: D1Database
+): Promise<Array<{
+  id: string;
+  business_name: string;
+  is_active: boolean;
+  google_place_id: string | null;
+  instagram_user_id: string | null;
+  facebook_page_id: string | null;
+  telegram_chat_id: string;
+}>> {
+  const result = await db
+    .prepare('SELECT id, business_name, is_active, google_place_id, instagram_user_id, facebook_page_id, telegram_chat_id FROM clients ORDER BY created_at DESC')
+    .all();
+  return result.results as any;
+}
+
+/** Update a client's Google Place ID */
+export async function updateGooglePlaceId(
+  db: D1Database,
+  clientId: string,
+  placeId: string | null
+): Promise<void> {
+  await db
+    .prepare("UPDATE clients SET google_place_id = ?, updated_at = datetime('now') WHERE id = ?")
+    .bind(placeId, clientId)
+    .run();
+}
+
+/** Update a client's Instagram/Facebook IDs */
+export async function updateSocialIds(
+  db: D1Database,
+  clientId: string,
+  instagramUserId: string | null,
+  facebookPageId: string | null
+): Promise<void> {
+  await db
+    .prepare("UPDATE clients SET instagram_user_id = ?, facebook_page_id = ?, updated_at = datetime('now') WHERE id = ?")
+    .bind(instagramUserId, facebookPageId, clientId)
+    .run();
+}
+
+/** Update a client's quiet hours */
+export async function updateQuietHours(
+  db: D1Database,
+  clientId: string,
+  start: string,
+  end: string
+): Promise<void> {
+  await db
+    .prepare("UPDATE clients SET quiet_hours_start = ?, quiet_hours_end = ?, updated_at = datetime('now') WHERE id = ?")
+    .bind(start, end, clientId)
+    .run();
 }
