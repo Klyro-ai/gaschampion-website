@@ -1,0 +1,40 @@
+name = "klyro-worker"
+main = "src/index.ts"
+compatibility_date = "2025-04-01"
+
+# Unified entry point — exports fetch (API), scheduled (cron), and queue (fetch jobs)
+
+# D1 Database
+[[d1_databases]]
+binding = "DB"
+database_name = "klyro-db"
+database_id = "placeholder-will-be-set-after-creation"
+
+# R2 Storage
+[[r2_buckets]]
+binding = "R2"
+bucket_name = "klyro-media"
+
+# KV Namespace
+[[kv_namespaces]]
+binding = "KV"
+id = "placeholder-will-be-set-after-creation"
+
+# Queue Producer (cron dispatches to this)
+[[queues.producers]]
+queue = "klyro-fetch-queue"
+binding = "FETCH_QUEUE"
+
+# Queue Consumer (same worker consumes from queue)
+[[queues.consumers]]
+queue = "klyro-fetch-queue"
+max_batch_size = 1
+max_retries = 3
+
+# Cron trigger
+[triggers]
+crons = ["0 */6 * * *"]
+
+# Environment variables (non-secret, secrets set via wrangler secret)
+[vars]
+ENVIRONMENT = "production"

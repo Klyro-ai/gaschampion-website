@@ -1,0 +1,24 @@
+{
+  "name": "klyro-workers",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "db:migrate": "wrangler d1 execute klyro-db --file=./migrations/0001_initial.sql",
+    "db:migrate:local": "wrangler d1 execute klyro-db --local --file=./migrations/0001_initial.sql",
+    "db:seed:local": "wrangler d1 execute klyro-db --local --file=./src/db/seed.sql"
+  },
+  "dependencies": {
+    "hono": "^4.7.0"
+  },
+  "devDependencies": {
+    "@cloudflare/vitest-pool-workers": "^0.8.0",
+    "@cloudflare/workers-types": "^4.20250313.0",
+    "vitest": "^3.1.0",
+    "wrangler": "^4.72.0"
+  }
+}
