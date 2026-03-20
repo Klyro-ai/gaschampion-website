@@ -41,3 +41,9 @@ ENVIRONMENT = "production"
 # BUILD_API_KEY is set via `wrangler secret` in production
 # This default is only used in local dev/test
 BUILD_API_KEY = "test-key"
+ADMIN_CHAT_ID = "test-admin"
+TELEGRAM_BOT_TOKEN = "test-token"
+TELEGRAM_WEBHOOK_SECRET = "test-secret"
+FACEBOOK_APP_ID = "test-app-id"
+FACEBOOK_APP_SECRET = "test-app-secret"
+GOOGLE_PLACES_API_KEY = "test-google-key"
