@@ -1,5 +1,3 @@
-import type { Env } from '../types';
-
 export async function logError(
   db: D1Database,
   worker: string,
