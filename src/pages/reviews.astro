@@ -10,6 +10,24 @@ import Footer from '../components/static/Footer.astro'
 
 
 import { reviews, business } from '../data/business'
+import { getApprovedReviews } from '../lib/klyro-api'
+
+let apiReviews: any[] = [];
+let aggregate = { average: Number(business.stats.averageRating), count: Number(business.stats.reviewCount) };
+try {
+  const data = await getApprovedReviews();
+  if (data.reviews.length > 0) {
+    apiReviews = data.reviews;
+    aggregate = data.aggregate;
+  }
+} catch {
+  // Fallback to hardcoded reviews in business.ts
+}
+
+// Use apiReviews if available, otherwise fall back to business.reviews
+const displayReviews = apiReviews.length > 0
+  ? apiReviews.map(r => ({ name: r.author_name, rating: r.rating, text: r.text, source: r.source }))
+  : reviews;
 ---
 
 <Base title="Reviews" description={`${business.stats.reviewCount}+ five-star reviews. See what customers say about Gas Champion.`}>
