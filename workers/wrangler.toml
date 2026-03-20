@@ -8,7 +8,7 @@ compatibility_date = "2025-04-01"
 [[d1_databases]]
 binding = "DB"
 database_name = "klyro-db"
-database_id = "placeholder-will-be-set-after-creation"
+database_id = "660cc50c-5ae2-4de0-a80a-2b461eddb328"
 
 # R2 Storage
 [[r2_buckets]]
@@ -18,7 +18,7 @@ bucket_name = "klyro-media"
 # KV Namespace
 [[kv_namespaces]]
 binding = "KV"
-id = "placeholder-will-be-set-after-creation"
+id = "a4f5f40181cd4f8893be404adf067985"
 
 # Queue Producer (cron dispatches to this)
 [[queues.producers]]
