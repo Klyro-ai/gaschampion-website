@@ -38,4 +38,6 @@ crons = ["0 */6 * * *"]
 # Environment variables (non-secret, secrets set via wrangler secret)
 [vars]
 ENVIRONMENT = "production"
+# BUILD_API_KEY is set via `wrangler secret` in production
+# This default is only used in local dev/test
 BUILD_API_KEY = "test-key"
