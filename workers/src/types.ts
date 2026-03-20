@@ -7,6 +7,10 @@ export interface Env {
   TELEGRAM_WEBHOOK_SECRET: string;
   BUILD_API_KEY: string;
   ENVIRONMENT: string;
+  FACEBOOK_APP_ID: string;
+  FACEBOOK_APP_SECRET: string;
+  GOOGLE_PLACES_API_KEY: string;
+  ADMIN_CHAT_ID: string;
 }
 
 export interface Client {
@@ -96,4 +100,40 @@ export interface FetchQueueMessage {
   client_id: string;
   client: FetchClientInfo;
   tasks: ('instagram' | 'google' | 'facebook')[];
+}
+
+export interface TelegramUpdate {
+  update_id: number;
+  message?: {
+    message_id: number;
+    from: { id: number; first_name: string; username?: string };
+    chat: { id: number; type: string };
+    date: number;
+    text?: string;
+  };
+  callback_query?: {
+    id: string;
+    from: { id: number; first_name: string };
+    message?: {
+      message_id: number;
+      chat: { id: number };
+    };
+    data?: string;
+  };
+}
+
+export interface WizardState {
+  type: 'addclient' | 'onboarding';
+  step: string;
+  data: Record<string, string>;
+  clientId?: string;
+  updatedAt: string;
+}
+
+export interface InviteToken {
+  token: string;
+  client_id: string;
+  created_at: string;
+  expires_at: string;
+  claimed_by: string | null;
 }
