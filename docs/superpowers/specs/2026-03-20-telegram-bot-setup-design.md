@@ -349,7 +349,16 @@ CREATE INDEX IF NOT EXISTS idx_invite_tokens_client
   ON invite_tokens(client_id);
 ```
 
-No changes to existing tables — all fields already exist on the `clients` and `authorized_users` tables.
+**Migration also alters `clients.telegram_chat_id`** to allow NULL, since the client record is created by the admin before the client claims the invite:
+
+```sql
+-- D1 doesn't support ALTER COLUMN, so we recreate:
+-- In practice, add a new nullable column or handle at application level
+-- by inserting a placeholder value 'UNCLAIMED' at creation time,
+-- then updating to the real chat_id when the invite is claimed.
+```
+
+The application layer uses `'UNCLAIMED'` as the initial `telegram_chat_id` value when the admin creates a client. This is updated to the real chat_id when the client claims the invite. The `authorized_users` table tracks all authorized Telegram users per client — the client who claims the invite is added as an authorized user with role `admin`, and `clients.telegram_chat_id` is updated to their chat_id (used as the primary contact for notifications).
 
 ### New KV Keys
 
@@ -390,6 +399,7 @@ No changes to existing tables — all fields already exist on the `clients` and 
 | `TELEGRAM_BOT_TOKEN` | Telegram Bot API token |
 | `TELEGRAM_WEBHOOK_SECRET` | Webhook validation secret |
 | `GOOGLE_PLACES_API_KEY` | Google Places API key (may already exist) |
+| `ADMIN_CHAT_ID` | Admin Telegram chat_id for command routing |
 
 ## Bot Architecture
 
