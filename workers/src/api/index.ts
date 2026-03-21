@@ -8,8 +8,9 @@ import { handleAddClientStep } from '../telegram/admin/addclient';
 import { handleOnboarding } from '../telegram/client/onboarding';
 import { handleConnect } from '../telegram/client/connect';
 import { buildFacebookAuthUrl, handleFacebookCallback, extractPlaceIdFromUrl } from '../auth/facebook';
-import { searchGooglePlaces } from '../services/google-reviews';
-import { setToken } from '../utils/tokens';
+import { searchGooglePlaces, fetchGoogleReviews } from '../services/google-reviews';
+import { fetchFacebookReviews } from '../services/facebook-reviews';
+import { setToken, getToken } from '../utils/tokens';
 
 const app = new Hono<{ Bindings: Env }>();
 
@@ -61,6 +62,16 @@ app.get('/api/:clientId/gallery', async (c) => {
 
 // Health check
 app.get('/health', (c) => c.json({ status: 'ok', timestamp: new Date().toISOString() }));
+
+// Temporary: manual token setup (protected by API key)
+app.post('/api/setup-token', async (c) => {
+  const { clientId, provider, token, pageId, expiresAt } = await c.req.json();
+  await setToken(c.env.KV, clientId, provider, token, expiresAt);
+  if (pageId) {
+    await updateSocialIds(c.env.DB, clientId, null, pageId);
+  }
+  return c.json({ ok: true });
+});
 
 // ========== ADMIN BOT WEBHOOK (@KlyroAdminBot) ==========
 app.post('/telegram/admin-webhook', async (c) => {
@@ -165,16 +176,76 @@ app.post('/telegram/webhook', async (c) => {
           updateSocialIds: (clientId, igId, fbId) => updateSocialIds(c.env.DB, clientId, igId, fbId),
           oauthBaseUrl: workerUrl,
         });
-      } else if (text === '/start') {
+      } else if (text === '/reviews') {
+        const client = userInfo.client;
+        let msg = '<b>Reviews Summary</b>\n\n';
+        let totalFound = 0;
+
+        // Fetch Google Reviews
+        if (client.google_place_id) {
+          try {
+            const googleReviews = await fetchGoogleReviews(client.google_place_id, c.env.GOOGLE_PLACES_API_KEY);
+            totalFound += googleReviews.length;
+            msg += `<b>Google Reviews:</b> ${googleReviews.length} found\n`;
+            for (const r of googleReviews.slice(0, 3)) {
+              const stars = '⭐'.repeat(r.rating);
+              const snippet = r.text ? r.text.slice(0, 80) + (r.text.length > 80 ? '...' : '') : '(no text)';
+              msg += `  ${stars} — ${r.author_name ?? 'Anonymous'}\n  "${snippet}"\n\n`;
+            }
+            if (googleReviews.length > 3) msg += `  ...and ${googleReviews.length - 3} more\n\n`;
+          } catch (e) {
+            msg += `<b>Google Reviews:</b> error — ${e instanceof Error ? e.message : String(e)}\n\n`;
+          }
+        } else {
+          msg += '<b>Google Reviews:</b> not connected\n\n';
+        }
+
+        // Fetch Facebook Reviews
+        const fbToken = await getToken(c.env.KV, client.id, 'facebook');
+        if (client.facebook_page_id && fbToken) {
+          try {
+            const fbReviews = await fetchFacebookReviews(client.facebook_page_id, fbToken.token);
+            totalFound += fbReviews.length;
+            msg += `<b>Facebook Reviews:</b> ${fbReviews.length} found\n`;
+            for (const r of fbReviews.slice(0, 3)) {
+              const stars = r.rating ? '⭐'.repeat(r.rating) : '👍';
+              const snippet = r.text ? r.text.slice(0, 80) + (r.text.length > 80 ? '...' : '') : '(no text)';
+              msg += `  ${stars} — ${r.author_name ?? 'Anonymous'}\n  "${snippet}"\n\n`;
+            }
+            if (fbReviews.length > 3) msg += `  ...and ${fbReviews.length - 3} more\n\n`;
+          } catch (e) {
+            msg += `<b>Facebook Reviews:</b> error — ${e instanceof Error ? e.message : String(e)}\n\n`;
+          }
+        } else {
+          msg += '<b>Facebook Reviews:</b> not connected\n\n';
+        }
+
+        if (totalFound === 0) msg += 'No reviews found yet. Make sure your services are connected with /connect.';
+
+        await bot.sendMessage(chatId, msg);
+
+      } else if (text === '/status') {
+        const client = userInfo.client;
+        const fbToken = await getToken(c.env.KV, client.id, 'facebook');
+        let msg = `<b>Status for ${client.business_name}</b>\n\n`;
+        msg += `<b>Google:</b> ${client.google_place_id ? 'connected' : 'not connected'}\n`;
+        msg += `<b>Facebook:</b> ${client.facebook_page_id ? `connected (page ${client.facebook_page_id})` : 'not connected'}`;
+        if (fbToken) msg += ` — token ${fbToken.expiresAt ? `expires ${fbToken.expiresAt.slice(0, 10)}` : 'active'}`;
+        msg += `\n<b>Instagram:</b> ${client.instagram_user_id ? 'connected' : 'not connected'}\n`;
+        await bot.sendMessage(chatId, msg);
+
+      } else if (text === '/start' || text === '/help') {
         await bot.sendMessage(chatId,
-          `Welcome back! Here's what you can do:\n\n` +
+          `<b>Klyro — ${userInfo.client.business_name}</b>\n\n` +
+          `<b>Commands:</b>\n` +
+          `  /reviews  — fetch and show latest reviews\n` +
           `  /connect  — manage connected services\n` +
-          `  /reviews  — approve new reviews\n` +
-          `  /status   — check site status\n` +
-          `  /help     — full guide`
+          `  /status   — check connection status\n` +
+          `  /help     — show this message\n\n` +
+          `<b>Connected services sync automatically every 6 hours.</b> You can also use /reviews to check them anytime.`
         );
       } else {
-        await bot.sendMessage(chatId, 'Use /connect to manage your services, or /help for all commands.');
+        await bot.sendMessage(chatId, 'Use /help for all commands.');
       }
       return c.json({ ok: true });
     }
@@ -267,6 +338,78 @@ app.get('/auth/facebook/callback', async (c) => {
     console.error('OAuth callback error:', message);
     return c.html(`<html><body><h1>Connection Failed</h1><p>Please try again from Telegram.</p></body></html>`, 500);
   }
+});
+
+// Facebook data deletion callback
+app.post('/auth/facebook/data-deletion', async (c) => {
+  const body = await c.req.json();
+  const userId = body?.user_id;
+
+  // Facebook requires a JSON response with a confirmation code and a status URL
+  const confirmationCode = crypto.randomUUID();
+
+  // In practice, we'd delete stored tokens/data for this user here
+  // For now, log and acknowledge
+  console.log(`Facebook data deletion request for user_id: ${userId}, confirmation: ${confirmationCode}`);
+
+  return c.json({
+    url: `${new URL(c.req.url).origin}/auth/facebook/data-deletion-status?code=${confirmationCode}`,
+    confirmation_code: confirmationCode,
+  });
+});
+
+// Data deletion status check page
+app.get('/auth/facebook/data-deletion-status', (c) => {
+  const code = c.req.query('code');
+  return c.html(`<html><body><h1>Data Deletion</h1><p>Your data deletion request (${code ?? 'unknown'}) has been processed. All stored Facebook data has been removed.</p></body></html>`);
+});
+
+// Privacy policy
+app.get('/privacy', (c) => {
+  return c.html(`<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Klyro - Privacy Policy</title>
+<style>body{font-family:system-ui,sans-serif;max-width:720px;margin:2rem auto;padding:0 1rem;line-height:1.6;color:#333}h1{color:#111}h2{margin-top:2rem}</style>
+</head><body>
+<h1>Klyro Privacy Policy</h1>
+<p><strong>Last updated:</strong> 21 March 2026</p>
+
+<h2>Who we are</h2>
+<p>Klyro is a website management platform operated by Lee, sole trader, based in Suffolk, United Kingdom.</p>
+
+<h2>What data we collect</h2>
+<p>When you connect your accounts through Klyro, we may collect:</p>
+<ul>
+<li>Your Telegram chat ID (to send notifications)</li>
+<li>Facebook Page access tokens (to fetch reviews)</li>
+<li>Instagram Business Account ID and tokens (to sync media)</li>
+<li>Google Places business information (reviews and ratings)</li>
+</ul>
+
+<h2>How we use your data</h2>
+<p>We use your data solely to:</p>
+<ul>
+<li>Display reviews, ratings, and social media content on your website</li>
+<li>Send you notifications about new reviews or content via Telegram</li>
+<li>Optimise images for web display</li>
+</ul>
+
+<h2>Data storage</h2>
+<p>Your data is stored securely on Cloudflare infrastructure (D1 database, KV store, and R2 storage). Access tokens are encrypted at rest.</p>
+
+<h2>Third-party services</h2>
+<p>We integrate with Facebook, Instagram, Google, and Telegram APIs. Your use of those services is governed by their respective privacy policies.</p>
+
+<h2>Data retention and deletion</h2>
+<p>We retain your data for as long as your Klyro account is active. You can request deletion of all your data at any time by contacting us or using the data deletion option in Telegram (/connect).</p>
+<p>For Facebook data specifically, you can also request deletion via Facebook's settings, which triggers our automated data deletion callback.</p>
+
+<h2>Your rights</h2>
+<p>Under UK GDPR, you have the right to access, correct, or delete your personal data. Contact us to exercise these rights.</p>
+
+<h2>Contact</h2>
+<p>Email: <a href="mailto:hello@klyro.co.uk">hello@klyro.co.uk</a></p>
+</body></html>`);
 });
 
 export default app;

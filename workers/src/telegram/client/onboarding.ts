@@ -173,7 +173,7 @@ export async function handleOnboarding(
         `  Notifications: ${start} - ${end}\n\n` +
         `I'll start syncing your content now.\n\n` +
         `Here's what you can do anytime:\n\n` +
-        `  /reviews  — approve new reviews\n` +
+        `  /reviews  — view latest reviews\n` +
         `  /newpost  — create a blog post\n` +
         `  /gallery  — upload photos\n` +
         `  /status   — check everything's running\n` +

@@ -24,7 +24,7 @@ export function parseFacebookReview(raw: FacebookReviewRaw): ParsedReview {
 
   return {
     source: 'facebook',
-    author_name: raw.reviewer?.name ?? null,
+    author_name: raw.reviewer?.name ?? 'Facebook User',
     rating,
     text: raw.review_text ?? null,
     review_date: raw.created_time,
