@@ -38,3 +38,6 @@ crons = ["0 */6 * * *"]
 # Non-secret vars only. Secrets are in .dev.vars (local) and wrangler secret (production)
 [vars]
 ENVIRONMENT = "production"
+
+[ai]
+binding = "AI"

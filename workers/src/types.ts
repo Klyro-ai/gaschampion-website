@@ -13,6 +13,8 @@ export interface Env {
   FACEBOOK_APP_SECRET: string;
   GOOGLE_PLACES_API_KEY: string;
   ADMIN_CHAT_ID: string;
+  AI: Ai;
+  CLAUDE_API_KEY?: string;
 }
 
 export interface Client {
@@ -70,6 +72,7 @@ export interface BlogPost {
   tags: string | null;
   status: 'draft' | 'pending_approval' | 'published';
   image_url: string | null;
+  image_alt_text: string | null;
   scheduled_publish_at: string | null;
   created_at: string;
   updated_at: string;
@@ -112,6 +115,7 @@ export interface TelegramUpdate {
     chat: { id: number; type: string };
     date: number;
     text?: string;
+    photo?: Array<{ file_id: string; width: number; height: number }>;
   };
   callback_query?: {
     id: string;
@@ -125,7 +129,7 @@ export interface TelegramUpdate {
 }
 
 export interface WizardState {
-  type: 'addclient' | 'onboarding';
+  type: 'addclient' | 'onboarding' | 'blog' | 'gallery_caption';
   step: string;
   data: Record<string, string>;
   clientId?: string;
