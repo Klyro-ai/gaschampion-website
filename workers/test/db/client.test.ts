@@ -16,6 +16,16 @@ describe('ClientDB', () => {
     for (const stmt of statements) {
       await env.DB.prepare(stmt).run();
     }
+    const { default: migration2SQL } = await import('../../migrations/0002_invite_tokens.sql?raw');
+    const stmts2 = migration2SQL.split(';').map((s: string) => s.replace(/--[^\n]*/g, '').trim()).filter((s: string) => s.length > 0).map((s: string) => s + ';');
+    for (const stmt of stmts2) {
+      await env.DB.prepare(stmt).run();
+    }
+    const { default: migration3SQL } = await import('../../migrations/0003_blog_alt_text.sql?raw');
+    const stmts3 = migration3SQL.split(';').map((s: string) => s.replace(/--[^\n]*/g, '').trim()).filter((s: string) => s.length > 0).map((s: string) => s + ';');
+    for (const stmt of stmts3) {
+      await env.DB.prepare(stmt).run();
+    }
     // Seed required client rows to satisfy FK constraints
     await env.DB.prepare(
       "INSERT OR IGNORE INTO clients (id, business_name, telegram_chat_id, pages_project_name, r2_bucket_prefix) VALUES (?, ?, ?, ?, ?)"
@@ -140,6 +150,53 @@ describe('ClientDB', () => {
       const published = await clientDb.blogPosts.getPublished();
       expect(published).toHaveLength(1);
       expect(published[0].published_at).toBeDefined();
+    });
+  });
+
+  describe('blogPosts.getBySlug', () => {
+    it('returns a published blog post by slug', async () => {
+      const id = await clientDb.blogPosts.create({
+        title: 'Test Post', slug: 'test-post', content: 'Content here',
+        description: 'A test', tags: '["test"]', status: 'published',
+        image_url: null, image_alt_text: null, scheduled_publish_at: null,
+      });
+      await clientDb.blogPosts.publish(id);
+      const post = await clientDb.blogPosts.getBySlug('test-post');
+      expect(post).not.toBeNull();
+      expect(post!.title).toBe('Test Post');
+    });
+
+    it('returns null for non-existent slug', async () => {
+      const post = await clientDb.blogPosts.getBySlug('nope');
+      expect(post).toBeNull();
+    });
+  });
+
+  describe('blogPosts.delete', () => {
+    it('deletes a blog post by id', async () => {
+      const id = await clientDb.blogPosts.create({
+        title: 'Delete Me', slug: 'delete-me', content: 'Gone',
+        description: null, tags: null, status: 'draft',
+        image_url: null, image_alt_text: null, scheduled_publish_at: null,
+      });
+      await clientDb.blogPosts.delete(id);
+      const post = await clientDb.blogPosts.getBySlug('delete-me');
+      expect(post).toBeNull();
+    });
+  });
+
+  describe('gallery.updateCaption', () => {
+    it('updates caption and alt_text on a gallery image', async () => {
+      const id = await clientDb.gallery.add({
+        r2_key: 'test/img.jpg', alt_text: null, caption: null,
+        width: 800, height: 600, srcset: null, source: 'upload',
+        instagram_post_id: null,
+      });
+      await clientDb.gallery.updateCaption(id, 'New caption', 'Alt text here');
+      const images = await clientDb.gallery.getAll();
+      const img = images.find((i: any) => i.id === id);
+      expect(img!.caption).toBe('New caption');
+      expect(img!.alt_text).toBe('Alt text here');
     });
   });
 });

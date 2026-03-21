@@ -134,22 +134,30 @@ export class ClientDB {
       return result.results;
     },
 
+    getBySlug: async (slug: string): Promise<BlogPost | null> => {
+      return await this.db.prepare(
+        'SELECT * FROM blog_posts WHERE client_id = ? AND slug = ?'
+      ).bind(this.clientId, slug).first<BlogPost>();
+    },
+
     create: async (post: {
       title: string;
       slug: string;
       content: string;
       description?: string | null;
       tags?: string | null;
+      status?: string;
       image_url?: string | null;
+      image_alt_text?: string | null;
       scheduled_publish_at?: string | null;
     }): Promise<string> => {
       const id = crypto.randomUUID();
       await this.db
         .prepare(
-          `INSERT INTO blog_posts (id, client_id, title, slug, content, description, tags, image_url, scheduled_publish_at)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+          `INSERT INTO blog_posts (id, client_id, title, slug, content, description, tags, status, image_url, image_alt_text, scheduled_publish_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
         )
-        .bind(id, this.clientId, post.title, post.slug, post.content, post.description ?? null, post.tags ?? null, post.image_url ?? null, post.scheduled_publish_at ?? null)
+        .bind(id, this.clientId, post.title, post.slug, post.content, post.description ?? null, post.tags ?? null, post.status ?? 'draft', post.image_url ?? null, post.image_alt_text ?? null, post.scheduled_publish_at ?? null)
         .run();
       return id;
     },
@@ -163,19 +171,27 @@ export class ClientDB {
         .run();
     },
 
-    update: async (postId: string, fields: { title?: string; content?: string; description?: string; tags?: string }): Promise<void> => {
+    update: async (postId: string, fields: { title?: string; content?: string; description?: string; tags?: string; image_url?: string | null; image_alt_text?: string | null }): Promise<void> => {
       const sets: string[] = [];
       const values: (string | null)[] = [];
       if (fields.title !== undefined) { sets.push('title = ?'); values.push(fields.title); }
       if (fields.content !== undefined) { sets.push('content = ?'); values.push(fields.content); }
       if (fields.description !== undefined) { sets.push('description = ?'); values.push(fields.description); }
       if (fields.tags !== undefined) { sets.push('tags = ?'); values.push(fields.tags); }
+      if (fields.image_url !== undefined) { sets.push('image_url = ?'); values.push(fields.image_url); }
+      if (fields.image_alt_text !== undefined) { sets.push('image_alt_text = ?'); values.push(fields.image_alt_text); }
       if (sets.length === 0) return;
       sets.push("updated_at = datetime('now')");
       await this.db
         .prepare(`UPDATE blog_posts SET ${sets.join(', ')} WHERE id = ? AND client_id = ?`)
         .bind(...values, postId, this.clientId)
         .run();
+    },
+
+    delete: async (postId: string): Promise<void> => {
+      await this.db.prepare(
+        'DELETE FROM blog_posts WHERE id = ? AND client_id = ?'
+      ).bind(postId, this.clientId).run();
     },
   };
 
@@ -213,6 +229,18 @@ export class ClientDB {
         .bind(id, this.clientId, image.r2_key, image.alt_text ?? null, image.caption ?? null, image.width ?? null, image.height ?? null, image.srcset ?? null, order, image.source ?? 'upload', image.instagram_post_id ?? null)
         .run();
       return id;
+    },
+
+    updateCaption: async (imageId: string, caption: string, altText?: string): Promise<void> => {
+      if (altText) {
+        await this.db.prepare(
+          'UPDATE gallery_images SET caption = ?, alt_text = ? WHERE id = ? AND client_id = ?'
+        ).bind(caption, altText, imageId, this.clientId).run();
+      } else {
+        await this.db.prepare(
+          'UPDATE gallery_images SET caption = ? WHERE id = ? AND client_id = ?'
+        ).bind(caption, imageId, this.clientId).run();
+      }
     },
   };
 
