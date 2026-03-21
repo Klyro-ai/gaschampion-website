@@ -35,15 +35,6 @@ max_retries = 3
 [triggers]
 crons = ["0 */6 * * *"]
 
-# Environment variables (non-secret, secrets set via wrangler secret)
-# Non-secret env vars + test defaults
-# In production, secrets set via `wrangler secret put` override same-named vars
+# Non-secret vars only. Secrets are in .dev.vars (local) and wrangler secret (production)
 [vars]
 ENVIRONMENT = "production"
-BUILD_API_KEY = "test-key"
-ADMIN_CHAT_ID = "test-admin"
-TELEGRAM_BOT_TOKEN = "test-token"
-TELEGRAM_WEBHOOK_SECRET = "test-secret"
-FACEBOOK_APP_ID = "test-app-id"
-FACEBOOK_APP_SECRET = "test-app-secret"
-GOOGLE_PLACES_API_KEY = "test-google-key"
