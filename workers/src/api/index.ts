@@ -228,6 +228,10 @@ app.post('/telegram/webhook', async (c) => {
               });
             },
           });
+          // Trigger site rebuild so the new post goes live
+          if (c.env.PAGES_DEPLOY_HOOK) {
+            fetch(c.env.PAGES_DEPLOY_HOOK, { method: 'POST' }).catch(() => {});
+          }
           return c.json({ ok: true });
         }
         if (callbackData === 'blog:edit') {

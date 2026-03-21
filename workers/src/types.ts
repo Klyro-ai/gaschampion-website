@@ -15,6 +15,7 @@ export interface Env {
   ADMIN_CHAT_ID: string;
   AI: Ai;
   CLAUDE_API_KEY?: string;
+  PAGES_DEPLOY_HOOK?: string;
 }
 
 export interface Client {
