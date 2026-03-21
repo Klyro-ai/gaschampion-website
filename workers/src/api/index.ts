@@ -90,6 +90,31 @@ app.get('/api/:clientId/gallery', async (c) => {
   return c.json({ images: paginated, total, page, pages: Math.ceil(total / limit) });
 });
 
+// GET /api/:clientId/config — full site configuration for build/SSR
+app.get('/api/:clientId/config', async (c) => {
+  const clientId = c.req.param('clientId');
+
+  const client = await c.env.DB.prepare(
+    'SELECT * FROM clients WHERE id = ?'
+  ).bind(clientId).first();
+
+  if (!client) return c.json({ error: 'Client not found' }, 404);
+
+  const siteConfig = client.site_config ? JSON.parse(client.site_config as string) : null;
+  if (!siteConfig) return c.json({ error: 'Site not configured' }, 404);
+
+  return c.json({
+    config: siteConfig,
+    client: {
+      id: client.id,
+      business_name: client.business_name,
+      theme_id: (client as any).theme_id || 'champion-blueprint',
+      trade_type: (client as any).trade_type,
+      custom_hostname: (client as any).custom_hostname,
+    },
+  });
+});
+
 // Serve images from R2 (no auth — public images)
 app.get('/api/image/*', async (c) => {
   const key = c.req.path.replace('/api/image/', '');
