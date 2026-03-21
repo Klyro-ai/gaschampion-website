@@ -1,6 +1,5 @@
 ---
-import { getTenantData } from '../../lib/tenant'
-const { business } = await getTenantData()
+const { business } = Astro.locals.tenant
 
 const reasons = [
   {

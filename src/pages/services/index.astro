@@ -9,8 +9,7 @@ import Footer from '../../components/static/Footer.astro'
 
 
 
-import { getTenantData } from '../../lib/tenant'
-const { business, services } = await getTenantData()
+const { business, services } = Astro.locals.tenant
 ---
 
 <Base title="Our Services" description={`Expert boiler and heating services from a Gas Safe registered engineer with ${business.yearsExperience}+ years experience.`}>

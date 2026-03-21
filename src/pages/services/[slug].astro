@@ -10,15 +10,10 @@ import Footer from '../../components/static/Footer.astro'
 
 
 
-import { getTenantData } from '../../lib/tenant'
-const { business, services, faqs } = await getTenantData()
-
-export async function getStaticPaths() {
-  const { services } = await getTenantData()
-  return services.map(s => ({ params: { slug: s.id }, props: { service: s } }))
-}
-
-const { service } = Astro.props
+const { slug } = Astro.params
+const { business, services, faqs } = Astro.locals.tenant
+const service = services.find((s: any) => s.id === slug)
+if (!service) return Astro.redirect('/services')
 ---
 
 <Base title={service.name} description={service.description}>

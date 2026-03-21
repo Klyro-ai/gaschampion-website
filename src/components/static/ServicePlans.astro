@@ -1,6 +1,5 @@
 ---
-import { getTenantData } from '../../lib/tenant'
-const { business, servicePlans } = await getTenantData()
+const { business, servicePlans } = Astro.locals.tenant
 
 const phoneHref = `tel:${business.phone.replace(/\s/g, '')}`
 ---

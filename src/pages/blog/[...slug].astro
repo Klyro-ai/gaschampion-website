@@ -5,16 +5,12 @@ import TopBar from '../../components/static/TopBar.astro'
 import Header from '../../components/static/Header.astro'
 import CTABanner from '../../components/static/CTABanner.astro'
 import Footer from '../../components/static/Footer.astro'
-import { getPublishedBlogPosts, getBlogPostBySlug, imageUrl } from '../../lib/klyro-api'
+import { getBlogPostBySlug, imageUrl } from '../../lib/klyro-api'
 import { marked } from 'marked'
 
-export async function getStaticPaths() {
-  const posts = await getPublishedBlogPosts()
-  return posts.map(post => ({ params: { slug: post.slug } }))
-}
-
 const { slug } = Astro.params
-const post = await getBlogPostBySlug(slug!)
+const { clientId, apiBase, apiKey } = Astro.locals.tenant
+const post = await getBlogPostBySlug(apiBase, apiKey, clientId, slug!)
 if (!post) return Astro.redirect('/blog')
 
 const tags = (() => { try { return JSON.parse(post.tags || '[]') } catch { return [] } })()
@@ -41,7 +37,7 @@ const htmlContent = await marked.parse(post.content || '')
         {post.image_url && (
           <div class="mb-8 rounded-theme overflow-hidden">
             <img
-              src={imageUrl(post.image_url)}
+              src={imageUrl(apiBase, post.image_url)}
               alt={post.image_alt_text || post.title}
               class="w-full h-auto"
               loading="eager"

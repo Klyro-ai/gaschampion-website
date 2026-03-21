@@ -1,10 +1,9 @@
 ---
 import '../styles/global.css'
-import { getTenantData } from '../lib/tenant'
 import { generateLocalBusinessSchema, generateFAQSchema } from '../lib/schema'
 import Analytics from '../components/static/Analytics.astro'
 
-const { business, faqs } = await getTenantData()
+const { business, faqs } = Astro.locals.tenant
 
 interface Props {
   title?: string
