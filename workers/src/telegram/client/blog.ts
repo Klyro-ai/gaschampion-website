@@ -13,6 +13,7 @@ interface BlogContextDeps {
   }) => Promise<string>;
   getClient: (clientId: string) => Promise<{ business_name: string; r2_bucket_prefix: string } | null>;
   ensureUniqueSlug: (slug: string) => Promise<string>;
+  downloadPhoto?: (fileId: string, clientId: string) => Promise<{ r2Key: string; galleryId: string }>;
 }
 
 interface BlogActionDeps {
@@ -62,6 +63,14 @@ export async function handleBlogContext(
   await wizard.update(chatId, 'generating', { caption });
 
   try {
+    // Download photo to R2 if one was attached
+    let photoR2Key: string | null = null;
+    if (state.data.photoFileId && deps.downloadPhoto) {
+      const { r2Key } = await deps.downloadPhoto(state.data.photoFileId, state.clientId!);
+      photoR2Key = r2Key;
+      await wizard.update(chatId, 'generating', { photoR2Key: r2Key });
+    }
+
     const draft = await deps.aiWriter.generateDraft({
       businessName: client.business_name,
       serviceArea: 'Suffolk and surrounding areas',
@@ -78,7 +87,7 @@ export async function handleBlogContext(
       description: draft.description,
       tags: JSON.stringify(draft.tags),
       status: 'draft',
-      image_url: state.data.photoR2Key || null,
+      image_url: photoR2Key,
       image_alt_text: draft.image_alt_text,
       scheduled_publish_at: null,
     });

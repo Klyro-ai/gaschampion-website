@@ -295,6 +295,9 @@ app.post('/telegram/webhook', async (c) => {
               }
               return candidate;
             },
+            downloadPhoto: (fileId, clientId) => downloadAndStorePhoto(
+              bot, fileId, clientId, c.env.R2, db, userInfo.client.r2_bucket_prefix || ''
+            ),
           });
           return c.json({ ok: true });
         }
