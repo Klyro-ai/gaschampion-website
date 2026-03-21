@@ -244,6 +244,24 @@ export class ClientDB {
     },
   };
 
+  config = {
+    getSiteConfig: async (): Promise<import('../types').SiteConfig | null> => {
+      const row = await this.db
+        .prepare('SELECT site_config FROM clients WHERE id = ?')
+        .bind(this.clientId)
+        .first<{ site_config: string | null }>();
+      if (!row?.site_config) return null;
+      return JSON.parse(row.site_config);
+    },
+
+    updateSiteConfig: async (config: import('../types').SiteConfig): Promise<void> => {
+      await this.db
+        .prepare("UPDATE clients SET site_config = ?, updated_at = datetime('now') WHERE id = ?")
+        .bind(JSON.stringify(config), this.clientId)
+        .run();
+    },
+  };
+
   notifications = {
     queue: async (type: string, payload: object): Promise<void> => {
       const id = crypto.randomUUID();

@@ -26,6 +26,11 @@ describe('ClientDB', () => {
     for (const stmt of stmts3) {
       await env.DB.prepare(stmt).run();
     }
+    const { default: migration4SQL } = await import('../../migrations/0004_site_config.sql?raw');
+    const stmts4 = migration4SQL.split(';').map((s: string) => s.replace(/--[^\n]*/g, '').trim()).filter((s: string) => s.length > 0).map((s: string) => s + ';');
+    for (const stmt of stmts4) {
+      await env.DB.prepare(stmt).run();
+    }
     // Seed required client rows to satisfy FK constraints
     await env.DB.prepare(
       "INSERT OR IGNORE INTO clients (id, business_name, telegram_chat_id, pages_project_name, r2_bucket_prefix) VALUES (?, ?, ?, ?, ?)"
@@ -197,6 +202,24 @@ describe('ClientDB', () => {
       const img = images.find((i: any) => i.id === id);
       expect(img!.caption).toBe('New caption');
       expect(img!.alt_text).toBe('Alt text here');
+    });
+  });
+
+  describe('config.getSiteConfig', () => {
+    it('returns parsed site_config for a client', async () => {
+      await env.DB.prepare(
+        "UPDATE clients SET site_config = ? WHERE id = ?"
+      ).bind(JSON.stringify({ shortName: 'Test Co', tagline: 'Test tagline', services: [] }), 'test-client-001').run();
+
+      const config = await clientDb.config.getSiteConfig();
+      expect(config).not.toBeNull();
+      expect(config!.shortName).toBe('Test Co');
+      expect(config!.tagline).toBe('Test tagline');
+    });
+
+    it('returns null if no site_config set', async () => {
+      const config = await clientDb.config.getSiteConfig();
+      expect(config).toBeNull();
     });
   });
 });
