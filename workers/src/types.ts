@@ -5,6 +5,8 @@ export interface Env {
   FETCH_QUEUE: Queue;
   TELEGRAM_BOT_TOKEN: string;
   TELEGRAM_WEBHOOK_SECRET: string;
+  TELEGRAM_ADMIN_BOT_TOKEN: string;
+  TELEGRAM_ADMIN_WEBHOOK_SECRET: string;
   BUILD_API_KEY: string;
   ENVIRONMENT: string;
   FACEBOOK_APP_ID: string;

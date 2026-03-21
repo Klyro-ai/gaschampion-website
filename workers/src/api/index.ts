@@ -62,7 +62,53 @@ app.get('/api/:clientId/gallery', async (c) => {
 // Health check
 app.get('/health', (c) => c.json({ status: 'ok', timestamp: new Date().toISOString() }));
 
-// Telegram webhook
+// ========== ADMIN BOT WEBHOOK (@KlyroAdminBot) ==========
+app.post('/telegram/admin-webhook', async (c) => {
+  const secret = c.req.header('X-Telegram-Bot-Api-Secret-Token');
+  if (secret !== c.env.TELEGRAM_ADMIN_WEBHOOK_SECRET) {
+    return c.json({ error: 'Forbidden' }, 403);
+  }
+
+  const update = await c.req.json();
+  const bot = new TelegramBot(c.env.TELEGRAM_ADMIN_BOT_TOKEN);
+  const wizard = new WizardManager(c.env.KV);
+  const chatId = update.message?.chat.id ?? update.callback_query?.message?.chat.id;
+
+  if (!chatId) return c.json({ ok: true });
+
+  // Only admin can use this bot
+  if (String(chatId) !== c.env.ADMIN_CHAT_ID) {
+    await bot.sendMessage(chatId, 'This bot is for Klyro admin only.');
+    return c.json({ ok: true });
+  }
+
+  const text = update.message?.text ?? '';
+  const callbackData = update.callback_query?.data ?? null;
+
+  if (update.callback_query) {
+    await bot.answerCallback(update.callback_query.id);
+  }
+
+  try {
+    const wizState = await wizard.get(chatId);
+    if (wizState?.type === 'addclient') {
+      await handleAddClientStep(bot, chatId, text || null, callbackData, wizard, c.env.DB);
+    } else if (callbackData === 'admin:addclient') {
+      await handleAddClientStep(bot, chatId, null, null, wizard, c.env.DB);
+    } else if (callbackData?.startsWith('admin:')) {
+      await handleAdminCallback(bot, chatId, update.callback_query?.message?.message_id, update.callback_query?.id, callbackData, c.env.DB, wizard);
+    } else {
+      await handleAdminMessage(bot, chatId, text, c.env.DB, wizard);
+    }
+  } catch (e) {
+    const errMsg = e instanceof Error ? e.message : String(e);
+    console.error('Admin bot error:', errMsg);
+  }
+
+  return c.json({ ok: true });
+});
+
+// ========== CLIENT BOT WEBHOOK (@KlyroWebsiteBot) ==========
 app.post('/telegram/webhook', async (c) => {
   const secret = c.req.header('X-Telegram-Bot-Api-Secret-Token');
   if (secret !== c.env.TELEGRAM_WEBHOOK_SECRET) {
@@ -78,72 +124,55 @@ app.post('/telegram/webhook', async (c) => {
 
   const text = update.message?.text ?? '';
   const callbackData = update.callback_query?.data ?? null;
+  const workerUrl = new URL(c.req.url).origin;
 
   if (update.callback_query) {
     await bot.answerCallback(update.callback_query.id);
   }
 
-  const isAdmin = String(chatId) === c.env.ADMIN_CHAT_ID;
-  const workerUrl = new URL(c.req.url).origin;
+  const onboardingDeps = {
+    claimInvite: (token: string, cId: string) => claimInvite(c.env.DB, token, cId),
+    getClient: async (clientId: string) => c.env.DB.prepare('SELECT * FROM clients WHERE id = ?').bind(clientId).first(),
+    extractPlaceId: extractPlaceIdFromUrl,
+    searchGooglePlaces,
+    apiKey: c.env.GOOGLE_PLACES_API_KEY,
+    updateGooglePlaceId: (clientId: string, placeId: string | null) => updateGooglePlaceId(c.env.DB, clientId, placeId),
+    updateQuietHours: (clientId: string, start: string, end: string) => updateQuietHours(c.env.DB, clientId, start, end),
+    oauthBaseUrl: workerUrl,
+  };
 
   try {
-    // Deep link onboarding — /start <token> (takes priority over admin for invite links)
+    // Deep link onboarding — /start <token>
     const startPayload = text.startsWith('/start ') ? text.slice(7).trim() : '';
     if (startPayload && startPayload.length > 10) {
-      try {
-        await handleOnboarding(bot, chatId, startPayload, null, wizard, {
-          claimInvite: (token, cId) => claimInvite(c.env.DB, token, cId),
-          getClient: async (clientId) => c.env.DB.prepare('SELECT * FROM clients WHERE id = ?').bind(clientId).first(),
-          extractPlaceId: extractPlaceIdFromUrl,
-          searchGooglePlaces,
-          apiKey: c.env.GOOGLE_PLACES_API_KEY,
-          updateGooglePlaceId: (clientId, placeId) => updateGooglePlaceId(c.env.DB, clientId, placeId),
-          updateQuietHours: (clientId, start, end) => updateQuietHours(c.env.DB, clientId, start, end),
-          oauthBaseUrl: workerUrl,
-        });
-      } catch (onboardErr) {
-        const msg = onboardErr instanceof Error ? onboardErr.message : String(onboardErr);
-        return c.json({ ok: true, debug_onboard_error: msg });
-      }
+      await handleOnboarding(bot, chatId, startPayload, null, wizard, onboardingDeps);
       return c.json({ ok: true });
     }
 
-    // Admin
-    if (isAdmin) {
-      const wizState = await wizard.get(chatId);
-      if (wizState?.type === 'addclient') {
-        await handleAddClientStep(bot, chatId, text || null, callbackData, wizard, c.env.DB);
-      } else if (callbackData === 'admin:addclient') {
-        await handleAddClientStep(bot, chatId, null, null, wizard, c.env.DB);
-      } else if (callbackData?.startsWith('admin:')) {
-        await handleAdminCallback(bot, chatId, update.callback_query?.message?.message_id, update.callback_query?.id, callbackData, c.env.DB, wizard);
-      } else {
-        await handleAdminMessage(bot, chatId, text, c.env.DB, wizard);
-      }
+    // Check wizard state first
+    const wizState = await wizard.get(chatId);
+    if (wizState?.type === 'onboarding') {
+      await handleOnboarding(bot, chatId, text || null, callbackData, wizard, onboardingDeps);
       return c.json({ ok: true });
     }
 
-    // Client — check authorization
+    // Authorized client
     const userInfo = await getClientByAuthorizedUser(c.env.DB, String(chatId));
     if (userInfo) {
-      const wizState = await wizard.get(chatId);
-      if (wizState?.type === 'onboarding') {
-        await handleOnboarding(bot, chatId, text || null, callbackData, wizard, {
-          claimInvite: (token, cId) => claimInvite(c.env.DB, token, cId),
-          getClient: async (clientId) => c.env.DB.prepare('SELECT * FROM clients WHERE id = ?').bind(clientId).first(),
-          extractPlaceId: extractPlaceIdFromUrl,
-          searchGooglePlaces,
-          apiKey: c.env.GOOGLE_PLACES_API_KEY,
-          updateGooglePlaceId: (clientId, placeId) => updateGooglePlaceId(c.env.DB, clientId, placeId),
-          updateQuietHours: (clientId, start, end) => updateQuietHours(c.env.DB, clientId, start, end),
-          oauthBaseUrl: workerUrl,
-        });
-      } else if (text === '/connect' || callbackData?.startsWith('connect:')) {
+      if (text === '/connect' || callbackData?.startsWith('connect:')) {
         await handleConnect(bot, chatId, callbackData, userInfo.client, {
           updateGooglePlaceId: (clientId, placeId) => updateGooglePlaceId(c.env.DB, clientId, placeId),
           updateSocialIds: (clientId, igId, fbId) => updateSocialIds(c.env.DB, clientId, igId, fbId),
           oauthBaseUrl: workerUrl,
         });
+      } else if (text === '/start') {
+        await bot.sendMessage(chatId,
+          `Welcome back! Here's what you can do:\n\n` +
+          `  /connect  — manage connected services\n` +
+          `  /reviews  — approve new reviews\n` +
+          `  /status   — check site status\n` +
+          `  /help     — full guide`
+        );
       } else {
         await bot.sendMessage(chatId, 'Use /connect to manage your services, or /help for all commands.');
       }
@@ -154,8 +183,7 @@ app.post('/telegram/webhook', async (c) => {
     await bot.sendMessage(chatId, 'Contact your Klyro admin to get set up.');
   } catch (e) {
     const errMsg = e instanceof Error ? e.message : String(e);
-    console.error('Telegram webhook error:', errMsg);
-    return c.json({ ok: true, error: errMsg });
+    console.error('Client bot error:', errMsg);
   }
 
   return c.json({ ok: true });
