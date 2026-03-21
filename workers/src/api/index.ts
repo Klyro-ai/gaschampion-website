@@ -8,7 +8,7 @@ import { handleAddClientStep } from '../telegram/admin/addclient';
 import { handleOnboarding } from '../telegram/client/onboarding';
 import { handleConnect } from '../telegram/client/connect';
 import { buildFacebookAuthUrl, handleFacebookCallback, extractPlaceIdFromUrl } from '../auth/facebook';
-import { handlePhotoReceived, handlePhotoChoice } from '../telegram/client/photo';
+import { handlePhotoReceived, handlePhotoChoice, getPendingPhotoFileId } from '../telegram/client/photo';
 import { handleGalleryUpload, handleGalleryCaption, handleGallerySkip } from '../telegram/client/gallery';
 import { handleBlogContext, handleBlogApprove, handleBlogReject, handleBlogEdit, handleBlogEditResponse } from '../telegram/client/blog';
 import { WorkersAiWriter } from '../services/ai-writer';
@@ -249,16 +249,20 @@ app.post('/telegram/webhook', async (c) => {
         }
         // Photo choice callbacks
         if (callbackData.startsWith('photo:')) {
-          if (callbackData.startsWith('photo:gallery:')) {
-            const fileId = callbackData.replace('photo:gallery:', '');
-            const db = forClient(c.env.DB, userInfo.client.id);
-            await handleGalleryUpload(bot, chatId, fileId, wizard, userInfo.client.id, {
-              downloadAndStore: (fId, cId) => downloadAndStorePhoto(
-                bot, fId, cId, c.env.R2, db, userInfo.client.r2_bucket_prefix || ''
-              ),
-            });
+          if (callbackData === 'photo:gallery') {
+            const fileId = await getPendingPhotoFileId(c.env.KV, chatId);
+            if (fileId) {
+              const db = forClient(c.env.DB, userInfo.client.id);
+              await handleGalleryUpload(bot, chatId, fileId, wizard, userInfo.client.id, {
+                downloadAndStore: (fId, cId) => downloadAndStorePhoto(
+                  bot, fId, cId, c.env.R2, db, userInfo.client.r2_bucket_prefix || ''
+                ),
+              });
+            } else {
+              await bot.sendMessage(chatId, 'Photo expired — please send it again.');
+            }
           } else {
-            await handlePhotoChoice(bot, chatId, callbackData, wizard, userInfo.client.id);
+            await handlePhotoChoice(bot, chatId, callbackData, wizard, userInfo.client.id, c.env.KV);
           }
           return c.json({ ok: true });
         }
@@ -268,7 +272,7 @@ app.post('/telegram/webhook', async (c) => {
       const photo = update.message?.photo;
       if (photo && photo.length > 0) {
         const fileId = photo[photo.length - 1].file_id;
-        await handlePhotoReceived(bot, chatId, fileId);
+        await handlePhotoReceived(bot, chatId, fileId, c.env.KV);
         return c.json({ ok: true });
       }
 
@@ -411,7 +415,8 @@ app.post('/telegram/webhook', async (c) => {
     await bot.sendMessage(chatId, 'Contact your Klyro admin to get set up.');
   } catch (e) {
     const errMsg = e instanceof Error ? e.message : String(e);
-    console.error('Client bot error:', errMsg);
+    const stack = e instanceof Error ? e.stack : '';
+    console.error('Client bot error:', errMsg, stack);
   }
 
   return c.json({ ok: true });
