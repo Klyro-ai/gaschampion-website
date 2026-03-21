@@ -13,6 +13,7 @@ import { handleGalleryUpload, handleGalleryCaption, handleGallerySkip } from '..
 import { handleBlogCaption, handleBlogContext, handleBlogApprove, handleBlogReject, handleBlogEdit, handleBlogEditResponse } from '../telegram/client/blog';
 import { handleAiSettings, handleAiCallback, handleAiKeyInput } from '../telegram/client/ai-settings';
 import { handleCtaSettings, handleCtaCallback, handleCtaTextInput } from '../telegram/client/cta-settings';
+import { handleDomainCommand, handleDomainCallback, handleDomainInput } from '../telegram/client/domain-settings';
 import { createAiWriter } from '../services/ai-writer';
 import type { AiProvider } from '../services/ai-prompts';
 import { downloadAndStorePhoto } from '../services/photo-upload';
@@ -469,6 +470,10 @@ app.post('/telegram/webhook', async (c) => {
           await handleCtaCallback(bot, chatId, callbackData, userInfo.client.id, c.env.DB, wizard);
           return c.json({ ok: true });
         }
+        if (callbackData.startsWith('domain:')) {
+          await handleDomainCallback(bot, chatId, callbackData, userInfo.client.id, c.env.DB, wizard, c.env.CF_API_TOKEN, c.env.CF_ZONE_ID);
+          return c.json({ ok: true });
+        }
         // Lead contacted callbacks
         if (callbackData.startsWith('lead:contacted:')) {
           const leadId = callbackData.replace('lead:contacted:', '');
@@ -581,6 +586,11 @@ app.post('/telegram/webhook', async (c) => {
         return c.json({ ok: true });
       }
 
+      if ((wizStateClient?.type as string) === 'domain_setup' && text) {
+        await handleDomainInput(bot, chatId, text, userInfo.client.id, c.env.DB, wizard, c.env.CF_API_TOKEN, c.env.CF_ZONE_ID);
+        return c.json({ ok: true });
+      }
+
       // === NEW: /newpost command ===
       if (text === '/newpost') {
         await wizard.start(chatId, 'blog', 'awaiting_context', userInfo.client.id);
@@ -599,6 +609,11 @@ app.post('/telegram/webhook', async (c) => {
       // === /cta command — CTA settings ===
       if (text === '/cta') {
         await handleCtaSettings(bot, chatId, userInfo.client.id, c.env.DB);
+        return c.json({ ok: true });
+      }
+
+      if (text === '/domain') {
+        await handleDomainCommand(bot, chatId, userInfo.client.id, c.env.DB);
         return c.json({ ok: true });
       }
 
@@ -677,6 +692,7 @@ app.post('/telegram/webhook', async (c) => {
           `  /newpost  — write a blog post\n` +
           `  /ai       — change AI provider for blog writing\n` +
           `  /cta      — set call-to-action for blog posts\n` +
+          `  /domain   — connect your own domain\n` +
           `  /help     — show this message\n\n` +
           `<b>Connected services sync automatically every 6 hours.</b> You can also use /reviews to check them anytime.\n\n` +
           `<b>Tip:</b> Send a photo to create a blog post or add to your gallery!`

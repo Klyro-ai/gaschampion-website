@@ -6,7 +6,7 @@
  * 2. Cloudflare for SaaS enabled on the zone
  * 3. Fallback origin: proxy-fallback.klyro.co.uk → AAAA 100::
  * 4. Wildcard DNS: *.klyro.co.uk → AAAA 100::
- * 5. Worker route: */* → klyro-site
+ * 5. Worker route: wildcard → klyro-site
  * 6. Secrets: CF_API_TOKEN, CF_ZONE_ID
  */
 
