@@ -1,16 +1,12 @@
-const API_BASE = import.meta.env.KLYRO_API_URL || 'http://localhost:8787';
-const API_KEY = import.meta.env.KLYRO_API_KEY || '';
-const CLIENT_ID = import.meta.env.KLYRO_CLIENT_ID || 'gc-001';
-
 /** Build a public image URL served from the worker's R2 endpoint */
-export function imageUrl(r2Key: string): string {
-  return `${API_BASE}/api/image/${r2Key}`;
+export function imageUrl(apiBase: string, r2Key: string): string {
+  return `${apiBase}/api/image/${r2Key}`;
 }
 
-async function fetchKlyro<T>(endpoint: string): Promise<T> {
-  const url = `${API_BASE}/api/${CLIENT_ID}${endpoint}`;
+async function fetchForClient<T>(apiBase: string, apiKey: string, clientId: string, endpoint: string): Promise<T> {
+  const url = `${apiBase}/api/${clientId}${endpoint}`;
   const response = await fetch(url, {
-    headers: { 'X-API-Key': API_KEY },
+    headers: { 'X-API-Key': apiKey },
   });
 
   if (!response.ok) {
@@ -21,8 +17,8 @@ async function fetchKlyro<T>(endpoint: string): Promise<T> {
   return response.json() as Promise<T>;
 }
 
-export async function getApprovedReviews() {
-  const data = await fetchKlyro<{
+export async function getApprovedReviews(apiBase: string, apiKey: string, clientId: string) {
+  return fetchForClient<{
     reviews: Array<{
       id: string;
       source: string;
@@ -32,12 +28,11 @@ export async function getApprovedReviews() {
       review_date: string;
     }>;
     aggregate: { average: number; count: number };
-  }>('/reviews');
-  return data;
+  }>(apiBase, apiKey, clientId, '/reviews');
 }
 
-export async function getInstagramPosts() {
-  const data = await fetchKlyro<{
+export async function getInstagramPosts(apiBase: string, apiKey: string, clientId: string) {
+  const data = await fetchForClient<{
     posts: Array<{
       instagram_id: string;
       caption: string | null;
@@ -46,12 +41,12 @@ export async function getInstagramPosts() {
       permalink: string;
       posted_at: string;
     }>;
-  }>('/instagram');
+  }>(apiBase, apiKey, clientId, '/instagram');
   return data.posts;
 }
 
-export async function getPublishedBlogPosts() {
-  const data = await fetchKlyro<{
+export async function getPublishedBlogPosts(apiBase: string, apiKey: string, clientId: string) {
+  const data = await fetchForClient<{
     posts: Array<{
       id: string;
       title: string;
@@ -60,25 +55,23 @@ export async function getPublishedBlogPosts() {
       description: string;
       tags: string;
       image_url: string | null;
+      image_alt_text: string | null;
       published_at: string;
     }>;
-  }>('/blog');
+  }>(apiBase, apiKey, clientId, '/blog');
   return data.posts;
 }
 
-export async function getBlogPostBySlug(slug: string) {
-  const url = `${API_BASE}/api/${CLIENT_ID}/blog/${slug}`;
-  const response = await fetch(url, {
-    headers: { 'X-API-Key': API_KEY },
-  });
-
+export async function getBlogPostBySlug(apiBase: string, apiKey: string, clientId: string, slug: string) {
+  const url = `${apiBase}/api/${clientId}/blog/${slug}`;
+  const response = await fetch(url, { headers: { 'X-API-Key': apiKey } });
   if (!response.ok) return null;
   const data = await response.json() as { post: any };
   return data?.post ?? null;
 }
 
-export async function getGalleryImages() {
-  const data = await fetchKlyro<{
+export async function getGalleryImages(apiBase: string, apiKey: string, clientId: string) {
+  const data = await fetchForClient<{
     images: Array<{
       id: string;
       r2_key: string;
@@ -86,6 +79,6 @@ export async function getGalleryImages() {
       caption: string | null;
       srcset: string | null;
     }>;
-  }>('/gallery');
+  }>(apiBase, apiKey, clientId, '/gallery');
   return data.images;
 }
