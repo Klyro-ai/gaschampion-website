@@ -28,14 +28,25 @@ interface BlogEditDeps {
   getDraft: (postId: string) => Promise<{ content: string; title: string } | null>;
 }
 
+function escapeHtml(s: string): string {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
 export function formatPreview(draft: BlogDraftOutput): string {
-  const tags = draft.tags.map(t => `#${t}`).join(' ');
-  const contentLines = draft.content.split('\n\n');
-  const preview = contentLines.slice(0, 3).join('\n\n');
+  const tags = draft.tags.map(t => `#${t.replace(/[^a-zA-Z0-9_]/g, '')}`).join(' ');
+  // Strip markdown formatting for preview, keep plain text
+  const plainContent = draft.content
+    .replace(/^#{1,3}\s+/gm, '') // strip heading markers
+    .replace(/\*\*(.+?)\*\*/g, '$1') // strip bold
+    .replace(/\*(.+?)\*/g, '$1') // strip italic
+    .replace(/^[*-]\s+/gm, '• ') // convert list markers to bullets
+    .replace(/^>\s+/gm, ''); // strip blockquotes
+  const contentLines = plainContent.split('\n\n');
+  const preview = escapeHtml(contentLines.slice(0, 3).join('\n\n'));
   const wordCount = draft.content.split(/\s+/).length;
 
-  let text = `<b>${draft.title}</b>\n\n`;
-  text += `<i>${draft.description}</i>\n\n`;
+  let text = `<b>${escapeHtml(draft.title)}</b>\n\n`;
+  text += `<i>${escapeHtml(draft.description)}</i>\n\n`;
   text += preview;
   text += `\n\n${tags}`;
   text += `\n\n<i>Full post: ~${wordCount} words</i>`;
