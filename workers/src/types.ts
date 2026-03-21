@@ -16,6 +16,8 @@ export interface Env {
   AI: Ai;
   CLAUDE_API_KEY?: string;
   PAGES_DEPLOY_HOOK?: string;
+  CF_API_TOKEN?: string;
+  CF_ZONE_ID?: string;
 }
 
 export interface Client {
@@ -130,7 +132,7 @@ export interface TelegramUpdate {
 }
 
 export interface WizardState {
-  type: 'addclient' | 'onboarding' | 'blog' | 'gallery_caption' | 'ai_setup' | 'cta_setup';
+  type: 'addclient' | 'onboarding' | 'blog' | 'gallery_caption' | 'ai_setup' | 'cta_setup' | 'domain_setup';
   step: string;
   data: Record<string, string>;
   clientId?: string;
