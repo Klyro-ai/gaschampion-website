@@ -6,7 +6,7 @@ import Header from '../../components/static/Header.astro'
 import Footer from '../../components/static/Footer.astro'
 import { getPublishedBlogPosts, imageUrl } from '../../lib/klyro-api'
 
-const { clientId, apiBase, apiKey } = Astro.locals.tenant
+const { clientId, apiBase, apiKey, apiFetch } = Astro.locals.tenant
 const posts = await getPublishedBlogPosts(apiFetch, apiKey, clientId)
 ---
 
