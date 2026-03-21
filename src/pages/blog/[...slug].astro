@@ -5,22 +5,26 @@ import TopBar from '../../components/static/TopBar.astro'
 import Header from '../../components/static/Header.astro'
 import CTABanner from '../../components/static/CTABanner.astro'
 import Footer from '../../components/static/Footer.astro'
-
-
-
-import { getCollection, render } from 'astro:content'
+import { getPublishedBlogPosts, getBlogPostBySlug } from '../../lib/klyro-api'
+import { marked } from 'marked'
 
 export async function getStaticPaths() {
-  const posts = await getCollection('blog')
-  return posts.map(post => ({ params: { slug: post.id || post.slug }, props: { post } }))
+  const posts = await getPublishedBlogPosts()
+  return posts.map(post => ({ params: { slug: post.slug } }))
 }
 
-const { post } = Astro.props
-const { Content } = await render(post)
+const { slug } = Astro.params
+const post = await getBlogPostBySlug(slug!)
+if (!post) return Astro.redirect('/blog')
+
+const tags = (() => { try { return JSON.parse(post.tags || '[]') } catch { return [] } })()
+const firstTag = tags[0] || 'Tips'
+const dateStr = post.published_at ? new Date(post.published_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : ''
+const htmlContent = await marked.parse(post.content || '')
 ---
 
-<Base title={post.data.title} description={post.data.description}>
-  
+<Base title={post.title} description={post.description}>
+
     <TopBar />
     <Header><MobileNav /></Header>
 
@@ -28,20 +32,28 @@ const { Content } = await render(post)
       <div class="max-w-3xl mx-auto px-4">
         <div class="mb-8">
           <div class="flex items-center gap-3 mb-4">
-            <span class="text-xs font-medium px-2 py-1 rounded-theme-full" style="background-color: color-mix(in srgb, var(--color-primary) 15%, transparent); color: var(--color-primary)">{post.data.tags?.[0]}</span>
-            <span class="text-sm" style="color: var(--color-foreground-muted)">{post.data.date.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+            <span class="text-xs font-medium px-2 py-1 rounded-theme-full" style="background-color: color-mix(in srgb, var(--color-primary) 15%, transparent); color: var(--color-primary)">{firstTag}</span>
+            <span class="text-sm" style="color: var(--color-foreground-muted)">{dateStr}</span>
           </div>
-          <h1 class="font-heading text-[1.65rem] sm:text-4xl md:text-5xl font-bold mb-4">{post.data.title}</h1>
-          <p class="text-lg" style="color: var(--color-foreground-muted)">{post.data.description}</p>
+          <h1 class="font-heading text-[1.65rem] sm:text-4xl md:text-5xl font-bold mb-4">{post.title}</h1>
+          <p class="text-lg" style="color: var(--color-foreground-muted)">{post.description}</p>
         </div>
-        <div class="prose prose-lg max-w-none" style="color: var(--color-foreground); overflow-wrap: break-word;">
-          <Content />
-        </div>
+        {post.image_url && (
+          <div class="mb-8 rounded-theme overflow-hidden">
+            <img
+              src={`/api/image/${post.image_url}`}
+              alt={post.image_alt_text || post.title}
+              class="w-full h-auto"
+              loading="eager"
+            />
+          </div>
+        )}
+        <div class="prose prose-lg max-w-none" style="color: var(--color-foreground); overflow-wrap: break-word;" set:html={htmlContent} />
       </div>
     </article>
 
     <CTABanner />
     <Footer />
-    
-  
+
+
 </Base>

@@ -4,16 +4,13 @@ import MobileNav from '../../components/static/MobileNav.astro'
 import TopBar from '../../components/static/TopBar.astro'
 import Header from '../../components/static/Header.astro'
 import Footer from '../../components/static/Footer.astro'
+import { getPublishedBlogPosts } from '../../lib/klyro-api'
 
-
-
-import { getCollection } from 'astro:content'
-
-const posts = (await getCollection('blog')).filter(p => !p.data.draft).sort((a, b) => b.data.date.getTime() - a.data.date.getTime())
+const posts = await getPublishedBlogPosts()
 ---
 
 <Base title="Blog" description="Expert heating and boiler tips from a Gas Safe registered engineer.">
-  
+
     <TopBar />
     <Header><MobileNav /></Header>
 
@@ -26,16 +23,23 @@ const posts = (await getCollection('blog')).filter(p => !p.data.draft).sort((a, 
 
     <section class="py-16 md:py-24">
       <div class="max-w-7xl mx-auto px-4">
+        {posts.length === 0 ? (
+          <p class="text-center text-lg" style="color: var(--color-foreground-muted)">No posts yet — check back soon!</p>
+        ) : (
         <div class="grid md:grid-cols-2 gap-8">
           {posts.map((post) => {
-            const slug = post.id || post.slug || ''
-            const imgSrc = slug.includes('service') ? '/images/blog-boiler-service.svg' : slug.includes('safety') ? '/images/blog-gas-safety.svg' : '/images/blog-radiator.svg'
+            const tags = (() => { try { return JSON.parse(post.tags || '[]') } catch { return [] } })()
+            const firstTag = tags[0] || 'Tips'
+            const dateStr = post.published_at ? new Date(post.published_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : ''
+            const imgSrc = post.image_url
+              ? `/api/image/${post.image_url}`
+              : post.slug.includes('service') ? '/images/blog-boiler-service.svg' : post.slug.includes('safety') ? '/images/blog-gas-safety.svg' : '/images/blog-radiator.svg'
             return (
-            <a href={`/blog/${slug}`} class="block p-5 sm:p-6 rounded-theme-lg border hover:shadow-theme-lg hover:-translate-y-1 transition-all group h-full" style="background-color: var(--color-card-bg); border-color: var(--color-card-border);">
+            <a href={`/blog/${post.slug}`} class="block p-5 sm:p-6 rounded-theme-lg border hover:shadow-theme-lg hover:-translate-y-1 transition-all group h-full" style="background-color: var(--color-card-bg); border-color: var(--color-card-border);">
               <div class="rounded-theme mb-4 overflow-hidden">
                 <img
                   src={imgSrc}
-                  alt={post.data.title}
+                  alt={post.image_alt_text || post.title}
                   class="w-full h-auto aspect-video object-cover"
                   width="640"
                   height="360"
@@ -43,20 +47,20 @@ const posts = (await getCollection('blog')).filter(p => !p.data.draft).sort((a, 
                 />
               </div>
               <div class="flex items-center gap-3 mb-3">
-                <span class="text-xs font-medium px-2 py-1 rounded-theme-full" style="background-color: color-mix(in srgb, var(--color-primary) 15%, transparent); color: var(--color-primary)">{post.data.tags?.[0] || 'Tips'}</span>
-                <span class="text-xs" style="color: var(--color-foreground-muted)">{post.data.date.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+                <span class="text-xs font-medium px-2 py-1 rounded-theme-full" style="background-color: color-mix(in srgb, var(--color-primary) 15%, transparent); color: var(--color-primary)">{firstTag}</span>
+                <span class="text-xs" style="color: var(--color-foreground-muted)">{dateStr}</span>
               </div>
-              <h2 class="font-heading font-bold text-xl mb-2">{post.data.title}</h2>
-              <p class="text-sm" style="color: var(--color-foreground-muted)">{post.data.description}</p>
+              <h2 class="font-heading font-bold text-xl mb-2">{post.title}</h2>
+              <p class="text-sm" style="color: var(--color-foreground-muted)">{post.description}</p>
               <div class="mt-4 flex items-center gap-1 text-sm font-medium" style="color: var(--color-accent)">Read more <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M12 5l7 7-7 7" /></svg></div>
             </a>
           )})}
-
         </div>
+        )}
       </div>
     </section>
 
     <Footer />
-    
-  
+
+
 </Base>
