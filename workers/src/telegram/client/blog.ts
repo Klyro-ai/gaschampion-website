@@ -11,7 +11,7 @@ interface BlogContextDeps {
     image_url: string | null; image_alt_text: string | null;
     scheduled_publish_at: string | null;
   }) => Promise<string>;
-  getClient: (clientId: string) => Promise<{ business_name: string; r2_bucket_prefix: string } | null>;
+  getClient: (clientId: string) => Promise<{ business_name: string; r2_bucket_prefix: string; site_config?: string } | null>;
   ensureUniqueSlug: (slug: string) => Promise<string>;
   downloadPhoto?: (fileId: string, clientId: string) => Promise<{ r2Key: string; galleryId: string }>;
   previewBaseUrl?: string;
@@ -72,11 +72,22 @@ export async function handleBlogContext(
       await wizard.update(chatId, 'generating', { photoR2Key: r2Key });
     }
 
+    // Parse site_config for enriched prompt data
+    const siteConfig = client.site_config ? JSON.parse(client.site_config) : {};
+
     const draft = await deps.aiWriter.generateDraft({
       businessName: client.business_name,
-      serviceArea: 'Suffolk and surrounding areas',
+      serviceArea: siteConfig.address?.town
+        ? `${siteConfig.address.town}, ${siteConfig.address.county || 'Suffolk'} and surrounding areas`
+        : 'Suffolk and surrounding areas',
       caption,
       hasPhoto: !!state.data.photoFileId,
+      phone: siteConfig.phone,
+      yearsExperience: siteConfig.yearsExperience,
+      registrationNumber: siteConfig.registrationNumber,
+      nearbyAreas: siteConfig.serviceAreas?.slice(0, 5),
+      ctaConfig: siteConfig.ctaConfig,
+      currentMonth: new Date().toLocaleString('en-GB', { month: 'long' }),
     });
 
     const uniqueSlug = await deps.ensureUniqueSlug(draft.slug);

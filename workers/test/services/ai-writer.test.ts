@@ -13,8 +13,8 @@ describe('buildBlogPrompt', () => {
     expect(prompt).toContain('Gas Champion Ltd');
     expect(prompt).toContain('Haverhill, Suffolk');
     expect(prompt).toContain('New boiler fitted in Clare');
-    expect(prompt).toContain('They Ask, You Answer');
     expect(prompt).toContain('NO customer names');
+    expect(prompt).toContain('BANNED PHRASES');
   });
 
   it('sets image_alt_text to null when no photo', () => {
