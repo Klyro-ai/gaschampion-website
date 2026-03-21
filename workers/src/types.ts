@@ -130,7 +130,7 @@ export interface TelegramUpdate {
 }
 
 export interface WizardState {
-  type: 'addclient' | 'onboarding' | 'blog' | 'gallery_caption';
+  type: 'addclient' | 'onboarding' | 'blog' | 'gallery_caption' | 'ai_setup' | 'cta_setup';
   step: string;
   data: Record<string, string>;
   clientId?: string;

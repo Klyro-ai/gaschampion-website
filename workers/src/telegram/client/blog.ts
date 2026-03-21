@@ -151,7 +151,10 @@ export async function handleBlogContext(
       ? `${deps.previewBaseUrl}/api/${state.clientId}/blog/preview/${postId}`
       : null;
     const previewLink = previewUrl ? `\n\n<a href="${previewUrl}">View full preview</a>` : '';
-    await bot.sendMessage(chatId, preview + previewLink, {
+    const aiDisclaimer = state.data.aiProvider === 'workers-ai' || (!state.data.aiProvider)
+      ? '\n\n\u26a0\ufe0f Generated with the free AI model. Please review for technical accuracy before approving.'
+      : '';
+    await bot.sendMessage(chatId, preview + previewLink + aiDisclaimer, {
       inline_keyboard: [
         [
           { text: '✅ Approve', callback_data: 'blog:approve' },

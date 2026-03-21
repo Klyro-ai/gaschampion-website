@@ -11,6 +11,8 @@ import { buildFacebookAuthUrl, handleFacebookCallback, extractPlaceIdFromUrl } f
 import { handlePhotoReceived, handlePhotoChoice, getPendingPhotoFileId } from '../telegram/client/photo';
 import { handleGalleryUpload, handleGalleryCaption, handleGallerySkip } from '../telegram/client/gallery';
 import { handleBlogCaption, handleBlogContext, handleBlogApprove, handleBlogReject, handleBlogEdit, handleBlogEditResponse } from '../telegram/client/blog';
+import { handleAiSettings, handleAiCallback, handleAiKeyInput } from '../telegram/client/ai-settings';
+import { handleCtaSettings, handleCtaCallback, handleCtaTextInput } from '../telegram/client/cta-settings';
 import { createAiWriter } from '../services/ai-writer';
 import type { AiProvider } from '../services/ai-prompts';
 import { downloadAndStorePhoto } from '../services/photo-upload';
@@ -365,6 +367,7 @@ app.post('/telegram/webhook', async (c) => {
           const aiProvider = (clientConfig.aiProvider || 'workers-ai') as AiProvider;
           const aiApiKey = await c.env.KV.get(`ai_key:${userInfo.client.id}:${aiProvider}`);
           const aiWriter = createAiWriter(aiProvider, { ai: c.env.AI, apiKey: aiApiKey || undefined });
+          await wizard.update(chatId, 'awaiting_details', { aiProvider });
           await handleBlogContext(bot, chatId, null, wizard, {
             aiWriter,
             createDraft: (post) => db.blogPosts.create(post),
@@ -410,6 +413,16 @@ app.post('/telegram/webhook', async (c) => {
         }
         if (callbackData === 'gallery:skip_caption') {
           await handleGallerySkip(bot, chatId, wizard);
+          return c.json({ ok: true });
+        }
+        // AI settings callbacks
+        if (callbackData.startsWith('ai:set:')) {
+          await handleAiCallback(bot, chatId, callbackData, userInfo.client.id, c.env.DB, c.env.KV, wizard);
+          return c.json({ ok: true });
+        }
+        // CTA settings callbacks
+        if (callbackData.startsWith('cta:')) {
+          await handleCtaCallback(bot, chatId, callbackData, userInfo.client.id, c.env.DB, wizard);
           return c.json({ ok: true });
         }
         // Photo choice callbacks
@@ -458,6 +471,7 @@ app.post('/telegram/webhook', async (c) => {
           const aiProvider = (clientConfig.aiProvider || 'workers-ai') as AiProvider;
           const aiApiKey = await c.env.KV.get(`ai_key:${userInfo.client.id}:${aiProvider}`);
           const aiWriter = createAiWriter(aiProvider, { ai: c.env.AI, apiKey: aiApiKey || undefined });
+          await wizard.update(chatId, 'awaiting_details', { aiProvider });
           await handleBlogContext(bot, chatId, text, wizard, {
             aiWriter,
             createDraft: (post) => db.blogPosts.create(post),
@@ -503,12 +517,36 @@ app.post('/telegram/webhook', async (c) => {
         return c.json({ ok: true });
       }
 
+      // AI setup wizard state (awaiting API key)
+      if (wizStateClient?.type === 'ai_setup' && text) {
+        await handleAiKeyInput(bot, chatId, text, userInfo.client.id, c.env.DB, c.env.KV, wizard);
+        return c.json({ ok: true });
+      }
+
+      // CTA setup wizard state (awaiting text input)
+      if (wizStateClient?.type === 'cta_setup' && text) {
+        await handleCtaTextInput(bot, chatId, text, userInfo.client.id, c.env.DB, wizard);
+        return c.json({ ok: true });
+      }
+
       // === NEW: /newpost command ===
       if (text === '/newpost') {
         await wizard.start(chatId, 'blog', 'awaiting_context', userInfo.client.id);
         await bot.sendMessage(chatId,
           'What would you like to write about?\nInclude the area if relevant.'
         );
+        return c.json({ ok: true });
+      }
+
+      // === /ai command — AI provider settings ===
+      if (text === '/ai') {
+        await handleAiSettings(bot, chatId, userInfo.client.id, c.env.DB, c.env.KV);
+        return c.json({ ok: true });
+      }
+
+      // === /cta command — CTA settings ===
+      if (text === '/cta') {
+        await handleCtaSettings(bot, chatId, userInfo.client.id, c.env.DB);
         return c.json({ ok: true });
       }
 
@@ -585,6 +623,8 @@ app.post('/telegram/webhook', async (c) => {
           `  /connect  — manage connected services\n` +
           `  /status   — check connection status\n` +
           `  /newpost  — write a blog post\n` +
+          `  /ai       — change AI provider for blog writing\n` +
+          `  /cta      — set call-to-action for blog posts\n` +
           `  /help     — show this message\n\n` +
           `<b>Connected services sync automatically every 6 hours.</b> You can also use /reviews to check them anytime.\n\n` +
           `<b>Tip:</b> Send a photo to create a blog post or add to your gallery!`
