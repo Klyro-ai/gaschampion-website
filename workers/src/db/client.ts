@@ -449,6 +449,32 @@ export async function updateSocialIds(
     .run();
 }
 
+/** Look up a client by custom_hostname or subdomain pattern */
+export async function getClientByHostname(
+  db: D1Database,
+  hostname: string
+): Promise<{ id: string; business_name: string; theme_id: string; trade_type: string } | null> {
+  // Try exact custom_hostname match first
+  const byHostname = await db
+    .prepare('SELECT id, business_name, theme_id, trade_type FROM clients WHERE custom_hostname = ? AND is_active = 1')
+    .bind(hostname)
+    .first();
+  if (byHostname) return byHostname as any;
+
+  // Try subdomain pattern: {client-id}.klyro.co.uk
+  const subdomainMatch = hostname.match(/^([^.]+)\.klyro\.co\.uk$/);
+  if (subdomainMatch) {
+    const clientId = subdomainMatch[1];
+    const byId = await db
+      .prepare('SELECT id, business_name, theme_id, trade_type FROM clients WHERE id = ? AND is_active = 1')
+      .bind(clientId)
+      .first();
+    if (byId) return byId as any;
+  }
+
+  return null;
+}
+
 /** Update a client's quiet hours */
 export async function updateQuietHours(
   db: D1Database,

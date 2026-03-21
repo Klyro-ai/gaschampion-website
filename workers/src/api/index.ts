@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
 import type { Env } from '../types';
-import { forClient, claimInvite, getClientByAuthorizedUser, updateGooglePlaceId, updateSocialIds, updateQuietHours } from '../db/client';
+import { forClient, claimInvite, getClientByAuthorizedUser, updateGooglePlaceId, updateSocialIds, updateQuietHours, getClientByHostname } from '../db/client';
 import { TelegramBot } from '../telegram/bot';
 import { WizardManager } from '../telegram/wizard';
 import { handleAdminMessage, handleAdminCallback } from '../telegram/admin/menu';
@@ -21,7 +21,7 @@ const app = new Hono<{ Bindings: Env }>();
 
 // Auth middleware — build-time API key (skip for public image endpoint)
 app.use('/api/*', async (c, next) => {
-  if (c.req.path.startsWith('/api/image/')) return next();
+  if (c.req.path.startsWith('/api/image/') || c.req.path === '/api/lookup') return next();
   const apiKey = c.req.header('X-API-Key');
   if (!apiKey || apiKey !== c.env.BUILD_API_KEY) {
     return c.json({ error: 'Unauthorized' }, 401);
@@ -127,6 +127,17 @@ app.get('/api/image/*', async (c) => {
   headers.set('Content-Type', object.httpMetadata?.contentType || 'image/jpeg');
   headers.set('Cache-Control', 'public, max-age=31536000, immutable');
   return new Response(object.body, { headers });
+});
+
+// Public hostname lookup — used by SSR Worker to resolve tenant
+app.get('/api/lookup', async (c) => {
+  const hostname = c.req.query('hostname');
+  if (!hostname) return c.json({ error: 'Missing hostname' }, 400);
+
+  const client = await getClientByHostname(c.env.DB, hostname);
+  if (!client) return c.json({ error: 'Unknown hostname' }, 404);
+
+  return c.json({ client });
 });
 
 // Health check
