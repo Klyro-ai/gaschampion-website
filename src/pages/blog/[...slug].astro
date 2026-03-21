@@ -9,8 +9,8 @@ import { getBlogPostBySlug, imageUrl } from '../../lib/klyro-api'
 import { marked } from 'marked'
 
 const { slug } = Astro.params
-const { clientId, apiBase, apiKey } = Astro.locals.tenant
-const post = await getBlogPostBySlug(apiBase, apiKey, clientId, slug!)
+const { clientId, apiBase, apiKey, apiFetch } = Astro.locals.tenant
+const post = await getBlogPostBySlug(apiFetch, apiKey, clientId, slug!)
 if (!post) return Astro.redirect('/blog')
 
 const tags = (() => { try { return JSON.parse(post.tags || '[]') } catch { return [] } })()

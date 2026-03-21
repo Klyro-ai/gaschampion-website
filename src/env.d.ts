@@ -50,6 +50,7 @@ interface TenantData {
   }>;
   apiBase: string;
   apiKey: string;
+  apiFetch: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
 }
 
 declare namespace App {

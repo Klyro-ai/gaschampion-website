@@ -11,11 +11,11 @@ import CTABanner from '../components/static/CTABanner.astro'
 import Footer from '../components/static/Footer.astro'
 import { MobileNavIsland, ContactFormIsland, FAQIsland } from '../components/interactive/AppIslands'
 import { getApprovedReviews } from '../lib/klyro-api'
-const { clientId, apiBase, apiKey, business, services, faqs } = Astro.locals.tenant
+const { clientId, apiBase, apiKey, apiFetch, business, services, faqs } = Astro.locals.tenant
 
 let reviews: any[] = [];
 try {
-  const data = await getApprovedReviews(apiBase, apiKey, clientId);
+  const data = await getApprovedReviews(apiFetch, apiKey, clientId);
   if (data.reviews.length > 0) {
     reviews = data.reviews.map(r => ({ name: r.author_name, rating: r.rating, text: r.text, source: r.source }));
   }

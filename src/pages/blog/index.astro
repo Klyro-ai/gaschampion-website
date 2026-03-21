@@ -7,7 +7,7 @@ import Footer from '../../components/static/Footer.astro'
 import { getPublishedBlogPosts, imageUrl } from '../../lib/klyro-api'
 
 const { clientId, apiBase, apiKey } = Astro.locals.tenant
-const posts = await getPublishedBlogPosts(apiBase, apiKey, clientId)
+const posts = await getPublishedBlogPosts(apiFetch, apiKey, clientId)
 ---
 
 <Base title="Blog" description="Expert heating and boiler tips from a Gas Safe registered engineer.">

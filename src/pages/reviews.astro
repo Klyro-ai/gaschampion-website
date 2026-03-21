@@ -10,11 +10,11 @@ import Footer from '../components/static/Footer.astro'
 
 
 import { getApprovedReviews } from '../lib/klyro-api'
-const { clientId, apiBase, apiKey, business } = Astro.locals.tenant
+const { clientId, apiBase, apiKey, apiFetch, business } = Astro.locals.tenant
 
 let displayReviews: any[] = [];
 try {
-  const data = await getApprovedReviews(apiBase, apiKey, clientId);
+  const data = await getApprovedReviews(apiFetch, apiKey, clientId);
   if (data.reviews.length > 0) {
     displayReviews = data.reviews.map(r => ({ name: r.author_name, rating: r.rating, text: r.text, source: r.source }));
   }

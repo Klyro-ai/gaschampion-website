@@ -3,8 +3,13 @@ compatibility_date = "2025-04-01"
 compatibility_flags = ["nodejs_compat"]
 
 [vars]
-KLYRO_API_URL = "https://klyro-worker.dark-grass-ae74.workers.dev"
 KLYRO_API_KEY = "f90cecf50e88091412d6e608eaaebc4491c8a433931e4084112776308bb0e711"
+
+# Service binding to the API Worker — direct Worker-to-Worker calls,
+# avoids workers.dev routing loops (CF error 1042)
+[[services]]
+binding = "API_WORKER"
+service = "klyro-worker"
 
 [assets]
 binding = "ASSETS"
