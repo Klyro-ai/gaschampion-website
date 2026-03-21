@@ -12,13 +12,13 @@ export function parseDraftResponse(raw: string): BlogDraftOutput {
     cleaned = cleaned.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '');
   }
 
-  // LLMs often put literal newlines/tabs inside JSON string values.
-  // Escape control chars inside strings before parsing.
-  cleaned = cleaned.replace(/[\x00-\x1F\x7F]/g, (ch) => {
-    if (ch === '\n') return '\\n';
-    if (ch === '\r') return '\\r';
-    if (ch === '\t') return '\\t';
-    return '';
+  // LLMs put literal newlines inside JSON string values which breaks JSON.parse.
+  // Only escape control chars INSIDE quoted strings, not in JSON structure.
+  cleaned = cleaned.replace(/"(?:[^"\\]|\\.)*"/g, (match) => {
+    return match
+      .replace(/\n/g, '\\n')
+      .replace(/\r/g, '\\r')
+      .replace(/\t/g, '\\t');
   });
 
   const parsed = JSON.parse(cleaned);
