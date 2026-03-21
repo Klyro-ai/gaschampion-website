@@ -10,7 +10,7 @@ import { handleConnect } from '../telegram/client/connect';
 import { buildFacebookAuthUrl, handleFacebookCallback, extractPlaceIdFromUrl } from '../auth/facebook';
 import { handlePhotoReceived, handlePhotoChoice, getPendingPhotoFileId } from '../telegram/client/photo';
 import { handleGalleryUpload, handleGalleryCaption, handleGallerySkip } from '../telegram/client/gallery';
-import { handleBlogContext, handleBlogApprove, handleBlogReject, handleBlogEdit, handleBlogEditResponse } from '../telegram/client/blog';
+import { handleBlogCaption, handleBlogContext, handleBlogApprove, handleBlogReject, handleBlogEdit, handleBlogEditResponse } from '../telegram/client/blog';
 import { createAiWriter } from '../services/ai-writer';
 import type { AiProvider } from '../services/ai-prompts';
 import { downloadAndStorePhoto } from '../services/photo-upload';
@@ -356,6 +356,34 @@ app.post('/telegram/webhook', async (c) => {
           await handleBlogEdit(bot, chatId, wizard);
           return c.json({ ok: true });
         }
+        if (callbackData === 'blog:generate') {
+          // Skip extra details — generate with caption only
+          console.log('Blog generate (skipping details)...');
+          const db = forClient(c.env.DB, userInfo.client.id);
+          const clientRow = await c.env.DB.prepare('SELECT site_config FROM clients WHERE id = ?').bind(userInfo.client.id).first<{ site_config: string | null }>();
+          const clientConfig = clientRow?.site_config ? JSON.parse(clientRow.site_config) : {};
+          const aiProvider = (clientConfig.aiProvider || 'workers-ai') as AiProvider;
+          const aiApiKey = await c.env.KV.get(`ai_key:${userInfo.client.id}:${aiProvider}`);
+          const aiWriter = createAiWriter(aiProvider, { ai: c.env.AI, apiKey: aiApiKey || undefined });
+          await handleBlogContext(bot, chatId, null, wizard, {
+            aiWriter,
+            createDraft: (post) => db.blogPosts.create(post),
+            getClient: async (id) => c.env.DB.prepare('SELECT * FROM clients WHERE id = ?').bind(id).first(),
+            ensureUniqueSlug: async (slug) => {
+              let candidate = slug;
+              let suffix = 2;
+              while (await db.blogPosts.getBySlug(candidate)) {
+                candidate = `${slug}-${suffix++}`;
+              }
+              return candidate;
+            },
+            downloadPhoto: (fileId, clientId) => downloadAndStorePhoto(
+              bot, fileId, clientId, c.env.R2, db, userInfo.client.r2_bucket_prefix || ''
+            ),
+            previewBaseUrl: new URL(c.req.url).origin,
+          });
+          return c.json({ ok: true });
+        }
         if (callbackData === 'blog:reject') {
           const db = forClient(c.env.DB, userInfo.client.id);
           await handleBlogReject(bot, chatId, wizard, {
@@ -417,9 +445,14 @@ app.post('/telegram/webhook', async (c) => {
       const wizStateClient = await wizard.get(chatId);
       if (wizStateClient?.type === 'blog') {
         if (wizStateClient.step === 'awaiting_context' && text) {
-          console.log('Blog context received, generating draft...');
+          // Step 1: Got the caption — ask for optional extra details
+          await handleBlogCaption(bot, chatId, text, wizard);
+          return c.json({ ok: true });
+        }
+        if (wizStateClient.step === 'awaiting_details' && text) {
+          // Step 2: Got extra details — generate the draft
+          console.log('Blog extra details received, generating draft...');
           const db = forClient(c.env.DB, userInfo.client.id);
-          // Get AI provider preference from client config
           const clientRow = await c.env.DB.prepare('SELECT site_config FROM clients WHERE id = ?').bind(userInfo.client.id).first<{ site_config: string | null }>();
           const clientConfig = clientRow?.site_config ? JSON.parse(clientRow.site_config) : {};
           const aiProvider = (clientConfig.aiProvider || 'workers-ai') as AiProvider;

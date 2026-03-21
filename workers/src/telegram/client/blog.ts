@@ -58,21 +58,50 @@ export function formatPreview(draft: BlogDraftOutput): string {
   return text;
 }
 
-export async function handleBlogContext(
+/** Step 1: User sent their caption — ask for optional extra details */
+export async function handleBlogCaption(
   bot: TelegramBot,
   chatId: number,
   caption: string,
+  wizard: WizardManager,
+): Promise<void> {
+  const state = await wizard.get(chatId);
+  if (!state || state.type !== 'blog') return;
+
+  await wizard.update(chatId, 'awaiting_details', { caption });
+
+  await bot.sendMessage(
+    chatId,
+    'Got it. Any extra details? These help me write a more accurate post:\n\n' +
+    '• Any safety concerns with this fault?\n' +
+    '• How long did the job take?\n' +
+    '• Anything you chose not to do or recommended against?\n' +
+    '• Appliance age/model if relevant?\n\n' +
+    'Type any extra info, or tap Generate to skip.',
+    {
+      inline_keyboard: [[{ text: '⚡ Generate now', callback_data: 'blog:generate' }]],
+    }
+  );
+}
+
+/** Step 2: Generate the draft — called after details or skip */
+export async function handleBlogContext(
+  bot: TelegramBot,
+  chatId: number,
+  extraDetails: string | null,
   wizard: WizardManager,
   deps: BlogContextDeps,
 ): Promise<void> {
   const state = await wizard.get(chatId);
   if (!state || state.type !== 'blog') return;
 
+  const caption = state.data.caption + (extraDetails ? `\n\nAdditional details: ${extraDetails}` : '');
+
   const client = await deps.getClient(state.clientId!);
   if (!client) return;
 
   await bot.sendMessage(chatId, 'Drafting your post...');
-  await wizard.update(chatId, 'generating', { caption });
+  await wizard.update(chatId, 'generating');
 
   try {
     // Download photo to R2 if one was attached

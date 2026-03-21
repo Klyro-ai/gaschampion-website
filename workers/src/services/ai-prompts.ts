@@ -74,6 +74,8 @@ RULES:
 - Admit when work ISN'T needed — honesty builds trust
 - Be specific: name the model, fault, part replaced
 - Short paragraphs (2-3 sentences max)
+- NEVER invent details not in the job description below. No appliance ages, job timings, or technical consequences unless stated. If you do not know something, do not mention it.
+- No em dashes. Use commas, hyphens, or full stops instead.
 
 ${ctaText}
 
@@ -133,6 +135,9 @@ TECHNICAL ACCURACY:
 - Never give bare "lasts X years" claims. Explain the factors (water quality, maintenance, system design).
 - Explain WHY things fail. Root causes = expertise.
 - Include at least one insight only a working engineer would know.
+- NEVER INVENT DETAILS not provided in the job description. No appliance ages, job timings, property descriptions, or technical consequences unless the user stated them. If you don't know something, leave it out entirely. Write around what you DO know.
+- If a fault could have ANY safety implication (carbon monoxide, gas leaks, electrical risk, water damage to electrics), flag it as a safety concern. Err on the side of caution.
+- No em dashes. Use commas, hyphens, or full stops instead.
 
 ${ctaText}
 
@@ -170,7 +175,7 @@ export function buildOpenAiPrompt(input: BlogDraftInput): { system: string; user
 
 Never use AI-sounding phrases: "It's important to note", "comprehensive solution", "don't hesitate", "we pride ourselves", "navigate", "leverage", "delve", "elevate", "seamless".
 
-Rules: NO customer names, NO addresses (town only), NO prices. Be technically accurate — explain WHY things fail, never give generic "lasts X years". Admit when work isn't needed. Embed credentials naturally, not as announcements.
+Rules: NO customer names, NO addresses (town only), NO prices. Be technically accurate — explain WHY things fail, never give generic "lasts X years". Admit when work isn't needed. Embed credentials naturally, not as announcements. NEVER invent details not in the job description — no ages, timings, or consequences unless stated. No em dashes. If a fault has safety implications, flag it.
 
 ${ctaText}
 
