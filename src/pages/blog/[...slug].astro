@@ -41,7 +41,7 @@ const htmlContent = await marked.parse(post.content || '')
         {post.image_url && (
           <div class="mb-8 rounded-theme overflow-hidden">
             <img
-              src={{imageUrl(post.image_url)}}
+              src={imageUrl(post.image_url)}
               alt={post.image_alt_text || post.title}
               class="w-full h-auto"
               loading="eager"

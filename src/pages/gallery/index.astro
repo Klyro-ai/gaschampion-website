@@ -34,7 +34,7 @@ const images = await getGalleryImages()
                 style="background-color: var(--color-card-bg); border-color: var(--color-card-border);"
               >
                 <img
-                  src={{imageUrl(img.r2_key)}}
+                  src={imageUrl(img.r2_key)}
                   alt={img.alt_text || img.caption || 'Gallery photo'}
                   class="w-full h-full object-cover"
                   loading="lazy"
@@ -59,7 +59,7 @@ const images = await getGalleryImages()
         <a href="#" class="absolute inset-0" aria-label="Close"></a>
         <div class="relative max-w-4xl max-h-[90vh] z-10">
           <img
-            src={{imageUrl(img.r2_key)}}
+            src={imageUrl(img.r2_key)}
             alt={img.alt_text || img.caption || 'Gallery photo'}
             class="max-w-full max-h-[85vh] object-contain rounded-theme"
           />
