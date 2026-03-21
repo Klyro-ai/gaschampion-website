@@ -3,7 +3,7 @@ export class TelegramBot {
 
   constructor(
     private token: string,
-    private fetchFn: typeof fetch = fetch
+    private fetchFn: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response> = (...args) => fetch(...args)
   ) {
     this.baseUrl = `https://api.telegram.org/bot${token}`;
   }

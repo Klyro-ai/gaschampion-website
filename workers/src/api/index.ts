@@ -142,7 +142,9 @@ app.post('/telegram/webhook', async (c) => {
     // Unknown user
     await bot.sendMessage(chatId, 'Contact your Klyro admin to get set up.');
   } catch (e) {
-    console.error('Telegram webhook error:', e);
+    const errMsg = e instanceof Error ? e.message : String(e);
+    console.error('Telegram webhook error:', errMsg);
+    return c.json({ ok: true, error: errMsg });
   }
 
   return c.json({ ok: true });
