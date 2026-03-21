@@ -230,6 +230,112 @@ html[data-theme="premium-luxurious"] textarea::placeholder {
 }
 
 /* ══════════════════════════════════════════════
+   Blog prose typography
+   ══════════════════════════════════════════════ */
+
+.prose {
+  line-height: 1.8;
+  font-size: 1.1rem;
+}
+
+.prose h2 {
+  font-family: var(--font-heading, inherit);
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-top: 2.5rem;
+  margin-bottom: 1rem;
+  color: var(--color-foreground);
+}
+
+.prose h3 {
+  font-family: var(--font-heading, inherit);
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-top: 2rem;
+  margin-bottom: 0.75rem;
+  color: var(--color-foreground);
+}
+
+.prose p {
+  margin-bottom: 1.25rem;
+  color: var(--color-foreground-muted);
+}
+
+.prose ul, .prose ol {
+  margin-bottom: 1.25rem;
+  padding-left: 1.5rem;
+  color: var(--color-foreground-muted);
+}
+
+.prose ul {
+  list-style-type: disc;
+}
+
+.prose ol {
+  list-style-type: decimal;
+}
+
+.prose li {
+  margin-bottom: 0.5rem;
+  padding-left: 0.25rem;
+}
+
+.prose li::marker {
+  color: var(--color-primary);
+}
+
+.prose a {
+  color: var(--color-primary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.prose a:hover {
+  color: var(--color-accent);
+}
+
+.prose strong {
+  font-weight: 600;
+  color: var(--color-foreground);
+}
+
+.prose blockquote {
+  border-left: 3px solid var(--color-primary);
+  padding-left: 1rem;
+  margin: 1.5rem 0;
+  font-style: italic;
+  color: var(--color-foreground-muted);
+}
+
+.prose hr {
+  border: none;
+  border-top: 1px solid var(--color-border, #e5e7eb);
+  margin: 2rem 0;
+}
+
+.prose img {
+  border-radius: var(--radius, 0.5rem);
+  margin: 1.5rem 0;
+}
+
+.prose pre, .prose code {
+  font-size: 0.9em;
+}
+
+.prose code {
+  background-color: color-mix(in srgb, var(--color-foreground) 8%, transparent);
+  padding: 0.15em 0.35em;
+  border-radius: 0.25rem;
+}
+
+/* FAQ styling within blog posts */
+.prose h2 + ul,
+.prose h3 + ul {
+  list-style: none;
+  padding-left: 0;
+}
+
+/* ══════════════════════════════════════════════
    Mobile-specific responsive fixes
    ══════════════════════════════════════════════ */
 
