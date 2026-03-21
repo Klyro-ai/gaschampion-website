@@ -52,17 +52,41 @@ app.get('/api/:clientId/instagram', async (c) => {
 // GET /api/:clientId/blog — published blog posts
 app.get('/api/:clientId/blog', async (c) => {
   const clientId = c.req.param('clientId');
+  const page = parseInt(c.req.query('page') || '1');
+  const limit = parseInt(c.req.query('limit') || '10');
+  const offset = (page - 1) * limit;
   const db = forClient(c.env.DB, clientId);
+
   const posts = await db.blogPosts.getPublished();
-  return c.json({ posts });
+  const total = posts.length;
+  const paginated = posts.slice(offset, offset + limit);
+
+  return c.json({ posts: paginated, total, page, pages: Math.ceil(total / limit) });
+});
+
+// GET /api/:clientId/blog/:slug — single blog post by slug
+app.get('/api/:clientId/blog/:slug', async (c) => {
+  const clientId = c.req.param('clientId');
+  const slug = c.req.param('slug');
+  const db = forClient(c.env.DB, clientId);
+  const post = await db.blogPosts.getBySlug(slug);
+  if (!post) return c.json({ error: 'Not found' }, 404);
+  return c.json({ post });
 });
 
 // GET /api/:clientId/gallery — gallery images ordered by display_order
 app.get('/api/:clientId/gallery', async (c) => {
   const clientId = c.req.param('clientId');
+  const page = parseInt(c.req.query('page') || '1');
+  const limit = parseInt(c.req.query('limit') || '20');
+  const offset = (page - 1) * limit;
   const db = forClient(c.env.DB, clientId);
+
   const images = await db.gallery.getAll();
-  return c.json({ images });
+  const total = images.length;
+  const paginated = images.slice(offset, offset + limit);
+
+  return c.json({ images: paginated, total, page, pages: Math.ceil(total / limit) });
 });
 
 // Health check

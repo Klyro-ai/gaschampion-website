@@ -61,6 +61,17 @@ export async function getPublishedBlogPosts() {
   return data.posts;
 }
 
+export async function getBlogPostBySlug(slug: string) {
+  const url = `${API_BASE}/api/${CLIENT_ID}/blog/${slug}`;
+  const response = await fetch(url, {
+    headers: { 'X-API-Key': API_KEY },
+  });
+
+  if (!response.ok) return null;
+  const data = await response.json() as { post: any };
+  return data?.post ?? null;
+}
+
 export async function getGalleryImages() {
   const data = await fetchKlyro<{
     images: Array<{
