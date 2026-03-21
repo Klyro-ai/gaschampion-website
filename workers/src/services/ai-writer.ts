@@ -6,40 +6,77 @@ export interface AiWriter {
   editDraft(existingContent: string, editInstruction: string): Promise<BlogDraftOutput>;
 }
 
+/** Last-resort extraction when JSON.parse fails completely */
+function extractFieldsWithRegex(raw: string): any {
+  function extract(key: string): string {
+    // Match "key": "value" or "key":"value" — capture until next unescaped quote
+    const regex = new RegExp(`"${key}"\\s*:\\s*"((?:[^"\\\\]|\\\\.)*)"`);
+    const match = raw.match(regex);
+    return match ? match[1].replace(/\\n/g, '\n').replace(/\\"/g, '"').replace(/\\\\/g, '\\') : '';
+  }
+
+  function extractArray(key: string): string[] {
+    const regex = new RegExp(`"${key}"\\s*:\\s*\\[([^\\]]*)\\]`);
+    const match = raw.match(regex);
+    if (!match) return [];
+    return match[1].match(/"([^"]+)"/g)?.map(s => s.replace(/"/g, '')) || [];
+  }
+
+  const title = extract('title');
+  const slug = extract('slug');
+  const content = extract('content');
+  const description = extract('description');
+  const tags = extractArray('tags');
+  const image_alt_text = extract('image_alt_text') || null;
+
+  if (!title || !slug || !content) {
+    throw new Error('Could not extract required fields from AI response');
+  }
+
+  return { title, slug, content, description, tags, image_alt_text };
+}
+
 export function parseDraftResponse(raw: string): BlogDraftOutput {
   let cleaned = raw.trim();
   if (cleaned.startsWith('```')) {
     cleaned = cleaned.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '');
   }
 
-  // LLMs put literal control characters inside JSON string values.
-  // Try parsing first; if it fails, aggressively clean control chars.
+  // LLMs (especially small ones) produce broken JSON with control chars.
+  // Multi-tier parsing with regex extraction fallback.
   let parsed: any;
+
+  // Tier 1: direct parse
   try {
     parsed = JSON.parse(cleaned);
-  } catch {
-    // Escape control chars inside quoted strings only.
-    // Use [\s\S] instead of . to match newlines within strings.
-    cleaned = cleaned.replace(/"(?:[^"\\]|\\[\s\S])*"/g, (match) => {
-      return match
-        .replace(/[\x00-\x1F]/g, (ch) => {
-          if (ch === '\n') return '\\n';
-          if (ch === '\r') return '\\r';
-          if (ch === '\t') return '\\t';
-          return '';
-        });
+  } catch (e1) {
+    // Tier 2: escape control chars inside quoted strings
+    let tier2 = cleaned.replace(/"(?:[^"\\]|\\[\s\S])*"/g, (match) => {
+      return match.replace(/[\x00-\x1F]/g, (ch) => {
+        if (ch === '\n') return '\\n';
+        if (ch === '\r') return '\\r';
+        if (ch === '\t') return '\\t';
+        return '';
+      });
     });
 
     try {
-      parsed = JSON.parse(cleaned);
-    } catch {
-      // Last resort: strip ALL control chars except structural whitespace
-      // between JSON tokens, then parse
-      const lastResort = cleaned.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, ' ')
+      parsed = JSON.parse(tier2);
+    } catch (e2) {
+      // Tier 3: replace ALL control chars globally (even structural newlines)
+      let tier3 = cleaned
+        .replace(/[\x00-\x09\x0B\x0C\x0E-\x1F]/g, ' ') // strip everything except \n and \r
+        .replace(/\r\n/g, '\\n')
         .replace(/\n/g, '\\n')
-        .replace(/\r/g, '\\r')
-        .replace(/\t/g, '\\t');
-      parsed = JSON.parse(lastResort);
+        .replace(/\r/g, '\\n');
+
+      try {
+        parsed = JSON.parse(tier3);
+      } catch (e3) {
+        // Tier 4: regex extraction — don't rely on JSON.parse at all
+        console.error('JSON parse failed all tiers. Raw (first 500):', cleaned.slice(0, 500));
+        parsed = extractFieldsWithRegex(cleaned);
+      }
     }
   }
 
