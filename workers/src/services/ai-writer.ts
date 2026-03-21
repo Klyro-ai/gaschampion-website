@@ -12,16 +12,36 @@ export function parseDraftResponse(raw: string): BlogDraftOutput {
     cleaned = cleaned.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '');
   }
 
-  // LLMs put literal newlines inside JSON string values which breaks JSON.parse.
-  // Only escape control chars INSIDE quoted strings, not in JSON structure.
-  cleaned = cleaned.replace(/"(?:[^"\\]|\\.)*"/g, (match) => {
-    return match
-      .replace(/\n/g, '\\n')
-      .replace(/\r/g, '\\r')
-      .replace(/\t/g, '\\t');
-  });
+  // LLMs put literal control characters inside JSON string values.
+  // Try parsing first; if it fails, aggressively clean control chars.
+  let parsed: any;
+  try {
+    parsed = JSON.parse(cleaned);
+  } catch {
+    // Escape control chars inside quoted strings only.
+    // Use [\s\S] instead of . to match newlines within strings.
+    cleaned = cleaned.replace(/"(?:[^"\\]|\\[\s\S])*"/g, (match) => {
+      return match
+        .replace(/[\x00-\x1F]/g, (ch) => {
+          if (ch === '\n') return '\\n';
+          if (ch === '\r') return '\\r';
+          if (ch === '\t') return '\\t';
+          return '';
+        });
+    });
 
-  const parsed = JSON.parse(cleaned);
+    try {
+      parsed = JSON.parse(cleaned);
+    } catch {
+      // Last resort: strip ALL control chars except structural whitespace
+      // between JSON tokens, then parse
+      const lastResort = cleaned.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, ' ')
+        .replace(/\n/g, '\\n')
+        .replace(/\r/g, '\\r')
+        .replace(/\t/g, '\\t');
+      parsed = JSON.parse(lastResort);
+    }
+  }
 
   if (!parsed.title || !parsed.slug || !parsed.content || !parsed.description) {
     throw new Error('AI response missing required fields');
