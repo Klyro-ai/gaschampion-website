@@ -1,0 +1,77 @@
+---
+import Base from '../../layouts/Base.astro'
+import MobileNav from '../../components/static/MobileNav.astro'
+import TopBar from '../../components/static/TopBar.astro'
+import Header from '../../components/static/Header.astro'
+import Footer from '../../components/static/Footer.astro'
+import { getGalleryImages } from '../../lib/klyro-api'
+
+const images = await getGalleryImages()
+---
+
+<Base title="Gallery" description="Photos of our heating and plumbing work across Suffolk — boiler installations, repairs, and more.">
+
+    <TopBar />
+    <Header><MobileNav /></Header>
+
+    <section class="py-16 md:py-24" style="background-color: var(--color-hero-bg); color: var(--color-hero-text)">
+      <div class="max-w-4xl mx-auto px-4 text-center">
+        <h1 class="font-heading text-3xl sm:text-4xl md:text-5xl font-bold mb-4">Our Work</h1>
+        <p class="text-lg" style="color: var(--color-foreground-muted)">Photos from recent heating and plumbing jobs across Suffolk.</p>
+      </div>
+    </section>
+
+    <section class="py-16 md:py-24">
+      <div class="max-w-7xl mx-auto px-4">
+        {images.length === 0 ? (
+          <p class="text-center text-lg" style="color: var(--color-foreground-muted)">No photos yet — check back soon!</p>
+        ) : (
+          <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {images.map((img) => (
+              <a
+                href={`#img-${img.id}`}
+                class="relative block rounded-theme overflow-hidden border hover:shadow-theme-lg hover:-translate-y-1 transition-all group aspect-square"
+                style="background-color: var(--color-card-bg); border-color: var(--color-card-border);"
+              >
+                <img
+                  src={`/api/image/${img.r2_key}`}
+                  alt={img.alt_text || img.caption || 'Gallery photo'}
+                  class="w-full h-full object-cover"
+                  loading="lazy"
+                  width="400"
+                  height="400"
+                />
+                {img.caption && (
+                  <div class="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+                    <p class="text-white text-sm">{img.caption}</p>
+                  </div>
+                )}
+              </a>
+            ))}
+          </div>
+        )}
+      </div>
+    </section>
+
+    <!-- CSS-only lightbox -->
+    {images.map((img) => (
+      <div id={`img-${img.id}`} class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 opacity-0 pointer-events-none target:opacity-100 target:pointer-events-auto transition-opacity">
+        <a href="#" class="absolute inset-0" aria-label="Close"></a>
+        <div class="relative max-w-4xl max-h-[90vh] z-10">
+          <img
+            src={`/api/image/${img.r2_key}`}
+            alt={img.alt_text || img.caption || 'Gallery photo'}
+            class="max-w-full max-h-[85vh] object-contain rounded-theme"
+          />
+          {img.caption && (
+            <p class="text-white text-center mt-3 text-sm">{img.caption}</p>
+          )}
+          <a href="#" class="absolute -top-3 -right-3 w-8 h-8 flex items-center justify-center rounded-full bg-white text-black font-bold text-lg hover:bg-gray-200 transition-colors" aria-label="Close">×</a>
+        </div>
+      </div>
+    ))}
+
+    <Footer />
+
+
+</Base>
