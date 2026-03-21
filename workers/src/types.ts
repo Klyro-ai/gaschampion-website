@@ -144,3 +144,60 @@ export interface InviteToken {
   expires_at: string;
   claimed_by: string | null;
 }
+
+export interface SiteConfig {
+  shortName: string;
+  tagline: string;
+  subtitle: string;
+  description: string;
+  owner: string;
+  ownerBackground: string;
+  phone: string;
+  phoneLandline?: string;
+  email: string;
+  address: {
+    street: string;
+    town: string;
+    county: string;
+    postcode: string;
+    full: string;
+  };
+  registrationNumber?: string;
+  registrationBody?: string;
+  yearsExperience: number;
+  socialMedia: {
+    facebook?: string;
+    twitter?: string;
+    instagram?: string;
+  };
+  serviceAreas: string[];
+  stats: {
+    reviewCount: number;
+    averageRating: number;
+    completedJobs: number;
+    yearsInBusiness: number;
+    responseSla: string;
+  };
+  credentials: Array<{ name: string; number: string | null }>;
+  guarantees: string[];
+  services: Array<{
+    id: string;
+    name: string;
+    shortDesc: string;
+    description: string;
+    icon: string;
+    features: string[];
+    fromPrice: string;
+  }>;
+  servicePlans?: Array<{
+    name: string;
+    price: string;
+    period: string;
+    features: string[];
+    popular: boolean;
+  }>;
+  faqs: Array<{
+    question: string;
+    answer: string;
+  }>;
+}
