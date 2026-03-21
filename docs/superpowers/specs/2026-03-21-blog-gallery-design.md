@@ -12,9 +12,8 @@ Add blog publishing and image gallery capabilities to Klyro, driven entirely thr
 2. Bot asks: "Blog Post / Gallery / Both?"
 3. Blog: bot asks for job context (what work, what area), AI drafts a full post, user approves/edits/rejects
 4. Gallery: image optimised, uploaded to R2, goes live immediately
-5. Both: blog draft created + image added to gallery on approval
-
-Text-only blog posts via `/newpost` command (no photo required).
+5. Both: blog draft created + image added to gallery automatically on blog approval
+6. Text-only blog posts via `/newpost` command (no photo required)
 
 ## Telegram Interactions
 
@@ -29,7 +28,7 @@ Bot:  What would you like to do with this?
 ### Blog Post (with photo)
 
 ```
-User: [taps Blog Post or Both]
+User: [taps Blog Post]
 Bot:  Tell me about this job:
       • What work was done?
       • What area? (town/village)
@@ -39,9 +38,13 @@ Bot:  Tell me about this job:
       Clare, replaced 20 year old system"
 User: "New Worcester Greenstar fitted in Haverhill, replaced old back boiler"
 Bot:  Drafting your post...
-Bot:  [shows AI-generated preview — title, snippet of content, tags]
+Bot:  [shows AI-generated preview — title, description, tags]
       [Approve]  [Edit]  [Reject]
 ```
+
+### "Both" Flow
+
+Same as Blog Post flow above. On approval, image is automatically added to gallery — no extra prompt.
 
 ### Blog Post (text only)
 
@@ -66,35 +69,40 @@ Bot:  [shows updated preview]
       [Approve]  [Edit]  [Reject]
 ```
 
-### Post-Approval (if photo was included)
+### Post-Approval (Blog Post only, if photo was included)
 
 ```
 Bot:  Published! Also add this photo to your gallery?
       [Yes]  [No]
 ```
 
+Note: This prompt only appears for "Blog Post" choice. "Both" adds to gallery automatically.
+
 ### Gallery Only
 
 ```
 User: [taps Gallery]
 Bot:  Added to your gallery! Want to add a caption?
+      [Skip]
 User: "Worcester Greenstar 4000 installation"
 Bot:  Gallery updated with caption.
 ```
+
+Caption prompt has a Skip button and expires after 1 hour (KV TTL). Next photo sent clears any pending caption state.
 
 ## AI Content Generation
 
 ### Provider
 
-- **Primary:** Cloudflare Workers AI (free, zero config)
-- **Secondary:** Claude API (switchable, higher quality, minimal cost)
-- Both implementations behind a common interface for easy comparison
+- **Primary:** Cloudflare Workers AI (free, zero config, requires `[ai]` binding in wrangler.toml)
+- **Secondary:** Claude API (switchable via `CLAUDE_API_KEY` secret, higher quality, minimal cost)
+- Both implementations behind a common `AiWriter` interface for easy comparison
 
 ### System Prompt Context
 
 The AI prompt includes:
 
-- **Business context:** Business name, type of services, base location, service area
+- **Business context:** Business name, type of services, base location, service area (loaded from client DB record)
 - **Content strategy:** "They Ask, You Answer" — educational, transparent, builds trust, answers common customer questions
 - **Local SEO:** Location woven into title, headings, and body. Service area keywords. Town/village level only.
 - **Tone:** Professional but approachable, knowledgeable local tradesperson
@@ -111,18 +119,18 @@ The AI prompt includes:
 
 ### Output Structure
 
-For each blog post, the AI generates:
+The AI returns structured JSON with:
 
-- **Title:** Engaging, includes location and service type (under 70 chars)
-- **Slug:** URL-friendly version of title
-- **Content:** 500-800 words, structured with headings
+- **title:** Engaging, includes location and service type (under 70 chars)
+- **slug:** URL-friendly version of title (collision handling: append `-2`, `-3` etc. if slug exists)
+- **content:** 500-800 words markdown, structured with headings
   - Intro: what was done and where
   - Detail: the work, why it matters, educational context
   - FAQ section (when relevant): answers common customer questions about this type of work
   - CTA: contact prompt
-- **Description:** Meta description for search results (under 160 chars)
-- **Tags:** Service type, location, equipment brand where relevant
-- **Image alt text:** Descriptive, includes location and service context
+- **description:** Meta description for search results (under 160 chars)
+- **tags:** Service type, location, equipment brand where relevant (JSON array)
+- **image_alt_text:** Descriptive, includes location and service context
 
 ### Example
 
@@ -133,30 +141,49 @@ Output:
 - **Content:** Covers why old systems need replacing, what a Worcester Greenstar offers, how long installation takes, energy efficiency benefits, common questions about boiler replacement in the Haverhill area
 - **Tags:** `boiler-installation`, `worcester`, `haverhill`, `suffolk`
 
+### Error Handling
+
+- AI generation has a 30-second timeout
+- On failure: "Sorry, I couldn't generate a draft right now. Try again or use /newpost to write manually."
+- If primary provider (Workers AI) fails, does NOT auto-fallback to Claude (avoids surprise costs) — user can switch provider manually via admin setting
+
+### Preview Format
+
+Blog previews are truncated for Telegram's 4096-char limit:
+- Title (bold)
+- Description
+- First 2-3 paragraphs of content
+- Tags
+- "Full post will be ~X words"
+
+Full content is stored in the draft and published as-is on approval.
+
 ## Data Flow
 
 ### Photo Processing
 
-1. Bot receives photo from Telegram (gets highest resolution version)
-2. Downloads via Telegram Bot API `getFile`
-3. Uploads original to R2 bucket (`klyro-media/{client_id}/originals/{uuid}.jpg`)
-4. Image optimizer generates responsive variants (srcset)
-5. R2 key stored for use in blog `image_url` and/or `gallery_images` table
+1. Bot receives photo from Telegram (gets highest resolution version via `photo[-1].file_id`)
+2. New `getFile(fileId)` method on TelegramBot helper returns file URL
+3. Downloads file bytes from Telegram CDN
+4. Strips EXIF data (GPS, camera info) for GDPR compliance before storage
+5. Uploads to R2 bucket using existing image optimizer path convention: `{r2_bucket_prefix}{category}/{imageId}-{width}.{format}`
+6. Generates responsive variants (srcset) via image optimizer
+7. R2 key stored for use in blog `image_url` and/or `gallery_images` table
 
 ### Blog Post Lifecycle
 
 ```
 photo + caption
     ↓
-AI generates draft
+AI generates draft (structured JSON)
     ↓
 Stored in blog_posts (status: 'draft')
     ↓
-Preview sent to user in Telegram
+Truncated preview sent to user in Telegram
     ↓
 User: Approve → status changes to 'published', published_at set
-User: Edit → AI regenerates with edits, new preview
-User: Reject → status changes to 'rejected' (kept for reference)
+User: Edit → AI regenerates with edits, new preview, draft updated
+User: Reject → draft deleted from blog_posts
 ```
 
 ### Gallery Image Flow
@@ -164,40 +191,107 @@ User: Reject → status changes to 'rejected' (kept for reference)
 ```
 photo received
     ↓
-Optimised + uploaded to R2
+EXIF stripped, optimised, uploaded to R2
     ↓
 Stored in gallery_images (immediately visible)
     ↓
-Optional caption prompt
+Optional caption prompt (1hr TTL, Skip button)
 ```
 
 ## State Management
 
-Blog draft state stored in KV (same pattern as onboarding wizard):
+Extend existing `WizardManager` with new types. Add `'blog' | 'gallery_caption'` to the `WizardState.type` union in `types.ts`.
 
-```
-Key: blog_draft:{chatId}
-Value: {
+Blog draft state:
+
+```typescript
+// WizardState when type === 'blog'
+{
   type: 'blog',
   step: 'awaiting_context' | 'generating' | 'preview' | 'editing',
   clientId: string,
-  photoR2Key?: string,
-  caption?: string,
-  draftPostId?: string,
-  addToGallery?: boolean
+  photoR2Key?: string,        // R2 key of uploaded photo
+  photoFileId?: string,       // Telegram file ID (before upload)
+  caption?: string,           // User's job description
+  draftPostId?: string,       // blog_posts.id of the draft
+  addToGallery?: boolean,     // true if "Both" was selected
+  imageAltText?: string       // AI-generated alt text
 }
 ```
 
-Gallery state is simpler — stored temporarily during caption prompt:
+Gallery caption state:
 
-```
-Key: gallery_upload:{chatId}
-Value: {
-  type: 'gallery',
+```typescript
+// WizardState when type === 'gallery_caption'
+{
+  type: 'gallery_caption',
+  step: 'awaiting_caption',
   clientId: string,
-  r2Key: string,
-  awaitingCaption: boolean
+  galleryImageId: string      // gallery_images.id
 }
+```
+
+Conflict handling: if user sends a photo while mid-blog-draft, bot asks "You have a draft in progress. Discard it? [Yes / No]". Gallery caption state is overwritten silently (new photo takes priority).
+
+## Prerequisites
+
+### New Env Bindings
+
+```toml
+# wrangler.toml
+[ai]
+binding = "AI"
+```
+
+New secret (only if using Claude as secondary provider):
+```
+wrangler secret put CLAUDE_API_KEY
+```
+
+### Type Updates
+
+```typescript
+// types.ts — extend Env
+interface Env {
+  // ... existing bindings
+  AI: Ai;                    // Cloudflare Workers AI
+  CLAUDE_API_KEY?: string;   // Optional, for Claude provider
+}
+
+// types.ts — extend BlogPost status
+status: 'draft' | 'pending_approval' | 'published';
+// Rejected drafts are deleted, not status-tracked
+
+// types.ts — add image_alt_text to BlogPost
+image_alt_text?: string;
+```
+
+### DB Migration
+
+```sql
+-- 0003_blog_alt_text.sql
+ALTER TABLE blog_posts ADD COLUMN image_alt_text TEXT;
+```
+
+### TelegramBot Helper
+
+Add new methods:
+- `getFile(fileId: string)` — returns file path from Telegram
+- `getFileUrl(filePath: string)` — constructs download URL
+- `sendPhoto(chatId, photoUrl, caption?, replyMarkup?)` — for previews with images
+
+## Webhook Routing Update
+
+The client webhook handler needs a new routing path for photos. Order of checks:
+
+```
+1. callback_query → handle callbacks (existing + new blog/gallery callbacks)
+2. message.photo → route to photo handler (NEW)
+3. wizard state 'blog' or 'gallery_caption' → handle blog/gallery steps (NEW)
+4. wizard state 'onboarding' → handle onboarding (existing)
+5. text commands (/reviews, /connect, /status, /help, /newpost) → existing + new
+6. authorized user fallback → help message
+7. unknown user → "Contact your Klyro admin"
 ```
 
 ## Astro Frontend
@@ -210,7 +304,7 @@ Switch from static markdown content collection to API-driven:
 - **Detail page** (`/blog/[slug]`): fetches individual post by slug, renders markdown content with featured image
 - SEO meta tags auto-populated from AI-generated description and tags
 - Featured images served from R2 with optimised srcset
-- Existing static blog posts migrated to DB or kept as fallback
+- Existing static blog posts migrated to DB (one-time migration script)
 
 ### Gallery Page (new)
 
@@ -228,28 +322,37 @@ Both pages use existing Gas Champion site styling and layout components.
 
 ```
 GET  /api/:clientId/blog/:slug    — single blog post by slug
-POST /api/:clientId/blog          — create blog post (internal, from bot)
-PUT  /api/:clientId/blog/:id      — update blog post (internal, from bot)
 ```
+
+Blog creation and updates happen internally from the bot handlers (direct DB calls), not via API endpoints.
 
 ### Updated Endpoints
 
 ```
-GET  /api/:clientId/blog          — add pagination, return total count
-GET  /api/:clientId/gallery       — add pagination
+GET  /api/:clientId/blog          — add ?page=1&limit=10, return { posts, total }
+GET  /api/:clientId/gallery       — add ?page=1&limit=20, return { images, total }
 ```
 
 ## New Files
 
 ```
+workers/src/telegram/client/photo.ts      — photo router (blog/gallery/both decision)
 workers/src/telegram/client/blog.ts       — blog post conversation handler
 workers/src/telegram/client/gallery.ts    — gallery upload handler
-workers/src/telegram/client/photo.ts      — photo router (blog/gallery/both)
-workers/src/services/ai-writer.ts         — AI content generation (Workers AI + Claude)
-workers/src/services/ai-prompts.ts        — system prompts and content rules
+workers/src/services/ai-writer.ts         — AiWriter interface + Workers AI + Claude implementations
+workers/src/services/ai-prompts.ts        — system prompts, content rules, structured output schema
+workers/migrations/0003_blog_alt_text.sql — add image_alt_text column
 src/pages/gallery/index.astro             — gallery page
-src/pages/blog/index.astro                — updated to use API
-src/pages/blog/[slug].astro               — updated to use API
+```
+
+Updated files:
+```
+workers/src/types.ts                      — extend Env, WizardState, BlogPost
+workers/src/telegram/bot.ts               — add getFile, getFileUrl, sendPhoto
+workers/src/api/index.ts                  — photo routing, /newpost command, pagination
+workers/wrangler.toml                     — add [ai] binding
+src/pages/blog/index.astro                — switch to API-driven
+src/pages/blog/[...slug].astro            — switch to API-driven
 ```
 
 ## Existing Infrastructure Used
@@ -258,7 +361,7 @@ src/pages/blog/[slug].astro               — updated to use API
 - **DB layer:** `blogPosts.create()`, `publish()`, `update()`, `getPending()` and `gallery.add()`, `getAll()` already implemented
 - **R2 bucket:** `klyro-media` already configured
 - **Image optimizer:** already built with srcset generation
-- **KV store:** for draft state management (same pattern as wizard)
+- **KV store:** via existing WizardManager (extended with new types)
 - **Astro API client:** `getPublishedBlogPosts()` and `getGalleryImages()` already exist in `src/lib/klyro-api.ts`
 
 ## Out of Scope
