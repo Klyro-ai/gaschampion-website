@@ -14,6 +14,7 @@ interface BlogContextDeps {
   getClient: (clientId: string) => Promise<{ business_name: string; r2_bucket_prefix: string } | null>;
   ensureUniqueSlug: (slug: string) => Promise<string>;
   downloadPhoto?: (fileId: string, clientId: string) => Promise<{ r2Key: string; galleryId: string }>;
+  previewBaseUrl?: string;
 }
 
 interface BlogActionDeps {
@@ -95,7 +96,11 @@ export async function handleBlogContext(
     await wizard.update(chatId, 'preview', { draftPostId: postId });
 
     const preview = formatPreview(draft);
-    await bot.sendMessage(chatId, preview, {
+    const previewUrl = deps.previewBaseUrl
+      ? `${deps.previewBaseUrl}/api/${state.clientId}/blog/preview/${postId}`
+      : null;
+    const previewLink = previewUrl ? `\n\n<a href="${previewUrl}">View full preview</a>` : '';
+    await bot.sendMessage(chatId, preview + previewLink, {
       inline_keyboard: [
         [
           { text: '✅ Approve', callback_data: 'blog:approve' },
