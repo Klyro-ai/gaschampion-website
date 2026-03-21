@@ -11,7 +11,7 @@ import Footer from '../../components/static/Footer.astro'
 
 
 const { slug } = Astro.params
-const { business, services, faqs } = Astro.locals.tenant
+const { business, services, faqs, clientId, apiBase } = Astro.locals.tenant
 const service = services.find((s: any) => s.id === slug)
 if (!service) return Astro.redirect('/services')
 ---
@@ -59,7 +59,7 @@ if (!service) return Astro.redirect('/services')
               </ul>
             </div>
           </div>
-          <ContactFormIsland client:only="react" />
+          <ContactFormIsland client:only="react" apiBase={apiBase} clientId={clientId} />
         </div>
       </div>
     </section>

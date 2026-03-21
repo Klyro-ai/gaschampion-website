@@ -245,9 +245,12 @@ export function MobileNavIsland() {
 
 const serviceOptions = ['Boiler Repair', 'Boiler Installation', 'Boiler Servicing', 'Gas Safety Certificate', 'Powerflush', 'Smart Thermostat', 'Radiator Installation', 'Hot Water Cylinder', 'Gas Fire Servicing', 'General Plumbing', 'Other']
 
-export function ContactFormIsland() {
+export function ContactFormIsland({ apiBase, clientId }: { apiBase: string; clientId: string }) {
   const [step, setStep] = useState(1)
   const [form, setForm] = useState({ service: '', urgency: '', name: '', phone: '', email: '', postcode: '', message: '' })
+  const [submitting, setSubmitting] = useState(false)
+  const [submitted, setSubmitted] = useState(false)
+  const [error, setError] = useState('')
   const update = (field: string, value: string) => setForm(p => ({ ...p, [field]: value }))
 
   return (
@@ -303,7 +306,7 @@ export function ContactFormIsland() {
         </div>
       )}
 
-      {step === 3 && (
+      {step === 3 && !submitted && (
         <div className="space-y-4">
           <div>
             <label className="block font-medium text-sm mb-1">Tell us more (optional)</label>
@@ -316,11 +319,56 @@ export function ContactFormIsland() {
             <p><strong>Name:</strong> {form.name}</p>
             <p><strong>Phone:</strong> {form.phone}</p>
           </div>
+          {error && <p className="text-sm text-center" style={{ color: 'var(--color-error, #dc2626)' }}>{error}</p>}
           <div className="flex gap-2">
-            <button onClick={() => setStep(2)} className="flex-1 py-3 rounded-theme-full font-semibold border" style={{ borderColor: 'var(--color-border)', minHeight: '48px' }}>Back</button>
-            <button onClick={() => trackFormSubmit(form.service)} className="flex-1 py-3 rounded-theme-full font-semibold text-sm sm:text-base" style={{ backgroundColor: 'var(--color-cta-bg)', color: 'var(--color-cta-text)', minHeight: '48px' }}>Send Quote Request</button>
+            <button onClick={() => setStep(2)} disabled={submitting} className="flex-1 py-3 rounded-theme-full font-semibold border" style={{ borderColor: 'var(--color-border)', minHeight: '48px' }}>Back</button>
+            <button
+              disabled={submitting}
+              onClick={async () => {
+                setSubmitting(true)
+                setError('')
+                try {
+                  const res = await fetch(`${apiBase}/api/${clientId}/contact`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      name: form.name,
+                      phone: form.phone,
+                      email: form.email || undefined,
+                      postcode: form.postcode || undefined,
+                      service: form.service || undefined,
+                      urgency: form.urgency || undefined,
+                      message: form.message || undefined,
+                    }),
+                  })
+                  if (!res.ok) throw new Error('Submission failed')
+                  trackFormSubmit(form.service)
+                  setSubmitted(true)
+                } catch {
+                  setError('Something went wrong. Please try again or call us directly.')
+                } finally {
+                  setSubmitting(false)
+                }
+              }}
+              className="flex-1 py-3 rounded-theme-full font-semibold text-sm sm:text-base"
+              style={{ backgroundColor: 'var(--color-cta-bg)', color: 'var(--color-cta-text)', minHeight: '48px', opacity: submitting ? 0.7 : 1 }}
+            >
+              {submitting ? 'Sending...' : 'Send Quote Request'}
+            </button>
           </div>
           <p className="text-xs text-center" style={{ color: 'var(--color-foreground-muted)' }}>We'll respond within 2 hours during business hours.</p>
+        </div>
+      )}
+
+      {submitted && (
+        <div className="text-center py-8 space-y-4">
+          <div className="w-16 h-16 rounded-full mx-auto flex items-center justify-center" style={{ backgroundColor: 'var(--color-success, #22c55e)' }}>
+            <Icon name="check" size={32} className="text-white" />
+          </div>
+          <h3 className="font-heading font-bold text-xl">Quote Request Sent</h3>
+          <p className="text-sm" style={{ color: 'var(--color-foreground-muted)' }}>
+            Thanks {form.name}! We'll get back to you about your {form.service.toLowerCase()} request as soon as possible.
+          </p>
         </div>
       )}
     </div>

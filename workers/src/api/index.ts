@@ -24,7 +24,7 @@ const app = new Hono<{ Bindings: Env }>();
 
 // Auth middleware — build-time API key (skip for public image endpoint)
 app.use('/api/*', async (c, next) => {
-  if (c.req.path.startsWith('/api/image/') || c.req.path === '/api/lookup' || c.req.path.includes('/blog/preview/')) return next();
+  if (c.req.path.startsWith('/api/image/') || c.req.path === '/api/lookup' || c.req.path.includes('/blog/preview/') || c.req.path.endsWith('/contact')) return next();
   const apiKey = c.req.header('X-API-Key');
   if (!apiKey || apiKey !== c.env.BUILD_API_KEY) {
     return c.json({ error: 'Unauthorized' }, 401);
@@ -222,6 +222,50 @@ app.get('/api/lookup', async (c) => {
   if (!client) return c.json({ error: 'Unknown hostname' }, 404);
 
   return c.json({ client });
+});
+
+// POST /api/:clientId/contact — public lead submission from website contact form
+app.post('/api/:clientId/contact', async (c) => {
+  const clientId = c.req.param('clientId');
+  const body = await c.req.json();
+
+  const { name, phone, email, postcode, service, urgency, message } = body;
+  if (!name || !phone) return c.json({ error: 'Name and phone required' }, 400);
+
+  const id = crypto.randomUUID();
+  await c.env.DB.prepare(
+    'INSERT INTO leads (id, client_id, name, phone, email, postcode, service, urgency, message) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
+  ).bind(id, clientId, name, phone, email || null, postcode || null, service || null, urgency || null, message || null).run();
+
+  // Send Telegram notification to client
+  const client = await c.env.DB.prepare(
+    'SELECT telegram_chat_id, business_name FROM clients WHERE id = ?'
+  ).bind(clientId).first<{ telegram_chat_id: string; business_name: string }>();
+
+  if (client && client.telegram_chat_id !== 'UNCLAIMED' && client.telegram_chat_id !== 'PLACEHOLDER_CHAT_ID') {
+    const bot = new TelegramBot(c.env.TELEGRAM_BOT_TOKEN);
+
+    const urgencyEmoji = urgency === 'Emergency' ? '\u{1F534}' : urgency === 'This week' ? '\u{1F7E1}' : '\u{1F7E2}';
+    let msg = `<b>New Lead!</b> ${urgencyEmoji}\n\n`;
+    msg += `<b>Name:</b> ${name}\n`;
+    msg += `<b>Phone:</b> ${phone}\n`;
+    if (email) msg += `<b>Email:</b> ${email}\n`;
+    if (postcode) msg += `<b>Postcode:</b> ${postcode}\n`;
+    if (service) msg += `<b>Service:</b> ${service}\n`;
+    if (urgency) msg += `<b>Urgency:</b> ${urgency}\n`;
+    if (message) msg += `<b>Message:</b> ${message}\n`;
+
+    await bot.sendMessage(Number(client.telegram_chat_id), msg, {
+      inline_keyboard: [
+        [
+          { text: '\u{1F4DE} Call Back', url: `tel:${phone.replace(/\s+/g, '')}` },
+          { text: '\u{2705} Mark Contacted', callback_data: `lead:contacted:${id}` },
+        ],
+      ],
+    });
+  }
+
+  return c.json({ ok: true, id });
 });
 
 // Health check
@@ -423,6 +467,14 @@ app.post('/telegram/webhook', async (c) => {
         // CTA settings callbacks
         if (callbackData.startsWith('cta:')) {
           await handleCtaCallback(bot, chatId, callbackData, userInfo.client.id, c.env.DB, wizard);
+          return c.json({ ok: true });
+        }
+        // Lead contacted callbacks
+        if (callbackData.startsWith('lead:contacted:')) {
+          const leadId = callbackData.replace('lead:contacted:', '');
+          await c.env.DB.prepare("UPDATE leads SET status = 'contacted' WHERE id = ? AND client_id = ?")
+            .bind(leadId, userInfo.client.id).run();
+          await bot.sendMessage(chatId, 'Lead marked as contacted.');
           return c.json({ ok: true });
         }
         // Photo choice callbacks
