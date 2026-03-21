@@ -2,6 +2,11 @@ const API_BASE = import.meta.env.KLYRO_API_URL || 'http://localhost:8787';
 const API_KEY = import.meta.env.KLYRO_API_KEY || '';
 const CLIENT_ID = import.meta.env.KLYRO_CLIENT_ID || 'gc-001';
 
+/** Build a public image URL served from the worker's R2 endpoint */
+export function imageUrl(r2Key: string): string {
+  return `${API_BASE}/api/image/${r2Key}`;
+}
+
 async function fetchKlyro<T>(endpoint: string): Promise<T> {
   const url = `${API_BASE}/api/${CLIENT_ID}${endpoint}`;
   const response = await fetch(url, {

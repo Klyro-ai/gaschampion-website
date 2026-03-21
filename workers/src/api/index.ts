@@ -19,8 +19,9 @@ import { setToken, getToken } from '../utils/tokens';
 
 const app = new Hono<{ Bindings: Env }>();
 
-// Auth middleware — build-time API key
+// Auth middleware — build-time API key (skip for public image endpoint)
 app.use('/api/*', async (c, next) => {
+  if (c.req.path.startsWith('/api/image/')) return next();
   const apiKey = c.req.header('X-API-Key');
   if (!apiKey || apiKey !== c.env.BUILD_API_KEY) {
     return c.json({ error: 'Unauthorized' }, 401);
@@ -87,6 +88,20 @@ app.get('/api/:clientId/gallery', async (c) => {
   const paginated = images.slice(offset, offset + limit);
 
   return c.json({ images: paginated, total, page, pages: Math.ceil(total / limit) });
+});
+
+// Serve images from R2 (no auth — public images)
+app.get('/api/image/*', async (c) => {
+  const key = c.req.path.replace('/api/image/', '');
+  if (!key) return c.text('Not found', 404);
+
+  const object = await c.env.R2.get(key);
+  if (!object) return c.text('Not found', 404);
+
+  const headers = new Headers();
+  headers.set('Content-Type', object.httpMetadata?.contentType || 'image/jpeg');
+  headers.set('Cache-Control', 'public, max-age=31536000, immutable');
+  return new Response(object.body, { headers });
 });
 
 // Health check
