@@ -49,6 +49,36 @@ export class TelegramBot {
     await this.call('editMessageText', body);
   }
 
+  async getFile(fileId: string): Promise<string> {
+    const data = await this.call('getFile', { file_id: fileId });
+    return data.file_path;
+  }
+
+  getFileUrl(filePath: string): string {
+    return `https://api.telegram.org/file/bot${this.token}/${filePath}`;
+  }
+
+  async sendPhoto(
+    chatId: number | string,
+    photo: string,
+    caption?: string,
+    replyMarkup?: Record<string, unknown>
+  ): Promise<{ message_id: number }> {
+    const body: Record<string, unknown> = {
+      chat_id: chatId,
+      photo,
+      parse_mode: 'HTML',
+    };
+    if (caption) body.caption = caption;
+    if (replyMarkup) body.reply_markup = replyMarkup;
+    const data = await this.call('sendPhoto', body);
+    return { message_id: data.message_id };
+  }
+
+  async deleteMessage(chatId: number | string, messageId: number): Promise<void> {
+    await this.call('deleteMessage', { chat_id: chatId, message_id: messageId });
+  }
+
   private async call(method: string, body: Record<string, unknown>): Promise<any> {
     const response = await this.fetchFn(`${this.baseUrl}/${method}`, {
       method: 'POST',
