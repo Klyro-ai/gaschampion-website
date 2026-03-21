@@ -31,15 +31,18 @@ const { business } = Astro.locals.tenant
 
         <h2 class="font-heading text-2xl font-bold text-center mb-8">Towns & Areas We Serve</h2>
         <div class="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {business.serviceAreas.map((area) => (
-            <div class="flex items-center gap-3 p-4 rounded-theme-lg border" style="background-color: var(--color-card-bg); border-color: var(--color-card-border)">
-              <svg class="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="color: var(--color-primary)"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0zM12 13a3 3 0 100-6 3 3 0 000 6z" /></svg>
-              <div>
-                <span class="font-medium">{area}</span>
-                <p class="text-xs" style="color: var(--color-foreground-muted)">Boiler repair, servicing & installation</p>
-              </div>
-            </div>
-          ))}
+          {business.serviceAreas.map((area) => {
+            const slug = area.toLowerCase().replace(/[()]/g, '').replace(/\s+/g, '-')
+            return (
+              <a href={`/service-areas/${slug}`} class="flex items-center gap-3 p-4 rounded-theme-lg border transition-shadow hover:shadow-md" style="background-color: var(--color-card-bg); border-color: var(--color-card-border)">
+                <svg class="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="color: var(--color-primary)"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0zM12 13a3 3 0 100-6 3 3 0 000 6z" /></svg>
+                <div>
+                  <span class="font-medium">{area}</span>
+                  <p class="text-xs" style="color: var(--color-foreground-muted)">Boiler repair, servicing &amp; installation</p>
+                </div>
+              </a>
+            )
+          })}
         </div>
 
         <div class="text-center mt-12">

@@ -1,0 +1,214 @@
+---
+import Base from '../../layouts/Base.astro'
+import MobileNav from '../../components/static/MobileNav.astro'
+import TopBar from '../../components/static/TopBar.astro'
+import Header from '../../components/static/Header.astro'
+import CTABanner from '../../components/static/CTABanner.astro'
+import Footer from '../../components/static/Footer.astro'
+
+const { area } = Astro.params
+const { business, services } = Astro.locals.tenant
+
+// Find matching service area
+const areaName = business.serviceAreas.find(
+  (a: string) => a.toLowerCase().replace(/[()]/g, '').replace(/\s+/g, '-') === area
+)
+
+if (!areaName) return Astro.redirect('/service-areas')
+
+const phoneHref = `tel:${business.phone.replace(/\s/g, '')}`
+const pageTitle = `${business.shortName} in ${areaName}`
+const pageDescription = `Looking for a Gas Safe registered engineer in ${areaName}? ${business.shortName} provides boiler repair, servicing, and installation across ${areaName} and surrounding areas. Call us today.`
+---
+
+<Base title={pageTitle} description={pageDescription}>
+
+  <TopBar />
+  <Header><MobileNav /></Header>
+
+  <!-- Hero -->
+  <section class="py-16 md:py-24" style="background-color: var(--color-hero-bg); color: var(--color-hero-text)">
+    <div class="max-w-7xl mx-auto px-4">
+      <div class="max-w-3xl">
+        <p class="text-sm font-semibold uppercase tracking-widest mb-3" style="color: var(--color-primary)">
+          Serving {areaName} &amp; surrounding areas
+        </p>
+        <h1 class="font-heading text-3xl sm:text-4xl md:text-5xl font-bold mb-4">
+          Gas &amp; Heating Services in {areaName}
+        </h1>
+        <p class="text-base sm:text-lg mb-8" style="color: var(--color-foreground-muted)">
+          {business.tagline}
+        </p>
+        <div class="flex flex-col sm:flex-row gap-3">
+          <a
+            href={phoneHref}
+            class="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-theme-full font-semibold"
+            style="background-color: var(--color-cta-bg); color: var(--color-cta-text); min-height: 48px;"
+          >
+            <svg class="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z" />
+            </svg>
+            {business.phone}
+          </a>
+          <a
+            href="/contact"
+            class="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-theme-full font-semibold"
+            style="border: 2px solid var(--color-border); min-height: 48px;"
+          >
+            Request a Callback
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Services in this area -->
+  <section class="py-16 md:py-24">
+    <div class="max-w-7xl mx-auto px-4">
+      <h2 class="font-heading text-2xl sm:text-3xl font-bold mb-2 text-center">
+        Our Services in {areaName}
+      </h2>
+      <p class="text-center mb-10" style="color: var(--color-foreground-muted)">
+        We offer a full range of gas and heating services to homeowners and landlords in {areaName}.
+      </p>
+      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {services.map((service: any) => (
+          <a
+            href={`/services/${service.id}`}
+            class="group flex flex-col p-6 rounded-theme-lg border transition-shadow hover:shadow-md"
+            style="background-color: var(--color-card-bg); border-color: var(--color-card-border);"
+          >
+            <h3 class="font-heading text-lg font-bold mb-2 group-hover:underline" style="color: var(--color-foreground)">
+              {service.name}
+            </h3>
+            <p class="text-sm flex-1 mb-4" style="color: var(--color-foreground-muted)">
+              {service.description}
+            </p>
+            {service.fromPrice && (
+              <span class="text-sm font-semibold" style="color: var(--color-primary)">
+                From {service.fromPrice}
+              </span>
+            )}
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- Why Choose Us in this area -->
+  <section class="py-16 md:py-24" style="background-color: var(--color-section-alt-bg, var(--color-card-bg))">
+    <div class="max-w-7xl mx-auto px-4">
+      <div class="grid lg:grid-cols-2 gap-12 items-start">
+        <div>
+          <h2 class="font-heading text-2xl sm:text-3xl font-bold mb-4">
+            Why Choose {business.shortName} in {areaName}?
+          </h2>
+          <p class="mb-8" style="color: var(--color-foreground-muted)">
+            {business.description}
+          </p>
+
+          <!-- Guarantees -->
+          {business.guarantees.length > 0 && (
+            <ul class="space-y-3 mb-8">
+              {business.guarantees.map((g: string) => (
+                <li class="flex items-start gap-3">
+                  <svg class="w-5 h-5 text-green-500 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 6L9 17l-5-5" />
+                  </svg>
+                  <span>{g}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+
+          <!-- Credentials -->
+          {business.credentials.length > 0 && (
+            <div class="grid sm:grid-cols-2 gap-4">
+              {business.credentials.map((cred: string) => (
+                <div
+                  class="flex items-center gap-3 p-3 rounded-theme-lg border text-sm font-medium"
+                  style="background-color: var(--color-card-bg); border-color: var(--color-card-border);"
+                >
+                  <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="color: var(--color-primary)">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                  </svg>
+                  {cred}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <!-- Contact CTA panel -->
+        <div
+          class="p-8 rounded-theme-lg border"
+          style="background-color: var(--color-card-bg); border-color: var(--color-card-border);"
+        >
+          <h3 class="font-heading text-xl font-bold mb-2">
+            Book an Engineer in {areaName}
+          </h3>
+          <p class="text-sm mb-6" style="color: var(--color-foreground-muted)">
+            Gas Safe registered. Fast response. Friendly, local service.
+          </p>
+
+          <div class="space-y-4">
+            <a
+              href={phoneHref}
+              class="flex items-center gap-3 p-4 rounded-theme-lg font-semibold text-center justify-center w-full"
+              style="background-color: var(--color-cta-bg); color: var(--color-cta-text); min-height: 56px;"
+            >
+              <svg class="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z" />
+              </svg>
+              Call {business.phone}
+            </a>
+            <a
+              href="/contact"
+              class="flex items-center justify-center gap-2 p-4 rounded-theme-lg font-semibold w-full"
+              style="border: 2px solid var(--color-border); min-height: 56px;"
+            >
+              Send a Message
+            </a>
+          </div>
+
+          {business.gasSafeNumber && (
+            <p class="text-xs text-center mt-6" style="color: var(--color-foreground-muted)">
+              Gas Safe Registered: {business.gasSafeNumber}
+            </p>
+          )}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Other areas we serve -->
+  <section class="py-16 md:py-24">
+    <div class="max-w-7xl mx-auto px-4">
+      <h2 class="font-heading text-xl font-bold mb-6 text-center">Other Areas We Cover</h2>
+      <div class="flex flex-wrap justify-center gap-3">
+        {business.serviceAreas
+          .filter((a: string) => a !== areaName)
+          .map((a: string) => {
+            const slug = a.toLowerCase().replace(/[()]/g, '').replace(/\s+/g, '-')
+            return (
+              <a
+                href={`/service-areas/${slug}`}
+                class="px-4 py-2 rounded-theme-full text-sm font-medium border transition-colors hover:border-primary"
+                style="border-color: var(--color-border); min-height: 44px; display: inline-flex; align-items: center;"
+              >
+                {a}
+              </a>
+            )
+          })
+        }
+      </div>
+      <p class="text-center mt-6 text-sm" style="color: var(--color-foreground-muted)">
+        Not sure if we cover your area? <a href={phoneHref} class="font-semibold" style="color: var(--color-primary)">Give us a call</a> — we may still be able to help.
+      </p>
+    </div>
+  </section>
+
+  <CTABanner />
+  <Footer />
+
+</Base>
