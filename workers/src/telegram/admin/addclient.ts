@@ -96,7 +96,7 @@ export async function handleAddClientStep(
             chatId,
             `Client created: <b>${data.business_name}</b>\n\n` +
             `Send this link to the business owner to start their setup:\n\n` +
-            `https://t.me/KlyroBot?start=${token}\n\n` +
+            `https://t.me/KlyroWebsiteBot?start=${token}\n\n` +
             `The invite expires in 7 days. Use /clients to see all your clients anytime.`
           );
         } catch (e) {

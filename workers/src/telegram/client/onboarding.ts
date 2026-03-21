@@ -8,6 +8,7 @@ interface OnboardingDeps {
   updateQuietHours?: (clientId: string, start: string, end: string) => Promise<void>;
   searchGooglePlaces?: (query: string, apiKey: string) => Promise<Array<{ placeId: string; name: string; address: string }>>;
   extractPlaceId?: (url: string) => string | null;
+  apiKey?: string;
   oauthBaseUrl?: string;
 }
 
@@ -21,8 +22,8 @@ export async function handleOnboarding(
 ): Promise<void> {
   const state = await wizard.get(chatId);
 
-  // Deep link entry — claim invite
-  if (text && text.startsWith('invite_')) {
+  // Deep link entry — claim invite (token passed directly, no prefix)
+  if (text && !state) {
     const clientId = await deps.claimInvite(text, String(chatId));
     if (!clientId) {
       await bot.sendMessage(chatId, 'This invite link has expired or is invalid.\nPlease contact your Klyro admin for a new link.');
@@ -45,7 +46,7 @@ export async function handleOnboarding(
       chatId,
       `First, let's connect your Google Reviews.\n\n` +
       `If you have your Google Maps link handy, paste it here. It looks like:\nhttps://maps.google.com/maps?cid=1234...\n\n` +
-      `Or just tell me your business name and town and I'll find you.`,
+      `Or just type your town and I'll search for <b>${client.business_name}</b> there.`,
       {
         inline_keyboard: [[{ text: 'Skip for now', callback_data: 'onboard:skip_google' }]],
       }
@@ -63,6 +64,15 @@ export async function handleOnboarding(
         return;
       }
 
+      if (callbackData?.startsWith('onboard:place_')) {
+        const placeId = callbackData.replace('onboard:place_', '');
+        await deps.updateGooglePlaceId?.(state.clientId!, placeId);
+        await wizard.update(chatId, 'social', { google: 'connected' });
+        await bot.sendMessage(chatId, 'Google Reviews connected!');
+        await sendSocialStep(bot, chatId, state.clientId!, deps);
+        return;
+      }
+
       if (text) {
         // Try to extract Place ID from URL
         const placeId = deps.extractPlaceId?.(text);
@@ -74,16 +84,44 @@ export async function handleOnboarding(
           return;
         }
 
-        // Otherwise treat as search query
-        if (deps.searchGooglePlaces) {
-          // Search and show results — simplified for now
-          await bot.sendMessage(
-            chatId,
-            "I'll search for that. For now, you can connect Google later via /connect.",
-            { inline_keyboard: [[{ text: 'Continue setup', callback_data: 'onboard:skip_google' }]] }
-          );
+        // Otherwise treat as search query — use business name + town
+        if (deps.searchGooglePlaces && deps.apiKey) {
+          const client = await deps.getClient(state.clientId!);
+          const query = `${client?.business_name ?? ''} ${text}`;
+          try {
+            const results = await deps.searchGooglePlaces(query, deps.apiKey);
+            if (results.length === 0) {
+              await bot.sendMessage(
+                chatId,
+                "I couldn't find that business. Try pasting your Google Maps link instead.",
+                { inline_keyboard: [[{ text: 'Skip for now', callback_data: 'onboard:skip_google' }]] }
+              );
+              return;
+            }
+            // Show results as buttons
+            const buttons = results.slice(0, 3).map(r => ([{
+              text: `${r.name} - ${r.address}`,
+              callback_data: `onboard:place_${r.placeId}`,
+            }]));
+            buttons.push([{ text: 'None of these', callback_data: 'onboard:skip_google' }]);
+            await bot.sendMessage(chatId, 'I found these businesses:', { inline_keyboard: buttons });
+          } catch {
+            await bot.sendMessage(
+              chatId,
+              "Search didn't work. Try pasting your Google Maps link instead.",
+              { inline_keyboard: [[{ text: 'Skip for now', callback_data: 'onboard:skip_google' }]] }
+            );
+          }
           return;
         }
+
+        // No search available — prompt for link
+        await bot.sendMessage(
+          chatId,
+          "Try pasting your Google Maps link instead, or tap Skip.",
+          { inline_keyboard: [[{ text: 'Skip for now', callback_data: 'onboard:skip_google' }]] }
+        );
+        return;
       }
       break;
     }

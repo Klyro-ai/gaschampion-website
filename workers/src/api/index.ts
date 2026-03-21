@@ -8,6 +8,7 @@ import { handleAddClientStep } from '../telegram/admin/addclient';
 import { handleOnboarding } from '../telegram/client/onboarding';
 import { handleConnect } from '../telegram/client/connect';
 import { buildFacebookAuthUrl, handleFacebookCallback, extractPlaceIdFromUrl } from '../auth/facebook';
+import { searchGooglePlaces } from '../services/google-reviews';
 import { setToken } from '../utils/tokens';
 
 const app = new Hono<{ Bindings: Env }>();
@@ -86,16 +87,24 @@ app.post('/telegram/webhook', async (c) => {
   const workerUrl = new URL(c.req.url).origin;
 
   try {
-    // Deep link onboarding
-    if (text.startsWith('/start invite_')) {
-      await handleOnboarding(bot, chatId, text.replace('/start ', ''), null, wizard, {
-        claimInvite: (token, cId) => claimInvite(c.env.DB, token, cId),
-        getClient: async (clientId) => c.env.DB.prepare('SELECT * FROM clients WHERE id = ?').bind(clientId).first(),
-        extractPlaceId: extractPlaceIdFromUrl,
-        updateGooglePlaceId: (clientId, placeId) => updateGooglePlaceId(c.env.DB, clientId, placeId),
-        updateQuietHours: (clientId, start, end) => updateQuietHours(c.env.DB, clientId, start, end),
-        oauthBaseUrl: workerUrl,
-      });
+    // Deep link onboarding — /start <token> (takes priority over admin for invite links)
+    const startPayload = text.startsWith('/start ') ? text.slice(7).trim() : '';
+    if (startPayload && startPayload.length > 10) {
+      try {
+        await handleOnboarding(bot, chatId, startPayload, null, wizard, {
+          claimInvite: (token, cId) => claimInvite(c.env.DB, token, cId),
+          getClient: async (clientId) => c.env.DB.prepare('SELECT * FROM clients WHERE id = ?').bind(clientId).first(),
+          extractPlaceId: extractPlaceIdFromUrl,
+          searchGooglePlaces,
+          apiKey: c.env.GOOGLE_PLACES_API_KEY,
+          updateGooglePlaceId: (clientId, placeId) => updateGooglePlaceId(c.env.DB, clientId, placeId),
+          updateQuietHours: (clientId, start, end) => updateQuietHours(c.env.DB, clientId, start, end),
+          oauthBaseUrl: workerUrl,
+        });
+      } catch (onboardErr) {
+        const msg = onboardErr instanceof Error ? onboardErr.message : String(onboardErr);
+        return c.json({ ok: true, debug_onboard_error: msg });
+      }
       return c.json({ ok: true });
     }
 
@@ -123,6 +132,8 @@ app.post('/telegram/webhook', async (c) => {
           claimInvite: (token, cId) => claimInvite(c.env.DB, token, cId),
           getClient: async (clientId) => c.env.DB.prepare('SELECT * FROM clients WHERE id = ?').bind(clientId).first(),
           extractPlaceId: extractPlaceIdFromUrl,
+          searchGooglePlaces,
+          apiKey: c.env.GOOGLE_PLACES_API_KEY,
           updateGooglePlaceId: (clientId, placeId) => updateGooglePlaceId(c.env.DB, clientId, placeId),
           updateQuietHours: (clientId, start, end) => updateQuietHours(c.env.DB, clientId, start, end),
           oauthBaseUrl: workerUrl,
