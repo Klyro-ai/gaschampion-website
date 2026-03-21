@@ -7,4 +7,5 @@ dist/
 workers/node_modules/
 .wrangler/
 workers/.dev.vars
+.env
 .worktrees/

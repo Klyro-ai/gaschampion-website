@@ -8,7 +8,8 @@ import Footer from '../components/static/Footer.astro'
 
 
 
-import { business } from '../data/business'
+import { getTenantData } from '../lib/tenant'
+const { business } = await getTenantData()
 ---
 
 <Base title="Service Areas" description="Gas Champion covers Haverhill, Saffron Walden, Bury St Edmunds, Sudbury and surrounding areas.">

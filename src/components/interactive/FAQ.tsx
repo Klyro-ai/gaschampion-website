@@ -2,9 +2,12 @@ import React, { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useTheme } from './ThemeProvider'
 import { Icon } from '../../lib/icons'
-import { faqs } from '../../data/business'
 
-export default function FAQ() {
+interface FAQProps {
+  faqs: Array<{ question: string; answer: string }>
+}
+
+export default function FAQ({ faqs }: FAQProps) {
   const { theme } = useTheme()
   const c = theme.colors
   const [openIndex, setOpenIndex] = useState<number | null>(null)

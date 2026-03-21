@@ -1,5 +1,6 @@
 ---
-import { business, servicePlans } from '../../data/business'
+import { getTenantData } from '../../lib/tenant'
+const { business, servicePlans } = await getTenantData()
 
 const phoneHref = `tel:${business.phone.replace(/\s/g, '')}`
 ---

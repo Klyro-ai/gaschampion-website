@@ -1,6 +1,4 @@
-import { business, services, reviews, faqs } from '@/data/business'
-
-export function generateLocalBusinessSchema() {
+export function generateLocalBusinessSchema(business: any) {
   return {
     '@context': 'https://schema.org',
     '@type': 'LocalBusiness',
@@ -23,7 +21,7 @@ export function generateLocalBusinessSchema() {
       latitude: 52.0824,
       longitude: 0.4399,
     },
-    areaServed: business.serviceAreas.map((area) => ({
+    areaServed: business.serviceAreas.map((area: string) => ({
       '@type': 'City',
       name: area,
     })),
@@ -47,7 +45,7 @@ export function generateLocalBusinessSchema() {
   }
 }
 
-export function generateServiceSchemas() {
+export function generateServiceSchemas(business: any, services: any[]) {
   return services.map((service) => ({
     '@context': 'https://schema.org',
     '@type': 'Service',
@@ -57,7 +55,7 @@ export function generateServiceSchemas() {
       '@type': 'LocalBusiness',
       name: business.name,
     },
-    areaServed: business.serviceAreas.map((area) => ({
+    areaServed: business.serviceAreas.map((area: string) => ({
       '@type': 'City',
       name: area,
     })),
@@ -72,7 +70,7 @@ export function generateServiceSchemas() {
   }))
 }
 
-export function generateReviewSchemas() {
+export function generateReviewSchemas(business: any, reviews: any[]) {
   return reviews.map((review) => ({
     '@context': 'https://schema.org',
     '@type': 'Review',
@@ -90,7 +88,7 @@ export function generateReviewSchemas() {
   }))
 }
 
-export function generateFAQSchema() {
+export function generateFAQSchema(faqs: any[]) {
   return {
     '@context': 'https://schema.org',
     '@type': 'FAQPage',

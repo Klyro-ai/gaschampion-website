@@ -10,7 +10,19 @@ import ServicePlans from '../components/static/ServicePlans.astro'
 import CTABanner from '../components/static/CTABanner.astro'
 import Footer from '../components/static/Footer.astro'
 import { MobileNavIsland, ContactFormIsland, FAQIsland } from '../components/interactive/AppIslands'
-import { services, reviews, business } from '../data/business'
+import { getTenantData } from '../lib/tenant'
+import { getApprovedReviews } from '../lib/klyro-api'
+const { business, services, faqs } = await getTenantData()
+
+let reviews: any[] = [];
+try {
+  const data = await getApprovedReviews();
+  if (data.reviews.length > 0) {
+    reviews = data.reviews.map(r => ({ name: r.author_name, rating: r.rating, text: r.text, source: r.source }));
+  }
+} catch {
+  // Reviews will be empty if API is unavailable
+}
 ---
 
 <Base>
@@ -83,7 +95,7 @@ import { services, reviews, business } from '../data/business'
     </div>
   </section>
 
-  <FAQIsland client:only="react" />
+  <FAQIsland faqs={faqs} client:only="react" />
 
   <CTABanner />
 

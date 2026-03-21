@@ -1,8 +1,10 @@
 ---
 import '../styles/global.css'
-import { business } from '../data/business'
+import { getTenantData } from '../lib/tenant'
 import { generateLocalBusinessSchema, generateFAQSchema } from '../lib/schema'
 import Analytics from '../components/static/Analytics.astro'
+
+const { business, faqs } = await getTenantData()
 
 interface Props {
   title?: string
@@ -51,8 +53,8 @@ const pageDesc = description || business.description
   <link rel="icon" href="/favicon.ico" />
 
   <!-- Schema.org -->
-  <script type="application/ld+json" set:html={JSON.stringify(generateLocalBusinessSchema())} />
-  <script type="application/ld+json" set:html={JSON.stringify(generateFAQSchema())} />
+  <script type="application/ld+json" set:html={JSON.stringify(generateLocalBusinessSchema(business))} />
+  <script type="application/ld+json" set:html={JSON.stringify(generateFAQSchema(faqs))} />
 
   <!-- Analytics & Tracking -->
   <Analytics />

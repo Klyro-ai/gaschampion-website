@@ -9,7 +9,8 @@ import Footer from '../../components/static/Footer.astro'
 
 
 
-import { services, business } from '../../data/business'
+import { getTenantData } from '../../lib/tenant'
+const { business, services } = await getTenantData()
 ---
 
 <Base title="Our Services" description={`Expert boiler and heating services from a Gas Safe registered engineer with ${business.yearsExperience}+ years experience.`}>

@@ -2,7 +2,6 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import type { ThemeConfig } from '../../themes/all-themes'
 import { allThemes, groupAThemes, groupBThemes } from '../../themes/all-themes'
 import { Icon } from '../../lib/icons'
-import { faqs } from '../../data/business'
 import { trackPhoneClick, trackFormSubmit } from '../../lib/tracking'
 import { motion, AnimatePresence } from 'framer-motion'
 
@@ -330,7 +329,7 @@ export function ContactFormIsland() {
 
 // ─── FAQ Accordion (exported) ───────────────────────────────
 
-export function FAQIsland() {
+export function FAQIsland({ faqs }: { faqs: Array<{ question: string; answer: string }> }) {
   const [open, setOpen] = useState<number | null>(null)
 
   return (
