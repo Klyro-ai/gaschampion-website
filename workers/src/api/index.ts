@@ -280,6 +280,7 @@ app.post('/telegram/webhook', async (c) => {
       const wizStateClient = await wizard.get(chatId);
       if (wizStateClient?.type === 'blog') {
         if (wizStateClient.step === 'awaiting_context' && text) {
+          console.log('Blog context received, generating draft...');
           const db = forClient(c.env.DB, userInfo.client.id);
           const aiWriter = new WorkersAiWriter(c.env.AI);
           await handleBlogContext(bot, chatId, text, wizard, {

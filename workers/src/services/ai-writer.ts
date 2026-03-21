@@ -12,6 +12,15 @@ export function parseDraftResponse(raw: string): BlogDraftOutput {
     cleaned = cleaned.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '');
   }
 
+  // LLMs often put literal newlines/tabs inside JSON string values.
+  // Escape control chars inside strings before parsing.
+  cleaned = cleaned.replace(/[\x00-\x1F\x7F]/g, (ch) => {
+    if (ch === '\n') return '\\n';
+    if (ch === '\r') return '\\r';
+    if (ch === '\t') return '\\t';
+    return '';
+  });
+
   const parsed = JSON.parse(cleaned);
 
   if (!parsed.title || !parsed.slug || !parsed.content || !parsed.description) {
@@ -33,7 +42,7 @@ export class WorkersAiWriter implements AiWriter {
 
   async generateDraft(input: BlogDraftInput): Promise<BlogDraftOutput> {
     const prompt = buildBlogPrompt(input);
-    const response = await this.ai.run('@cf/meta/llama-3.1-70b-instruct', {
+    const response = await this.ai.run('@cf/meta/llama-3.1-8b-instruct', {
       messages: [{ role: 'user', content: prompt }],
       max_tokens: 2048,
     }) as { response?: string };
@@ -44,7 +53,7 @@ export class WorkersAiWriter implements AiWriter {
 
   async editDraft(existingContent: string, editInstruction: string): Promise<BlogDraftOutput> {
     const prompt = buildEditPrompt(existingContent, editInstruction);
-    const response = await this.ai.run('@cf/meta/llama-3.1-70b-instruct', {
+    const response = await this.ai.run('@cf/meta/llama-3.1-8b-instruct', {
       messages: [{ role: 'user', content: prompt }],
       max_tokens: 2048,
     }) as { response?: string };

@@ -97,7 +97,8 @@ export async function handleBlogContext(
     });
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
-    console.error('AI draft error:', msg);
+    const stack = e instanceof Error ? e.stack : '';
+    console.error('AI draft error:', msg, stack);
     await wizard.clear(chatId);
     await bot.sendMessage(chatId, "Sorry, I couldn't generate a draft right now. Try again or use /newpost.");
   }
