@@ -8,6 +8,11 @@ import { handleAddClientStep } from '../telegram/admin/addclient';
 import { handleOnboarding } from '../telegram/client/onboarding';
 import { handleConnect } from '../telegram/client/connect';
 import { buildFacebookAuthUrl, handleFacebookCallback, extractPlaceIdFromUrl } from '../auth/facebook';
+import { handlePhotoReceived, handlePhotoChoice } from '../telegram/client/photo';
+import { handleGalleryUpload, handleGalleryCaption, handleGallerySkip } from '../telegram/client/gallery';
+import { handleBlogContext, handleBlogApprove, handleBlogReject, handleBlogEdit, handleBlogEditResponse } from '../telegram/client/blog';
+import { WorkersAiWriter } from '../services/ai-writer';
+import { downloadAndStorePhoto } from '../services/photo-upload';
 import { searchGooglePlaces, fetchGoogleReviews } from '../services/google-reviews';
 import { fetchFacebookReviews } from '../services/facebook-reviews';
 import { setToken, getToken } from '../utils/tokens';
@@ -170,6 +175,132 @@ app.post('/telegram/webhook', async (c) => {
     // Authorized client
     const userInfo = await getClientByAuthorizedUser(c.env.DB, String(chatId));
     if (userInfo) {
+      // === NEW: Callback routing for blog/gallery/photo ===
+      if (callbackData) {
+        // Blog callbacks
+        if (callbackData === 'blog:approve') {
+          const db = forClient(c.env.DB, userInfo.client.id);
+          await handleBlogApprove(bot, chatId, wizard, {
+            publishPost: (id) => db.blogPosts.publish(id),
+            addToGallery: async (r2Key, altText) => {
+              await db.gallery.add({
+                r2_key: r2Key, alt_text: altText, caption: null,
+                width: null, height: null, srcset: null, source: 'upload', instagram_post_id: null,
+              });
+            },
+          });
+          return c.json({ ok: true });
+        }
+        if (callbackData === 'blog:edit') {
+          await handleBlogEdit(bot, chatId, wizard);
+          return c.json({ ok: true });
+        }
+        if (callbackData === 'blog:reject') {
+          const db = forClient(c.env.DB, userInfo.client.id);
+          await handleBlogReject(bot, chatId, wizard, {
+            deletePost: (id) => db.blogPosts.delete(id),
+          });
+          return c.json({ ok: true });
+        }
+        if (callbackData === 'blog:gallery_yes' || callbackData === 'blog:gallery_no') {
+          const state = await wizard.get(chatId);
+          if (state?.data.photoR2Key && callbackData === 'blog:gallery_yes') {
+            const db = forClient(c.env.DB, userInfo.client.id);
+            await db.gallery.add({
+              r2_key: state.data.photoR2Key, alt_text: state.data.imageAltText || null,
+              caption: null, width: null, height: null, srcset: null,
+              source: 'upload', instagram_post_id: null,
+            });
+            await wizard.clear(chatId);
+            await bot.sendMessage(chatId, 'Added to gallery!');
+          } else {
+            await wizard.clear(chatId);
+            await bot.sendMessage(chatId, 'All done!');
+          }
+          return c.json({ ok: true });
+        }
+        if (callbackData === 'gallery:skip_caption') {
+          await handleGallerySkip(bot, chatId, wizard);
+          return c.json({ ok: true });
+        }
+        // Photo choice callbacks
+        if (callbackData.startsWith('photo:')) {
+          if (callbackData.startsWith('photo:gallery:')) {
+            const fileId = callbackData.replace('photo:gallery:', '');
+            const db = forClient(c.env.DB, userInfo.client.id);
+            await handleGalleryUpload(bot, chatId, fileId, wizard, userInfo.client.id, {
+              downloadAndStore: (fId, cId) => downloadAndStorePhoto(
+                bot, fId, cId, c.env.R2, db, userInfo.client.r2_bucket_prefix || ''
+              ),
+            });
+          } else {
+            await handlePhotoChoice(bot, chatId, callbackData, wizard, userInfo.client.id);
+          }
+          return c.json({ ok: true });
+        }
+      }
+
+      // === NEW: Photo received ===
+      const photo = update.message?.photo;
+      if (photo && photo.length > 0) {
+        const fileId = photo[photo.length - 1].file_id;
+        await handlePhotoReceived(bot, chatId, fileId);
+        return c.json({ ok: true });
+      }
+
+      // === NEW: Blog/Gallery wizard state handling ===
+      const wizStateClient = await wizard.get(chatId);
+      if (wizStateClient?.type === 'blog') {
+        if (wizStateClient.step === 'awaiting_context' && text) {
+          const db = forClient(c.env.DB, userInfo.client.id);
+          const aiWriter = new WorkersAiWriter(c.env.AI);
+          await handleBlogContext(bot, chatId, text, wizard, {
+            aiWriter,
+            createDraft: (post) => db.blogPosts.create(post),
+            getClient: async (id) => c.env.DB.prepare('SELECT * FROM clients WHERE id = ?').bind(id).first(),
+            ensureUniqueSlug: async (slug) => {
+              let candidate = slug;
+              let suffix = 2;
+              while (await db.blogPosts.getBySlug(candidate)) {
+                candidate = `${slug}-${suffix++}`;
+              }
+              return candidate;
+            },
+          });
+          return c.json({ ok: true });
+        }
+        if (wizStateClient.step === 'editing' && text) {
+          const db = forClient(c.env.DB, userInfo.client.id);
+          const aiWriter = new WorkersAiWriter(c.env.AI);
+          await handleBlogEditResponse(bot, chatId, text, wizard, {
+            aiWriter,
+            updateDraft: (id, fields) => db.blogPosts.update(id, fields),
+            getDraft: (id) => c.env.DB.prepare('SELECT * FROM blog_posts WHERE id = ?').bind(id).first(),
+          });
+          return c.json({ ok: true });
+        }
+        return c.json({ ok: true });
+      }
+
+      // Gallery caption state
+      if (wizStateClient?.type === 'gallery_caption' && text) {
+        const db = forClient(c.env.DB, userInfo.client.id);
+        await handleGalleryCaption(bot, chatId, text, wizard, {
+          updateCaption: (id, caption) => db.gallery.updateCaption(id, caption),
+        });
+        return c.json({ ok: true });
+      }
+
+      // === NEW: /newpost command ===
+      if (text === '/newpost') {
+        await wizard.start(chatId, 'blog', 'awaiting_context', userInfo.client.id);
+        await bot.sendMessage(chatId,
+          'What would you like to write about?\nInclude the area if relevant.'
+        );
+        return c.json({ ok: true });
+      }
+
+      // === EXISTING command routing (keep all of this) ===
       if (text === '/connect' || callbackData?.startsWith('connect:')) {
         await handleConnect(bot, chatId, callbackData, userInfo.client, {
           updateGooglePlaceId: (clientId, placeId) => updateGooglePlaceId(c.env.DB, clientId, placeId),
@@ -241,8 +372,10 @@ app.post('/telegram/webhook', async (c) => {
           `  /reviews  — fetch and show latest reviews\n` +
           `  /connect  — manage connected services\n` +
           `  /status   — check connection status\n` +
+          `  /newpost  — write a blog post\n` +
           `  /help     — show this message\n\n` +
-          `<b>Connected services sync automatically every 6 hours.</b> You can also use /reviews to check them anytime.`
+          `<b>Connected services sync automatically every 6 hours.</b> You can also use /reviews to check them anytime.\n\n` +
+          `<b>Tip:</b> Send a photo to create a blog post or add to your gallery!`
         );
       } else {
         await bot.sendMessage(chatId, 'Use /help for all commands.');
