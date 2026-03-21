@@ -102,12 +102,14 @@ export class WorkersAiWriter implements AiWriter {
 
   async generateDraft(input: BlogDraftInput): Promise<BlogDraftOutput> {
     const prompt = buildWorkersAiPrompt(input);
+    console.log('Workers AI prompt length:', prompt.length);
     const response = await this.ai.run('@cf/meta/llama-3.1-8b-instruct', {
       messages: [{ role: 'user', content: prompt }],
-      max_tokens: 3000,
+      max_tokens: 8000,
     }) as { response?: string };
 
     if (!response.response) throw new Error('Workers AI returned empty response');
+    console.log('Workers AI response length:', response.response.length);
     return parseDraftResponse(response.response);
   }
 
@@ -115,7 +117,7 @@ export class WorkersAiWriter implements AiWriter {
     const prompt = buildEditPrompt(existingContent, editInstruction);
     const response = await this.ai.run('@cf/meta/llama-3.1-8b-instruct', {
       messages: [{ role: 'user', content: prompt }],
-      max_tokens: 3000,
+      max_tokens: 8000,
     }) as { response?: string };
 
     if (!response.response) throw new Error('Workers AI returned empty response');

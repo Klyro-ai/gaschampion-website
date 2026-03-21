@@ -91,7 +91,7 @@ Advice for homeowners, warning signs, when to call an engineer.
 Closing: contact details, what to expect when they call.
 
 Respond with ONLY valid JSON:
-{"title":"under 60 chars with town","slug":"url-friendly","content":"800+ words markdown with ## headings","description":"120-155 char meta description with service+location","tags":["service","location"],"image_alt_text":${input.hasPhoto ? '"80-120 chars describing the photo with service and town"' : 'null'}}
+{"title":"under 60 chars with town","slug":"url-friendly","content":"500-700 words markdown with ## headings","description":"120-155 char meta description with service+location","tags":["service","location"],"image_alt_text":${input.hasPhoto ? '"80-120 chars describing the photo with service and town"' : 'null'}}
 
 JOB DETAILS: ${input.caption}`;
 }
