@@ -1,5 +1,5 @@
-import type { BlogDraftOutput, BlogDraftInput } from './ai-prompts';
-import { buildBlogPrompt, buildEditPrompt } from './ai-prompts';
+import type { BlogDraftOutput, BlogDraftInput, AiProvider } from './ai-prompts';
+import { buildWorkersAiPrompt, buildClaudePrompt, buildOpenAiPrompt, buildGeminiPrompt, buildEditPrompt } from './ai-prompts';
 
 export interface AiWriter {
   generateDraft(input: BlogDraftInput): Promise<BlogDraftOutput>;
@@ -37,14 +37,17 @@ export function parseDraftResponse(raw: string): BlogDraftOutput {
   };
 }
 
+// ============================================================
+// Workers AI (Llama 3.1 8b) — FREE
+// ============================================================
 export class WorkersAiWriter implements AiWriter {
   constructor(private ai: Ai) {}
 
   async generateDraft(input: BlogDraftInput): Promise<BlogDraftOutput> {
-    const prompt = buildBlogPrompt(input);
+    const prompt = buildWorkersAiPrompt(input);
     const response = await this.ai.run('@cf/meta/llama-3.1-8b-instruct', {
       messages: [{ role: 'user', content: prompt }],
-      max_tokens: 2048,
+      max_tokens: 3000,
     }) as { response?: string };
 
     if (!response.response) throw new Error('Workers AI returned empty response');
@@ -55,7 +58,7 @@ export class WorkersAiWriter implements AiWriter {
     const prompt = buildEditPrompt(existingContent, editInstruction);
     const response = await this.ai.run('@cf/meta/llama-3.1-8b-instruct', {
       messages: [{ role: 'user', content: prompt }],
-      max_tokens: 2048,
+      max_tokens: 3000,
     }) as { response?: string };
 
     if (!response.response) throw new Error('Workers AI returned empty response');
@@ -63,11 +66,18 @@ export class WorkersAiWriter implements AiWriter {
   }
 }
 
+// ============================================================
+// Claude (Anthropic) — PREMIUM
+// ============================================================
 export class ClaudeAiWriter implements AiWriter {
-  constructor(private apiKey: string, private fetchFn: typeof fetch = fetch) {}
+  constructor(
+    private apiKey: string,
+    private model: string = 'claude-sonnet-4-6',
+    private fetchFn: typeof fetch = fetch,
+  ) {}
 
   async generateDraft(input: BlogDraftInput): Promise<BlogDraftOutput> {
-    const prompt = buildBlogPrompt(input);
+    const prompt = buildClaudePrompt(input);
     const response = await this.callClaude(prompt);
     return parseDraftResponse(response);
   }
@@ -87,13 +97,134 @@ export class ClaudeAiWriter implements AiWriter {
         'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
-        max_tokens: 2048,
+        model: this.model,
+        max_tokens: 4096,
         messages: [{ role: 'user', content: prompt }],
       }),
     });
-    if (!res.ok) throw new Error(`Claude API error: ${res.status}`);
+    if (!res.ok) {
+      const body = await res.text();
+      throw new Error(`Claude API error ${res.status}: ${body.slice(0, 200)}`);
+    }
     const data = await res.json() as { content: Array<{ text: string }> };
     return data.content[0].text;
+  }
+}
+
+// ============================================================
+// OpenAI (GPT-4o / 4o-mini) — MID-TIER
+// ============================================================
+export class OpenAiWriter implements AiWriter {
+  constructor(
+    private apiKey: string,
+    private model: string = 'gpt-4o-mini',
+    private fetchFn: typeof fetch = fetch,
+  ) {}
+
+  async generateDraft(input: BlogDraftInput): Promise<BlogDraftOutput> {
+    const { system, user } = buildOpenAiPrompt(input);
+    const response = await this.callOpenAi(system, user);
+    return parseDraftResponse(response);
+  }
+
+  async editDraft(existingContent: string, editInstruction: string): Promise<BlogDraftOutput> {
+    const prompt = buildEditPrompt(existingContent, editInstruction);
+    const response = await this.callOpenAi('You edit blog posts. Return valid JSON only.', prompt);
+    return parseDraftResponse(response);
+  }
+
+  private async callOpenAi(system: string, user: string): Promise<string> {
+    const res = await this.fetchFn('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${this.apiKey}`,
+      },
+      body: JSON.stringify({
+        model: this.model,
+        response_format: { type: 'json_object' },
+        messages: [
+          { role: 'system', content: system },
+          { role: 'user', content: user },
+        ],
+        max_tokens: 4096,
+      }),
+    });
+    if (!res.ok) {
+      const body = await res.text();
+      throw new Error(`OpenAI API error ${res.status}: ${body.slice(0, 200)}`);
+    }
+    const data = await res.json() as { choices: Array<{ message: { content: string } }> };
+    return data.choices[0].message.content;
+  }
+}
+
+// ============================================================
+// Gemini (Google) — FREE-TO-MID
+// ============================================================
+export class GeminiAiWriter implements AiWriter {
+  constructor(
+    private apiKey: string,
+    private model: string = 'gemini-2.0-flash',
+    private fetchFn: typeof fetch = fetch,
+  ) {}
+
+  async generateDraft(input: BlogDraftInput): Promise<BlogDraftOutput> {
+    const prompt = buildGeminiPrompt(input);
+    const response = await this.callGemini(prompt);
+    return parseDraftResponse(response);
+  }
+
+  async editDraft(existingContent: string, editInstruction: string): Promise<BlogDraftOutput> {
+    const prompt = buildEditPrompt(existingContent, editInstruction);
+    const response = await this.callGemini(prompt);
+    return parseDraftResponse(response);
+  }
+
+  private async callGemini(prompt: string): Promise<string> {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${this.model}:generateContent?key=${this.apiKey}`;
+    const res = await this.fetchFn(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: {
+          responseMimeType: 'application/json',
+          maxOutputTokens: 4096,
+        },
+      }),
+    });
+    if (!res.ok) {
+      const body = await res.text();
+      throw new Error(`Gemini API error ${res.status}: ${body.slice(0, 200)}`);
+    }
+    const data = await res.json() as { candidates: Array<{ content: { parts: Array<{ text: string }> } }> };
+    return data.candidates[0].content.parts[0].text;
+  }
+}
+
+// ============================================================
+// Factory — create the right writer for a provider + API key
+// ============================================================
+export function createAiWriter(
+  provider: AiProvider,
+  config: { ai?: Ai; apiKey?: string; model?: string }
+): AiWriter {
+  switch (provider) {
+    case 'workers-ai':
+      if (!config.ai) throw new Error('Workers AI binding required');
+      return new WorkersAiWriter(config.ai);
+    case 'claude':
+      if (!config.apiKey) throw new Error('Claude API key required');
+      return new ClaudeAiWriter(config.apiKey, config.model);
+    case 'openai':
+      if (!config.apiKey) throw new Error('OpenAI API key required');
+      return new OpenAiWriter(config.apiKey, config.model);
+    case 'gemini':
+      if (!config.apiKey) throw new Error('Gemini API key required');
+      return new GeminiAiWriter(config.apiKey, config.model);
+    default:
+      if (!config.ai) throw new Error('Workers AI binding required');
+      return new WorkersAiWriter(config.ai);
   }
 }

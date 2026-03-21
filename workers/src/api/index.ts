@@ -11,7 +11,8 @@ import { buildFacebookAuthUrl, handleFacebookCallback, extractPlaceIdFromUrl } f
 import { handlePhotoReceived, handlePhotoChoice, getPendingPhotoFileId } from '../telegram/client/photo';
 import { handleGalleryUpload, handleGalleryCaption, handleGallerySkip } from '../telegram/client/gallery';
 import { handleBlogContext, handleBlogApprove, handleBlogReject, handleBlogEdit, handleBlogEditResponse } from '../telegram/client/blog';
-import { WorkersAiWriter } from '../services/ai-writer';
+import { createAiWriter } from '../services/ai-writer';
+import type { AiProvider } from '../services/ai-prompts';
 import { downloadAndStorePhoto } from '../services/photo-upload';
 import { searchGooglePlaces, fetchGoogleReviews } from '../services/google-reviews';
 import { fetchFacebookReviews } from '../services/facebook-reviews';
@@ -418,7 +419,12 @@ app.post('/telegram/webhook', async (c) => {
         if (wizStateClient.step === 'awaiting_context' && text) {
           console.log('Blog context received, generating draft...');
           const db = forClient(c.env.DB, userInfo.client.id);
-          const aiWriter = new WorkersAiWriter(c.env.AI);
+          // Get AI provider preference from client config
+          const clientRow = await c.env.DB.prepare('SELECT site_config FROM clients WHERE id = ?').bind(userInfo.client.id).first<{ site_config: string | null }>();
+          const clientConfig = clientRow?.site_config ? JSON.parse(clientRow.site_config) : {};
+          const aiProvider = (clientConfig.aiProvider || 'workers-ai') as AiProvider;
+          const aiApiKey = await c.env.KV.get(`ai_key:${userInfo.client.id}:${aiProvider}`);
+          const aiWriter = createAiWriter(aiProvider, { ai: c.env.AI, apiKey: aiApiKey || undefined });
           await handleBlogContext(bot, chatId, text, wizard, {
             aiWriter,
             createDraft: (post) => db.blogPosts.create(post),
@@ -440,7 +446,11 @@ app.post('/telegram/webhook', async (c) => {
         }
         if (wizStateClient.step === 'editing' && text) {
           const db = forClient(c.env.DB, userInfo.client.id);
-          const aiWriter = new WorkersAiWriter(c.env.AI);
+          const editClientRow = await c.env.DB.prepare('SELECT site_config FROM clients WHERE id = ?').bind(userInfo.client.id).first<{ site_config: string | null }>();
+          const editClientConfig = editClientRow?.site_config ? JSON.parse(editClientRow.site_config) : {};
+          const editAiProvider = (editClientConfig.aiProvider || 'workers-ai') as AiProvider;
+          const editAiApiKey = await c.env.KV.get(`ai_key:${userInfo.client.id}:${editAiProvider}`);
+          const aiWriter = createAiWriter(editAiProvider, { ai: c.env.AI, apiKey: editAiApiKey || undefined });
           await handleBlogEditResponse(bot, chatId, text, wizard, {
             aiWriter,
             updateDraft: (id, fields) => db.blogPosts.update(id, fields),
