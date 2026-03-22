@@ -143,6 +143,44 @@ Return ONLY valid JSON array with no extra text: [{"question":"...","answer":"..
 }
 
 // ============================================================
+// Select layout variant based on business profile
+// ============================================================
+interface LayoutConfig {
+  hero: string;
+  services: string;
+  about: string;
+}
+
+async function selectLayout(
+  googleApiKey: string | undefined,
+  ai: Ai,
+  businessName: string,
+  tradeName: string,
+  reviewCount: number,
+  yearsExperience: number,
+): Promise<LayoutConfig | null> {
+  const prompt = `Select a website layout for ${businessName}, a ${tradeName}.
+They have ${reviewCount} reviews and ${yearsExperience || 'unknown'} years experience.
+
+Choose one option for each section:
+- hero: "split" (image + text side by side), "centered" (full-width centered text), or "minimal" (small clean header)
+- services: "grid" (card grid), "list" (horizontal rows), or "cards" (large feature cards)
+- about: "story" (narrative), "stats" (numbers-first), or "simple" (brief text only)
+
+Rules:
+- If they have lots of reviews (50+), use "stats" for about
+- If they have few reviews (<10), use "simple" for about
+- Vary the choices — don't always pick the same combination
+- "minimal" hero works best for premium/professional businesses
+- "centered" hero works best for emergency/urgent services
+- Mix and match — avoid always using the same combo
+
+Return ONLY valid JSON: {"hero":"...","services":"...","about":"..."}`;
+
+  return generateJson<LayoutConfig>(ai, prompt, googleApiKey);
+}
+
+// ============================================================
 // Generate unique tagline and subtitle
 // ============================================================
 async function generateTagline(googleApiKey: string | undefined, 
@@ -192,11 +230,12 @@ export async function generateSiteConfig(
   if (ai) {
     console.log(`[ai-onboarding] Generating unique content for ${input.businessName} in ${town}`);
 
-    const [taglineResult, aboutResult, faqResult, serviceResult] = await Promise.all([
+    const [taglineResult, aboutResult, faqResult, serviceResult, layoutResult] = await Promise.all([
       generateTagline(googleApiKey, ai, input.businessName, tradeName, town, trade.registrationBody).catch(() => null),
       generateAboutContent(googleApiKey, ai, input.businessName, input.ownerName, tradeName, town, county, input.yearsExperience).catch(() => null),
       generateUniqueFaqs(googleApiKey, ai, input.businessName, tradeName, town).catch(() => null),
       generateUniqueServices(googleApiKey, ai, input.businessName, tradeName, town, trade.defaultServices).catch(() => null),
+      selectLayout(googleApiKey, ai, input.businessName, tradeName, input.googleReviewCount || 0, input.yearsExperience || 0).catch(() => null),
     ]);
 
     if (taglineResult?.tagline) {
@@ -228,6 +267,9 @@ export async function generateSiteConfig(
         }
       }
       console.log(`[ai-onboarding] ${Object.keys(serviceDescriptions).length} unique service descriptions generated`);
+    }
+    if (layoutResult?.hero && layoutResult?.services && layoutResult?.about) {
+      console.log(`[ai-onboarding] Layout selected: hero=${layoutResult.hero}, services=${layoutResult.services}, about=${layoutResult.about}`);
     }
   } else {
     console.log('[ai-onboarding] No AI binding provided, using template defaults');
@@ -273,6 +315,9 @@ export async function generateSiteConfig(
     services,
     servicePlans: [],
     faqs,
+    layoutConfig: layoutResult?.hero && layoutResult?.services && layoutResult?.about
+      ? { hero: layoutResult.hero, services: layoutResult.services, about: layoutResult.about }
+      : { hero: 'split', services: 'grid', about: 'story' },
   };
 
   return config;

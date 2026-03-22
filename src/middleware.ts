@@ -85,6 +85,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
       services: c.services || [],
       servicePlans: c.servicePlans || [],
       faqs: c.faqs || [],
+      layoutConfig: c.layoutConfig || { hero: 'split', services: 'grid', about: 'story' },
       themeId: clientMeta?.theme_id || 'champion-blueprint',
       apiBase,
       apiKey,

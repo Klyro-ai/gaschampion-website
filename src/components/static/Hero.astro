@@ -1,101 +1,204 @@
 ---
-const { business, clientId } = Astro.locals.tenant
+const { business, clientId, layoutConfig } = Astro.locals.tenant
 const isGasChampion = clientId === 'gaschampion'
+const heroVariant = layoutConfig?.hero || 'split'
 
 const phoneHref = business.phone ? `tel:${business.phone.replace(/\s/g, '')}` : '#'
 ---
 
-<section
-  class="relative overflow-hidden"
-  style="background-color: var(--color-hero-bg); color: var(--color-hero-text);"
->
-  <div class="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 py-10 sm:py-14 md:py-20 lg:py-28">
-    <div class="lg:grid lg:grid-cols-12 lg:gap-16 lg:items-center">
+{heroVariant === 'centered' ? (
+  <!-- CENTERED HERO — full-width centered text, gradient bg, stats row -->
+  <section
+    class="relative overflow-hidden"
+    style="background: linear-gradient(135deg, var(--color-primary), var(--color-secondary)); color: #fff;"
+  >
+    <div class="max-w-4xl mx-auto px-5 sm:px-6 lg:px-8 py-14 sm:py-20 md:py-28 lg:py-36 text-center">
 
-      <!-- Text content -->
-      <div class="lg:col-span-7 flex flex-col gap-4 sm:gap-5">
-
-        <div
-          class="inline-flex items-center gap-2 px-3.5 py-2 rounded-theme-full text-xs sm:text-sm font-semibold w-fit"
-          style="background-color: var(--color-primary); color: #fff;"
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /><path d="M9 12l2 2 4-4" /></svg>
-          {business.gasSafeNumber ? `Gas Safe Registered — ${business.gasSafeNumber}` : 'Gas Safe Registered'}
-        </div>
-
-        <h1 class="font-heading text-[1.65rem] sm:text-4xl md:text-5xl lg:text-[3.5rem] font-bold leading-[1.1] tracking-tight">
-          Expert Boiler &amp; <span style="color: var(--color-primary);">Heating Services</span> in {business.address.town}
-        </h1>
-
-        <p class="text-base sm:text-lg lg:text-xl leading-relaxed max-w-xl" style="color: var(--color-foreground-muted);">
-          {business.yearsExperience > 0 ? `${business.yearsExperience}+ years of experience. ` : ''}5-star rated. Same-day emergency callouts. Your local Gas Safe registered engineer.
-        </p>
-
-        <div class="flex items-center gap-2.5 flex-wrap">
-          <div class="flex items-center gap-0.5">
-            {[1,2,3,4,5].map(() => (
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="#facc15" stroke="#facc15" stroke-width="1.5"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" /></svg>
-            ))}
-          </div>
-          <span class="text-sm font-semibold">{business.stats.averageRating}/5</span>
-          <span class="text-sm" style="color: var(--color-foreground-muted);">from {business.stats.reviewCount}+ reviews</span>
-        </div>
-
-        <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-1">
-          {business.phone && (
-            <a href={phoneHref} class="inline-flex items-center justify-center gap-2 px-5 sm:px-7 py-4 rounded-theme-full text-sm sm:text-base font-bold shadow-theme-lg transition-all hover:scale-[1.02] active:scale-[0.98]" style="background-color: var(--color-cta-bg); color: var(--color-cta-text); min-height: 48px;">
-              <svg class="shrink-0" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z" /></svg>
-              Call {business.phone}
-            </a>
-          )}
-          <a href="/contact" class="inline-flex items-center justify-center gap-2 px-5 sm:px-7 py-4 rounded-theme-full text-sm sm:text-base font-bold transition-all hover:scale-[1.02] active:scale-[0.98]" style="border: 2px solid var(--color-primary); color: var(--color-primary); min-height: 48px;">
-            Get a Free Quote
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
-          </a>
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2.5 pt-2 text-sm" style="color: var(--color-foreground-muted);">
-          {business.credentials.map((cred) => (
-            <div class="flex items-center gap-2 min-w-0">
-              <svg class="shrink-0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5" /></svg>
-              <span class="text-xs sm:text-sm truncate">{cred.name}</span>
-            </div>
-          ))}
-        </div>
+      <div
+        class="inline-flex items-center gap-2 px-4 py-2 rounded-theme-full text-xs sm:text-sm font-semibold mb-6"
+        style="background-color: rgba(255,255,255,0.15); color: #fff; backdrop-filter: blur(4px);"
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /><path d="M9 12l2 2 4-4" /></svg>
+        {business.gasSafeNumber ? `Gas Safe Registered — ${business.gasSafeNumber}` : 'Fully Certified & Insured'}
       </div>
 
-      <!-- Illustration — DESKTOP ONLY -->
-      <div class="hidden lg:block lg:col-span-5">
-        <div class="relative">
-          {isGasChampion ? (
-            <div class="rounded-theme-lg overflow-hidden shadow-theme-lg" style="background-color: var(--color-card-bg); border: 1px solid var(--color-card-border);">
-              <img src="/images/hero-engineer.svg" alt={`${business.name} — trusted heating engineers`} class="w-full h-auto" width="600" height="600" loading="eager" />
+      <h1 class="font-heading text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold leading-[1.05] tracking-tight mb-6">
+        {business.tagline || `Expert Heating Services in ${business.address.town}`}
+      </h1>
+
+      <p class="text-base sm:text-lg lg:text-xl leading-relaxed max-w-2xl mx-auto mb-8" style="color: rgba(255,255,255,0.8);">
+        {business.subtitle || business.description}
+      </p>
+
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 mb-10">
+        {business.phone && (
+          <a href={phoneHref} class="inline-flex items-center justify-center gap-2 px-6 sm:px-8 py-4 rounded-theme-full text-sm sm:text-base font-bold shadow-theme-lg transition-all hover:scale-[1.02] active:scale-[0.98]" style="background-color: #fff; color: var(--color-primary); min-height: 48px;">
+            <svg class="shrink-0" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z" /></svg>
+            Call {business.phone}
+          </a>
+        )}
+        <a href="/contact" class="inline-flex items-center justify-center gap-2 px-6 sm:px-8 py-4 rounded-theme-full text-sm sm:text-base font-bold transition-all hover:scale-[1.02] hover:bg-white/10 active:scale-[0.98]" style="border: 2px solid rgba(255,255,255,0.8); color: #fff; min-height: 48px;">
+          Get a Free Quote
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
+        </a>
+      </div>
+
+      <!-- Stats badges row -->
+      <div class="flex flex-wrap items-center justify-center gap-4 sm:gap-6">
+        {business.stats.reviewCount > 0 && (
+          <div class="flex items-center gap-2 px-4 py-2.5 rounded-theme-full text-sm font-semibold" style="background-color: rgba(255,255,255,0.15); backdrop-filter: blur(4px);">
+            <div class="flex items-center gap-0.5">
+              {[1,2,3,4,5].map(() => (
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="#facc15" stroke="#facc15" stroke-width="1.5"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" /></svg>
+              ))}
             </div>
-          ) : (
-            <div class="rounded-theme-lg overflow-hidden shadow-theme-lg flex items-center justify-center aspect-square" style={`background: linear-gradient(135deg, var(--color-primary), var(--color-secondary)); border: 1px solid var(--color-card-border);`}>
-              <div class="text-center p-8">
-                <div class="text-6xl mb-4" style="color: rgba(255,255,255,0.9);">
-                  <svg class="w-24 h-24 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="color: rgba(255,255,255,0.9);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4" /></svg>
-                </div>
-                <p class="text-xl font-bold" style="color: rgba(255,255,255,0.95);">Trusted & Certified</p>
-                {business.yearsExperience > 0 && (
-                  <p class="text-sm mt-1" style="color: rgba(255,255,255,0.7);">{business.yearsExperience}+ years experience</p>
-                )}
-              </div>
-            </div>
-          )}
-          <div class="absolute -bottom-4 -left-4 flex items-center gap-2.5 px-4 py-2.5 rounded-theme-full text-sm font-bold shadow-theme-lg" style="background-color: var(--color-card-bg); color: var(--color-foreground); border: 1px solid var(--color-card-border);">
-            <div class="w-8 h-8 rounded-full flex items-center justify-center" style="background-color: var(--color-success); color: #fff;">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5" /></svg>
-            </div>
-            <div>
-              <div class="text-sm font-bold leading-tight">Available Today</div>
-              <div class="text-xs leading-tight" style="color: var(--color-foreground-muted);">Same-day emergency</div>
-            </div>
+            <span>{business.stats.reviewCount}+ reviews</span>
           </div>
+        )}
+        {business.yearsExperience > 0 && (
+          <div class="flex items-center gap-2 px-4 py-2.5 rounded-theme-full text-sm font-semibold" style="background-color: rgba(255,255,255,0.15); backdrop-filter: blur(4px);">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" /></svg>
+            {business.yearsExperience}+ years experience
+          </div>
+        )}
+        <div class="flex items-center gap-2 px-4 py-2.5 rounded-theme-full text-sm font-semibold" style="background-color: rgba(255,255,255,0.15); backdrop-filter: blur(4px);">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5" /></svg>
+          Same-day callouts
         </div>
       </div>
 
     </div>
-  </div>
-</section>
+  </section>
+
+) : heroVariant === 'minimal' ? (
+  <!-- MINIMAL HERO — compact, text-only, professional -->
+  <section
+    class="relative"
+    style="background-color: var(--color-hero-bg); color: var(--color-hero-text); border-bottom: 3px solid var(--color-primary);"
+  >
+    <div class="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 py-8 sm:py-10 md:py-14">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-5">
+
+        <div class="flex-1 max-w-2xl">
+          <h1 class="font-heading text-2xl sm:text-3xl md:text-4xl font-bold leading-tight tracking-tight mb-2">
+            {business.shortName}
+          </h1>
+          <p class="text-sm sm:text-base lg:text-lg leading-relaxed" style="color: var(--color-foreground-muted);">
+            {business.tagline || `Expert heating services in ${business.address.town}`}
+            {business.gasSafeNumber ? ` — Gas Safe ${business.gasSafeNumber}` : ''}
+          </p>
+        </div>
+
+        <div class="flex items-center gap-3 shrink-0">
+          {business.phone && (
+            <a href={phoneHref} class="inline-flex items-center justify-center gap-2 px-5 sm:px-6 py-3 rounded-theme-full text-sm sm:text-base font-bold shadow-theme-lg transition-all hover:scale-[1.02] active:scale-[0.98]" style="background-color: var(--color-cta-bg); color: var(--color-cta-text); min-height: 44px;">
+              <svg class="shrink-0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z" /></svg>
+              {business.phone}
+            </a>
+          )}
+          <a href="/contact" class="inline-flex items-center justify-center gap-2 px-5 sm:px-6 py-3 rounded-theme-full text-sm sm:text-base font-bold transition-all hover:scale-[1.02] active:scale-[0.98]" style="border: 2px solid var(--color-primary); color: var(--color-primary); min-height: 44px;">
+            Free Quote
+          </a>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+) : (
+  <!-- SPLIT HERO (default) — image/illustration on right, text on left -->
+  <section
+    class="relative overflow-hidden"
+    style="background-color: var(--color-hero-bg); color: var(--color-hero-text);"
+  >
+    <div class="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 py-10 sm:py-14 md:py-20 lg:py-28">
+      <div class="lg:grid lg:grid-cols-12 lg:gap-16 lg:items-center">
+
+        <!-- Text content -->
+        <div class="lg:col-span-7 flex flex-col gap-4 sm:gap-5">
+
+          <div
+            class="inline-flex items-center gap-2 px-3.5 py-2 rounded-theme-full text-xs sm:text-sm font-semibold w-fit"
+            style="background-color: var(--color-primary); color: #fff;"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /><path d="M9 12l2 2 4-4" /></svg>
+            {business.gasSafeNumber ? `Gas Safe Registered — ${business.gasSafeNumber}` : 'Gas Safe Registered'}
+          </div>
+
+          <h1 class="font-heading text-[1.65rem] sm:text-4xl md:text-5xl lg:text-[3.5rem] font-bold leading-[1.1] tracking-tight">
+            Expert Boiler &amp; <span style="color: var(--color-primary);">Heating Services</span> in {business.address.town}
+          </h1>
+
+          <p class="text-base sm:text-lg lg:text-xl leading-relaxed max-w-xl" style="color: var(--color-foreground-muted);">
+            {business.yearsExperience > 0 ? `${business.yearsExperience}+ years of experience. ` : ''}5-star rated. Same-day emergency callouts. Your local Gas Safe registered engineer.
+          </p>
+
+          <div class="flex items-center gap-2.5 flex-wrap">
+            <div class="flex items-center gap-0.5">
+              {[1,2,3,4,5].map(() => (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="#facc15" stroke="#facc15" stroke-width="1.5"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" /></svg>
+              ))}
+            </div>
+            <span class="text-sm font-semibold">{business.stats.averageRating}/5</span>
+            <span class="text-sm" style="color: var(--color-foreground-muted);">from {business.stats.reviewCount}+ reviews</span>
+          </div>
+
+          <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-1">
+            {business.phone && (
+              <a href={phoneHref} class="inline-flex items-center justify-center gap-2 px-5 sm:px-7 py-4 rounded-theme-full text-sm sm:text-base font-bold shadow-theme-lg transition-all hover:scale-[1.02] active:scale-[0.98]" style="background-color: var(--color-cta-bg); color: var(--color-cta-text); min-height: 48px;">
+                <svg class="shrink-0" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z" /></svg>
+                Call {business.phone}
+              </a>
+            )}
+            <a href="/contact" class="inline-flex items-center justify-center gap-2 px-5 sm:px-7 py-4 rounded-theme-full text-sm sm:text-base font-bold transition-all hover:scale-[1.02] active:scale-[0.98]" style="border: 2px solid var(--color-primary); color: var(--color-primary); min-height: 48px;">
+              Get a Free Quote
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
+            </a>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2.5 pt-2 text-sm" style="color: var(--color-foreground-muted);">
+            {business.credentials.map((cred) => (
+              <div class="flex items-center gap-2 min-w-0">
+                <svg class="shrink-0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5" /></svg>
+                <span class="text-xs sm:text-sm truncate">{cred.name}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <!-- Illustration — DESKTOP ONLY -->
+        <div class="hidden lg:block lg:col-span-5">
+          <div class="relative">
+            {isGasChampion ? (
+              <div class="rounded-theme-lg overflow-hidden shadow-theme-lg" style="background-color: var(--color-card-bg); border: 1px solid var(--color-card-border);">
+                <img src="/images/hero-engineer.svg" alt={`${business.name} — trusted heating engineers`} class="w-full h-auto" width="600" height="600" loading="eager" />
+              </div>
+            ) : (
+              <div class="rounded-theme-lg overflow-hidden shadow-theme-lg flex items-center justify-center aspect-square" style={`background: linear-gradient(135deg, var(--color-primary), var(--color-secondary)); border: 1px solid var(--color-card-border);`}>
+                <div class="text-center p-8">
+                  <div class="text-6xl mb-4" style="color: rgba(255,255,255,0.9);">
+                    <svg class="w-24 h-24 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="color: rgba(255,255,255,0.9);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4" /></svg>
+                  </div>
+                  <p class="text-xl font-bold" style="color: rgba(255,255,255,0.95);">Trusted & Certified</p>
+                  {business.yearsExperience > 0 && (
+                    <p class="text-sm mt-1" style="color: rgba(255,255,255,0.7);">{business.yearsExperience}+ years experience</p>
+                  )}
+                </div>
+              </div>
+            )}
+            <div class="absolute -bottom-4 -left-4 flex items-center gap-2.5 px-4 py-2.5 rounded-theme-full text-sm font-bold shadow-theme-lg" style="background-color: var(--color-card-bg); color: var(--color-foreground); border: 1px solid var(--color-card-border);">
+              <div class="w-8 h-8 rounded-full flex items-center justify-center" style="background-color: var(--color-success); color: #fff;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5" /></svg>
+              </div>
+              <div>
+                <div class="text-sm font-bold leading-tight">Available Today</div>
+                <div class="text-xs leading-tight" style="color: var(--color-foreground-muted);">Same-day emergency</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+)}

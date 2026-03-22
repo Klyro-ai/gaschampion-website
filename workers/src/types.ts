@@ -202,4 +202,9 @@ export interface SiteConfig {
     question: string;
     answer: string;
   }>;
+  layoutConfig?: {
+    hero: string;
+    services: string;
+    about: string;
+  };
 }

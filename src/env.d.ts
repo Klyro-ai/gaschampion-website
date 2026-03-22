@@ -49,6 +49,11 @@ interface TenantData {
     question: string;
     answer: string;
   }>;
+  layoutConfig: {
+    hero: 'split' | 'centered' | 'minimal';
+    services: 'grid' | 'list' | 'cards';
+    about: 'story' | 'stats' | 'simple';
+  };
   themeId: string;
   apiBase: string;
   apiKey: string;
