@@ -18,6 +18,7 @@ import { createAiWriter } from '../services/ai-writer';
 import type { AiProvider } from '../services/ai-prompts';
 import { downloadAndStorePhoto } from '../services/photo-upload';
 import { searchGooglePlaces, fetchGoogleReviews } from '../services/google-reviews';
+import { searchGoogleBusiness } from '../services/google-harvester';
 import { fetchFacebookReviews } from '../services/facebook-reviews';
 import { setToken, getToken } from '../utils/tokens';
 
@@ -25,7 +26,7 @@ const app = new Hono<{ Bindings: Env }>();
 
 // Auth middleware — build-time API key (skip for public image endpoint)
 app.use('/api/*', async (c, next) => {
-  if (c.req.path.startsWith('/api/image/') || c.req.path === '/api/lookup' || c.req.path.includes('/blog/preview/') || c.req.path.endsWith('/contact')) return next();
+  if (c.req.path.startsWith('/api/image/') || c.req.path === '/api/lookup' || c.req.path === '/api/demo/search' || c.req.path.includes('/blog/preview/') || c.req.path.endsWith('/contact')) return next();
   const apiKey = c.req.header('X-API-Key');
   if (!apiKey || apiKey !== c.env.BUILD_API_KEY) {
     return c.json({ error: 'Unauthorized' }, 401);
@@ -864,6 +865,24 @@ app.get('/privacy', (c) => {
 <h2>Contact</h2>
 <p>Email: <a href="mailto:hello@klyro.co.uk">hello@klyro.co.uk</a></p>
 </body></html>`);
+});
+
+// GET /api/demo/search?q=business+name&loc=location — public demo endpoint
+app.get('/api/demo/search', async (c) => {
+  const query = c.req.query('q');
+  const location = c.req.query('loc') || 'United Kingdom';
+
+  if (!query || query.trim().length < 2) {
+    return c.json({ error: 'Please provide a business name (q parameter)' }, 400);
+  }
+
+  try {
+    const result = await searchGoogleBusiness(query.trim(), location, c.env.GOOGLE_PLACES_API_KEY);
+    return c.json(result);
+  } catch (e) {
+    console.error('Demo search error:', e);
+    return c.json({ error: 'Search failed — please try again' }, 500);
+  }
 });
 
 export default app;

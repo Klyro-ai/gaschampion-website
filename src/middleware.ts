@@ -12,9 +12,18 @@ export const onRequest = defineMiddleware(async (context, next) => {
   const apiKey = (env as any).KLYRO_API_KEY || '';
   const apiWorker = getApiWorker();
 
-  // Skip tenant resolution for static assets
+  // Skip tenant resolution for static assets and standalone pages
   const url = new URL(context.request.url);
   if (url.pathname.startsWith('/_astro/') || url.pathname.startsWith('/images/') || url.pathname === '/favicon.ico') {
+    return next();
+  }
+
+  // Skip tenant resolution for Klyro marketing pages (they don't need tenant data)
+  if (url.pathname === '/demo') {
+    // Provide minimal locals so the page can use the API worker service binding
+    context.locals.tenant = {
+      apiWorker: apiWorker,
+    } as any;
     return next();
   }
 

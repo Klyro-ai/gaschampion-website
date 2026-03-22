@@ -1,0 +1,553 @@
+---
+/**
+ * Klyro Demo Page — "See what your website could look like"
+ *
+ * Standalone marketing page that doesn't use tenant middleware.
+ * Users type their business name, we find them on Google Places,
+ * and show what data we'd use to build their site.
+ */
+const searchQuery = Astro.url.searchParams.get('q')?.trim() || '';
+const location = Astro.url.searchParams.get('loc')?.trim() || '';
+
+let result: any = null;
+let error = '';
+
+if (searchQuery) {
+  try {
+    const apiWorker = (Astro.locals.tenant as any).apiWorker;
+    const locParam = location || 'United Kingdom';
+    const res = await apiWorker.fetch(
+      new Request(`https://internal/api/demo/search?q=${encodeURIComponent(searchQuery)}&loc=${encodeURIComponent(locParam)}`)
+    );
+    if (res.ok) {
+      result = await res.json();
+      if (!result.found) {
+        error = "We couldn't find that business. Try adding a town or postcode to your search.";
+        result = null;
+      }
+    } else {
+      const body = await res.json().catch(() => ({ error: 'Search failed' }));
+      error = body.error || 'Search failed — please try again.';
+    }
+  } catch (e) {
+    console.error('Demo search error:', e);
+    error = 'Something went wrong. Please try again.';
+  }
+}
+---
+
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>See Your Website | Klyro</title>
+  <meta name="description" content="Type your business name and see what your professional website could look like. Free preview, no card required." />
+  <meta name="robots" content="noindex" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --klyro-primary: #6366F1;
+      --klyro-primary-dark: #4F46E5;
+      --klyro-bg: #0F0F1A;
+      --klyro-surface: #1A1A2E;
+      --klyro-surface-light: #252540;
+      --klyro-text: #F1F1F6;
+      --klyro-text-muted: #9CA3AF;
+      --klyro-border: #2D2D4A;
+      --klyro-success: #10B981;
+      --klyro-yellow: #FBBF24;
+      --klyro-radius: 12px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background-color: var(--klyro-bg);
+      color: var(--klyro-text);
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* -- Nav -- */
+    .nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 1.25rem 1.5rem;
+    }
+    .nav-logo {
+      font-weight: 800;
+      font-size: 1.5rem;
+      letter-spacing: -0.03em;
+      color: var(--klyro-text);
+      text-decoration: none;
+    }
+    .nav-logo span { color: var(--klyro-primary); }
+
+    /* -- Hero -- */
+    .hero {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 4rem 1.5rem 2rem;
+      text-align: center;
+    }
+    @media (min-width: 640px) {
+      .hero { padding-top: 6rem; }
+    }
+    .hero-badge {
+      display: inline-block;
+      padding: 0.35rem 0.9rem;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      color: var(--klyro-primary);
+      background: rgba(99, 102, 241, 0.12);
+      border: 1px solid rgba(99, 102, 241, 0.25);
+      margin-bottom: 1.5rem;
+    }
+    .hero h1 {
+      font-size: clamp(2rem, 5vw, 3.25rem);
+      font-weight: 800;
+      line-height: 1.1;
+      letter-spacing: -0.03em;
+      margin-bottom: 1rem;
+    }
+    .hero p {
+      font-size: 1.125rem;
+      color: var(--klyro-text-muted);
+      line-height: 1.6;
+      max-width: 540px;
+      margin: 0 auto 2.5rem;
+    }
+
+    /* -- Search form -- */
+    .search-form {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      max-width: 540px;
+      margin: 0 auto;
+    }
+    @media (min-width: 640px) {
+      .search-row {
+        display: flex;
+        gap: 0.75rem;
+      }
+      .search-row .input-wrap { flex: 1; }
+    }
+    .input-wrap {
+      position: relative;
+    }
+    .input-wrap svg {
+      position: absolute;
+      left: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--klyro-text-muted);
+      pointer-events: none;
+    }
+    .search-input {
+      width: 100%;
+      padding: 0.9rem 1rem 0.9rem 2.75rem;
+      font-size: 1rem;
+      font-family: inherit;
+      background: var(--klyro-surface);
+      border: 1.5px solid var(--klyro-border);
+      border-radius: var(--klyro-radius);
+      color: var(--klyro-text);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .search-input::placeholder { color: var(--klyro-text-muted); }
+    .search-input:focus { border-color: var(--klyro-primary); }
+    .search-btn {
+      width: 100%;
+      padding: 0.9rem 2rem;
+      font-size: 1rem;
+      font-weight: 600;
+      font-family: inherit;
+      color: #fff;
+      background: var(--klyro-primary);
+      border: none;
+      border-radius: var(--klyro-radius);
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+    }
+    .search-btn:hover { background: var(--klyro-primary-dark); }
+    .search-btn:active { transform: scale(0.98); }
+
+    /* -- Result card -- */
+    .result-section {
+      max-width: 620px;
+      margin: 3rem auto;
+      padding: 0 1.5rem;
+    }
+    .result-card {
+      background: var(--klyro-surface);
+      border: 1px solid var(--klyro-border);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+    .result-header {
+      padding: 1.75rem 1.75rem 0;
+    }
+    .result-found {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--klyro-success);
+      margin-bottom: 1rem;
+    }
+    .result-name {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      letter-spacing: -0.02em;
+    }
+    .result-address {
+      font-size: 0.95rem;
+      color: var(--klyro-text-muted);
+      margin-bottom: 1.25rem;
+    }
+
+    /* Stars */
+    .stars-row {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      margin-bottom: 1.5rem;
+    }
+    .stars {
+      display: flex;
+      gap: 2px;
+    }
+    .star { color: var(--klyro-yellow); width: 20px; height: 20px; }
+    .star-empty { color: var(--klyro-border); width: 20px; height: 20px; }
+    .rating-text {
+      font-size: 0.95rem;
+      color: var(--klyro-text-muted);
+    }
+    .rating-text strong {
+      color: var(--klyro-text);
+      font-weight: 700;
+    }
+
+    /* What we found */
+    .result-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 1px;
+      background: var(--klyro-border);
+      border-top: 1px solid var(--klyro-border);
+    }
+    .stat-item {
+      padding: 1.25rem 1.5rem;
+      background: var(--klyro-surface);
+      text-align: center;
+    }
+    .stat-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--klyro-primary);
+      margin-bottom: 0.2rem;
+    }
+    .stat-label {
+      font-size: 0.8rem;
+      color: var(--klyro-text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    /* CTA */
+    .cta-section {
+      max-width: 620px;
+      margin: 0 auto 4rem;
+      padding: 0 1.5rem;
+      text-align: center;
+    }
+    .cta-card {
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(99, 102, 241, 0.05));
+      border: 1px solid rgba(99, 102, 241, 0.2);
+      border-radius: 16px;
+      padding: 2rem;
+    }
+    .cta-card h3 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin-bottom: 0.75rem;
+    }
+    .cta-card p {
+      color: var(--klyro-text-muted);
+      font-size: 0.95rem;
+      margin-bottom: 1.5rem;
+      line-height: 1.5;
+    }
+    .cta-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.85rem 2rem;
+      font-size: 1rem;
+      font-weight: 600;
+      font-family: inherit;
+      color: #fff;
+      background: var(--klyro-primary);
+      border-radius: var(--klyro-radius);
+      text-decoration: none;
+      transition: background 0.2s, transform 0.1s;
+    }
+    .cta-link:hover { background: var(--klyro-primary-dark); }
+    .cta-link:active { transform: scale(0.98); }
+
+    .cta-subtext {
+      font-size: 0.8rem;
+      color: var(--klyro-text-muted);
+      margin-top: 0.75rem;
+    }
+
+    /* Error */
+    .error-msg {
+      max-width: 540px;
+      margin: 2rem auto 0;
+      padding: 1rem 1.25rem;
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.25);
+      border-radius: var(--klyro-radius);
+      color: #FCA5A5;
+      font-size: 0.95rem;
+      text-align: center;
+    }
+
+    /* Review preview */
+    .review-preview {
+      padding: 1.25rem 1.75rem 1.5rem;
+      border-top: 1px solid var(--klyro-border);
+    }
+    .review-preview-title {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--klyro-text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 1rem;
+    }
+    .review-item {
+      padding: 0.75rem 0;
+    }
+    .review-item + .review-item {
+      border-top: 1px solid var(--klyro-border);
+    }
+    .review-stars {
+      display: flex;
+      gap: 1px;
+      margin-bottom: 0.35rem;
+    }
+    .review-star { color: var(--klyro-yellow); width: 14px; height: 14px; }
+    .review-text {
+      font-size: 0.9rem;
+      color: var(--klyro-text-muted);
+      line-height: 1.5;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .review-author {
+      font-size: 0.8rem;
+      color: var(--klyro-text-muted);
+      margin-top: 0.25rem;
+      opacity: 0.7;
+    }
+
+    /* Footer */
+    .demo-footer {
+      text-align: center;
+      padding: 2rem 1.5rem 3rem;
+      font-size: 0.85rem;
+      color: var(--klyro-text-muted);
+    }
+    .demo-footer a {
+      color: var(--klyro-primary);
+      text-decoration: none;
+    }
+    .demo-footer a:hover {
+      text-decoration: underline;
+    }
+
+    /* Loading state (JS enhancement) */
+    .search-btn .spinner {
+      display: none;
+      width: 18px;
+      height: 18px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      margin: 0 auto;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .search-btn.loading .btn-text { display: none; }
+    .search-btn.loading .spinner { display: inline-block; }
+  </style>
+</head>
+<body>
+
+  <nav class="nav">
+    <a href="/demo" class="nav-logo">klyro<span>.</span></a>
+  </nav>
+
+  <section class="hero">
+    <div class="hero-badge">Free preview — no card required</div>
+    <h1>See what your website could look like</h1>
+    <p>Type your business name below. We'll find you on Google and show you what we can build — reviews, ratings, and all.</p>
+
+    <form class="search-form" method="get" action="/demo" id="search-form">
+      <div class="search-row">
+        <div class="input-wrap">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input
+            type="text"
+            name="q"
+            class="search-input"
+            placeholder="Your business name"
+            value={searchQuery}
+            required
+            autocomplete="off"
+          />
+        </div>
+        <div class="input-wrap">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          <input
+            type="text"
+            name="loc"
+            class="search-input"
+            placeholder="Town or postcode (optional)"
+            value={location}
+            autocomplete="off"
+          />
+        </div>
+      </div>
+      <button type="submit" class="search-btn" id="search-btn">
+        <span class="btn-text">Find my business</span>
+        <span class="spinner"></span>
+      </button>
+    </form>
+
+    {error && <div class="error-msg">{error}</div>}
+  </section>
+
+  {result && (
+    <>
+      <section class="result-section">
+        <div class="result-card">
+          <div class="result-header">
+            <div class="result-found">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              We found you
+            </div>
+            <h2 class="result-name">{result.businessName}</h2>
+            <p class="result-address">{result.address}</p>
+
+            {result.rating && (
+              <div class="stars-row">
+                <div class="stars">
+                  {Array.from({ length: 5 }).map((_, i) =>
+                    i < Math.round(result.rating) ? (
+                      <svg class="star" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                    ) : (
+                      <svg class="star-empty" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                    )
+                  )}
+                </div>
+                <span class="rating-text">
+                  <strong>{result.rating}</strong> from <strong>{result.reviewCount || 0}</strong> reviews
+                </span>
+              </div>
+            )}
+          </div>
+
+          <div class="result-stats">
+            <div class="stat-item">
+              <div class="stat-value">{result.reviewCount || 0}</div>
+              <div class="stat-label">Reviews ready</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value">{result.photoRefs?.length || 0}</div>
+              <div class="stat-label">Photos found</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value">{result.rating || '—'}</div>
+              <div class="stat-label">Star rating</div>
+            </div>
+          </div>
+
+          {result.reviews && result.reviews.length > 0 && (
+            <div class="review-preview">
+              <div class="review-preview-title">Latest reviews we'd display</div>
+              {result.reviews.slice(0, 3).map((r: any) => (
+                <div class="review-item">
+                  <div class="review-stars">
+                    {Array.from({ length: r.rating }).map(() => (
+                      <svg class="review-star" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                    ))}
+                  </div>
+                  <p class="review-text">{r.text || '(No review text)'}</p>
+                  <p class="review-author">{r.authorName}</p>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
+
+      <section class="cta-section">
+        <div class="cta-card">
+          <h3>We've got everything we need</h3>
+          <p>
+            {result.reviewCount || 0} reviews, {result.photoRefs?.length || 0} photos, your rating, your address — your site is ready to be built.
+            Get a professional website live in 24 hours.
+          </p>
+          <a
+            href="https://t.me/klyrobot"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="cta-link"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/></svg>
+            Get my site built
+          </a>
+          <p class="cta-subtext">Free preview. No card required. Cancel anytime.</p>
+        </div>
+      </section>
+    </>
+  )}
+
+  <footer class="demo-footer">
+    Powered by <a href="/demo">Klyro</a> — professional websites for tradespeople
+  </footer>
+
+  <script>
+    // Add loading state on form submit
+    const form = document.getElementById('search-form');
+    const btn = document.getElementById('search-btn');
+    if (form && btn) {
+      form.addEventListener('submit', () => {
+        btn.classList.add('loading');
+      });
+    }
+  </script>
+
+</body>
+</html>
