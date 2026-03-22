@@ -582,8 +582,35 @@ app.post('/telegram/webhook', async (c) => {
       }
       if (callbackData?.startsWith('signup_trade:')) {
         const tradeType = callbackData.replace('signup_trade:', '');
-        await wizard.update(chatId, 'ask_town', { trade_type: tradeType });
-        await bot.sendMessage(chatId, 'Last one — what town or area are you based in?');
+        // If we already have town from Google data, skip the town question
+        if (wizState.data.town) {
+          await wizard.update(chatId, 'submit', { trade_type: tradeType });
+          // Auto-submit the signup request
+          const data: Record<string, string> = { ...wizState.data, trade_type: tradeType };
+          const requestId = crypto.randomUUID();
+          const from = update.callback_query?.from;
+
+          await c.env.DB.prepare(
+            'INSERT INTO signup_requests (id, telegram_chat_id, telegram_username, telegram_first_name, business_name, trade_type, town) VALUES (?, ?, ?, ?, ?, ?, ?)'
+          ).bind(requestId, String(chatId), from?.username || null, from?.first_name || null, data.business_name || null, data.trade_type || null, data.town || null).run();
+
+          await wizard.clear(chatId);
+          await bot.sendMessage(chatId, "Thanks! Your request has been submitted.\n\nI'll message you here once your site is ready — usually within 24 hours.");
+
+          const adminBot = new TelegramBot(c.env.TELEGRAM_ADMIN_BOT_TOKEN);
+          const tradeLabel = tradeType === 'gas-engineer' ? 'Gas Engineer' : tradeType === 'plumber' ? 'Plumber' : tradeType === 'electrician' ? 'Electrician' : tradeType || 'Unknown';
+          await adminBot.sendMessage(Number(c.env.ADMIN_CHAT_ID),
+            `<b>New signup request!</b>\n\n` +
+            `<b>Business:</b> ${data.business_name || 'Not provided'}\n` +
+            `<b>Trade:</b> ${tradeLabel}\n` +
+            `<b>Area:</b> ${data.town || 'Not provided'}\n` +
+            `<b>From:</b> ${from?.username ? '@' + from.username : 'no username'} (${from?.first_name || 'Unknown'})\n`,
+            { inline_keyboard: [[{ text: 'Approve', callback_data: `signup:approve:${requestId}` }, { text: 'Deny', callback_data: `signup:deny:${requestId}` }], [{ text: 'Message', callback_data: `signup:msg:${requestId}` }]] }
+          );
+        } else {
+          await wizard.update(chatId, 'ask_town', { trade_type: tradeType });
+          await bot.sendMessage(chatId, 'Last one — what town or area are you based in?');
+        }
         return c.json({ ok: true });
       }
       if (wizState.step === 'ask_name' && text && !text.startsWith('/')) {
@@ -1020,29 +1047,28 @@ app.post('/telegram/webhook', async (c) => {
     const isDemo = startPayloadRaw.startsWith('demo');
     const demoPlaceId = startPayloadRaw.startsWith('demo_') ? startPayloadRaw.slice(5) : null;
 
-    // If we have a Place ID from the demo page, auto-lookup the business
-    if (demoPlaceId && demoPlaceId !== 'new' && c.env.GOOGLE_PLACES_API_KEY) {
+    // If we have a ref ID from the demo page, look up the cached business data from KV
+    if (demoPlaceId && demoPlaceId !== 'new') {
       try {
-        const { searchGoogleBusiness } = await import('../services/google-harvester');
-        // Use the place ID to search (pass it as the business name — the API handles it)
-        const result = await searchGoogleBusiness(demoPlaceId, '', c.env.GOOGLE_PLACES_API_KEY);
-        if (result.found && result.businessName) {
-          // Pre-fill and show confirmation
+        const cached = await c.env.KV.get(`demo_ref:${demoPlaceId}`);
+        if (cached) {
+          const bizData = JSON.parse(cached);
           await wizard.start(chatId, 'signup', 'confirm_google');
           await wizard.update(chatId, 'confirm_google', {
-            business_name: result.businessName,
-            google_address: result.address || '',
-            google_rating: String(result.rating || ''),
-            google_reviews: String(result.reviewCount || 0),
-            google_place_id: result.placeId || demoPlaceId,
+            business_name: bizData.businessName || '',
+            google_address: bizData.address || '',
+            google_rating: String(bizData.rating || ''),
+            google_reviews: String(bizData.reviewCount || 0),
+            google_place_id: bizData.placeId || '',
+            town: (bizData.address || '').split(',').slice(-2, -1)[0]?.trim() || '',
           });
 
-          const stars = result.rating ? '⭐'.repeat(Math.round(result.rating)) : '';
+          const stars = bizData.rating ? '⭐'.repeat(Math.round(bizData.rating)) : '';
           await bot.sendMessage(chatId,
             `Found you! Is this right?\n\n` +
-            `<b>${result.businessName}</b>\n` +
-            `${result.address || ''}\n` +
-            `${stars} ${result.rating || ''} (${result.reviewCount || 0} reviews)\n`,
+            `<b>${bizData.businessName}</b>\n` +
+            `${bizData.address || ''}\n` +
+            `${stars} ${bizData.rating || ''} (${bizData.reviewCount || 0} reviews)\n`,
             {
               inline_keyboard: [
                 [
@@ -1055,7 +1081,7 @@ app.post('/telegram/webhook', async (c) => {
           return c.json({ ok: true });
         }
       } catch {
-        // Google lookup failed — fall through to manual flow
+        // KV lookup failed — fall through to manual flow
       }
     }
 
@@ -1243,6 +1269,22 @@ app.get('/api/demo/search', async (c) => {
 
   try {
     const result = await searchGoogleBusiness(query.trim(), location, c.env.GOOGLE_PLACES_API_KEY);
+
+    // Store result in KV with a short ref ID for the Telegram deep link
+    if (result.found) {
+      const refId = crypto.randomUUID().slice(0, 8);
+      await c.env.KV.put(`demo_ref:${refId}`, JSON.stringify({
+        businessName: result.businessName,
+        address: result.address,
+        phone: result.phone,
+        rating: result.rating,
+        reviewCount: result.reviewCount,
+        placeId: result.placeId,
+        categories: result.categories,
+      }), { expirationTtl: 3600 }); // 1 hour TTL
+      (result as any).refId = refId;
+    }
+
     return c.json(result);
   } catch (e) {
     console.error('Demo search error:', e);
