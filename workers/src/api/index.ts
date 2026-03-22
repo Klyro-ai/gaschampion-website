@@ -511,7 +511,7 @@ app.post('/telegram/admin-webhook', async (c) => {
   return c.json({ ok: true });
 });
 
-// ========== CLIENT BOT WEBHOOK (@KlyroWebsiteBot) ==========
+// ========== CLIENT BOT WEBHOOK (@klyro_clientbot) ==========
 app.post('/telegram/webhook', async (c) => {
   const secret = c.req.header('X-Telegram-Bot-Api-Secret-Token');
   if (secret !== c.env.TELEGRAM_WEBHOOK_SECRET) {
@@ -528,6 +528,8 @@ app.post('/telegram/webhook', async (c) => {
   const text = update.message?.text ?? '';
   const callbackData = update.callback_query?.data ?? null;
   const workerUrl = new URL(c.req.url).origin;
+
+  console.log(`CLIENT BOT: chatId=${chatId}, text="${text}", callback="${callbackData}"`);
 
   if (update.callback_query) {
     await bot.answerCallback(update.callback_query.id);
@@ -686,6 +688,7 @@ app.post('/telegram/webhook', async (c) => {
 
     // Authorized client
     const userInfo = await getClientByAuthorizedUser(c.env.DB, String(chatId));
+    console.log(`AUTH CHECK: chatId=${chatId}, found=${!!userInfo}, client=${userInfo?.client?.id || 'none'}`);
     if (userInfo) {
       // === NEW: Callback routing for blog/gallery/photo ===
       if (callbackData) {

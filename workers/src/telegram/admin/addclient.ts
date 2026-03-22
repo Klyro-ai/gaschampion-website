@@ -263,7 +263,7 @@ export async function handleAddClientStep(
             `Services: ${trade?.defaultServices.length || 0} pre-configured\n` +
             `Site: ${data.client_id}.klyro.co.uk${googleInfo}\n\n` +
             `Send this link to the business owner to start their setup:\n\n` +
-            `https://t.me/KlyroWebsiteBot?start=${token}\n\n` +
+            `https://t.me/klyro_clientbot?start=${token}\n\n` +
             `The invite expires in 7 days. Use /clients to see all your clients anytime.`
           );
         } catch (e) {

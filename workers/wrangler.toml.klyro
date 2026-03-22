@@ -1,0 +1,42 @@
+name = "klyro-worker"
+main = "src/index.ts"
+compatibility_date = "2025-04-01"
+account_id = "3a7d786ecf0b37fed098a78df2dfbf2b"
+
+# D1 Database
+[[d1_databases]]
+binding = "DB"
+database_name = "klyro-db"
+database_id = "3339c951-a52d-46f0-bf1f-4ac5394cf1d3"
+
+# R2 Storage
+[[r2_buckets]]
+binding = "R2"
+bucket_name = "klyro-media"
+
+# KV Namespace
+[[kv_namespaces]]
+binding = "KV"
+id = "790799f3e77b4ac9ae99e07d97935b76"
+
+# Queue Producer
+[[queues.producers]]
+queue = "klyro-fetch-queue"
+binding = "FETCH_QUEUE"
+
+# Queue Consumer
+[[queues.consumers]]
+queue = "klyro-fetch-queue"
+max_batch_size = 1
+max_retries = 3
+
+# Cron triggers
+[triggers]
+crons = ["0 */6 * * *", "0 9 * * 1"]
+
+# Non-secret vars
+[vars]
+ENVIRONMENT = "production"
+
+[ai]
+binding = "AI"
