@@ -14,7 +14,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
 
   // Skip tenant resolution for static assets
   const url = new URL(context.request.url);
-  if (url.pathname.startsWith('/_astro/') || url.pathname.startsWith('/images/') || url.pathname === '/favicon.ico' || url.pathname === '/robots.txt') {
+  if (url.pathname.startsWith('/_astro/') || url.pathname.startsWith('/images/') || url.pathname === '/favicon.ico') {
     return next();
   }
 

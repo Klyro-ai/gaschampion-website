@@ -1,11 +1,12 @@
-export function generateLocalBusinessSchema(business: any) {
+export function generateLocalBusinessSchema(business: any, siteUrl?: string) {
+  const baseUrl = siteUrl || 'https://example.com'
   return {
     '@context': 'https://schema.org',
     '@type': 'LocalBusiness',
-    '@id': 'https://gaschampion.co.uk/#business',
+    '@id': `${baseUrl}/#business`,
     name: business.name,
     description: business.description,
-    url: 'https://gaschampion.co.uk',
+    url: baseUrl,
     telephone: business.phone,
     email: business.email,
     address: {
@@ -40,7 +41,7 @@ export function generateLocalBusinessSchema(business: any) {
       },
     },
     priceRange: '$$',
-    image: 'https://gaschampion.co.uk/og-image.jpg',
+    image: `${baseUrl}/og-image.jpg`,
     sameAs: [business.socialMedia.facebook, business.socialMedia.twitter],
   }
 }
