@@ -1,5 +1,8 @@
 ---
-const { business, services } = Astro.locals.tenant
+import { imageUrl } from '../../lib/klyro-api'
+
+const { business, services, apiBase, clientId } = Astro.locals.tenant
+const isGasChampion = clientId === 'gaschampion'
 
 const phoneHref = `tel:${business.phone.replace(/\s/g, '')}`
 const emailHref = `mailto:${business.email}`
@@ -31,14 +34,27 @@ const areaLinks = business.serviceAreas.slice(0, 6).map((area) => ({
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
       <!-- Brand column -->
       <div class="sm:col-span-2 lg:col-span-1 flex flex-col gap-4">
-        <img
-          src="/logo/logo.png"
-          alt={`${business.name} logo`}
-          class="brightness-0 invert"
-          width="27"
-          height="40"
-          style="height: 40px; width: auto; max-height: 40px; object-fit: contain; display: block;"
-        />
+        {business.logoUrl ? (
+          <img
+            src={imageUrl(apiBase, business.logoUrl)}
+            alt={`${business.shortName} logo`}
+            class="brightness-0 invert"
+            width="27"
+            height="40"
+            style="height: 40px; width: auto; max-height: 40px; object-fit: contain; display: block;"
+          />
+        ) : isGasChampion ? (
+          <img
+            src="/logo/logo.png"
+            alt={`${business.name} logo`}
+            class="brightness-0 invert"
+            width="27"
+            height="40"
+            style="height: 40px; width: auto; max-height: 40px; object-fit: contain; display: block;"
+          />
+        ) : (
+          <span class="font-heading font-bold text-xl" style="color: var(--color-footer-text);">{business.shortName}</span>
+        )}
         <p class="text-sm opacity-90 leading-relaxed">
           {business.description}
         </p>
@@ -181,7 +197,7 @@ const areaLinks = business.serviceAreas.slice(0, 6).map((area) => ({
       <div class="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-x-2 gap-y-1 text-center">
         <span>&copy; {currentYear} {business.name}.</span>
         <span class="hidden sm:inline">&bull;</span>
-        <span>Gas Safe: {business.gasSafeNumber}</span>
+        {business.gasSafeNumber && <span>Gas Safe: {business.gasSafeNumber}</span>}
       </div>
       <div class="flex items-center gap-3 sm:gap-4 flex-wrap justify-center">
         <a href="/privacy" class="hover:opacity-100 transition-opacity inline-flex items-center" style="min-height: 44px;">Privacy Policy</a>

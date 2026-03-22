@@ -1,5 +1,6 @@
 ---
-const { business } = Astro.locals.tenant
+const { business, clientId } = Astro.locals.tenant
+const isGasChampion = clientId === 'gaschampion'
 
 const phoneHref = `tel:${business.phone.replace(/\s/g, '')}`
 ---
@@ -64,9 +65,21 @@ const phoneHref = `tel:${business.phone.replace(/\s/g, '')}`
       <!-- Illustration — DESKTOP ONLY -->
       <div class="hidden lg:block lg:col-span-5">
         <div class="relative">
-          <div class="rounded-theme-lg overflow-hidden shadow-theme-lg" style="background-color: var(--color-card-bg); border: 1px solid var(--color-card-border);">
-            <img src="/images/hero-engineer.svg" alt={`${business.name} — trusted heating engineers`} class="w-full h-auto" width="600" height="600" loading="eager" />
-          </div>
+          {isGasChampion ? (
+            <div class="rounded-theme-lg overflow-hidden shadow-theme-lg" style="background-color: var(--color-card-bg); border: 1px solid var(--color-card-border);">
+              <img src="/images/hero-engineer.svg" alt={`${business.name} — trusted heating engineers`} class="w-full h-auto" width="600" height="600" loading="eager" />
+            </div>
+          ) : (
+            <div class="rounded-theme-lg overflow-hidden shadow-theme-lg flex items-center justify-center aspect-square" style={`background: linear-gradient(135deg, var(--color-primary), var(--color-secondary)); border: 1px solid var(--color-card-border);`}>
+              <div class="text-center p-8">
+                <div class="text-6xl mb-4" style="color: rgba(255,255,255,0.9);">
+                  <svg class="w-24 h-24 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="color: rgba(255,255,255,0.9);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4" /></svg>
+                </div>
+                <p class="text-xl font-bold" style="color: rgba(255,255,255,0.95);">Trusted & Certified</p>
+                <p class="text-sm mt-1" style="color: rgba(255,255,255,0.7);">{business.yearsExperience}+ years experience</p>
+              </div>
+            </div>
+          )}
           <div class="absolute -bottom-4 -left-4 flex items-center gap-2.5 px-4 py-2.5 rounded-theme-full text-sm font-bold shadow-theme-lg" style="background-color: var(--color-card-bg); color: var(--color-foreground); border: 1px solid var(--color-card-border);">
             <div class="w-8 h-8 rounded-full flex items-center justify-center" style="background-color: var(--color-success); color: #fff;">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5" /></svg>

@@ -1,5 +1,8 @@
 ---
-const { business } = Astro.locals.tenant
+import { imageUrl } from '../../lib/klyro-api'
+
+const { business, apiBase, clientId } = Astro.locals.tenant
+const isGasChampion = clientId === 'gaschampion'
 
 const phoneHref = `tel:${business.phone.replace(/\s/g, '')}`
 
@@ -21,13 +24,25 @@ const navLinks = [
   <div class="max-w-7xl mx-auto px-4 py-2 flex items-center justify-between">
     <!-- Logo — constrained to fixed height, auto width -->
     <a href="/" class="flex-shrink-0 flex items-center" style="min-height: 44px;">
-      <img
-        src="/logo/logo.png"
-        alt={`${business.name} logo`}
-        width="27"
-        height="40"
-        style="height: 40px; width: auto; max-height: 40px; object-fit: contain; display: block;"
-      />
+      {business.logoUrl ? (
+        <img
+          src={imageUrl(apiBase, business.logoUrl)}
+          alt={`${business.shortName} logo`}
+          width="27"
+          height="40"
+          style="height: 40px; width: auto; max-height: 40px; object-fit: contain; display: block;"
+        />
+      ) : isGasChampion ? (
+        <img
+          src="/logo/logo.png"
+          alt={`${business.name} logo`}
+          width="27"
+          height="40"
+          style="height: 40px; width: auto; max-height: 40px; object-fit: contain; display: block;"
+        />
+      ) : (
+        <span class="font-heading font-bold text-lg" style="color: var(--color-primary);">{business.shortName}</span>
+      )}
     </a>
 
     <!-- Desktop Nav -->

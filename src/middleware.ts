@@ -53,7 +53,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
       return new Response('Site not found', { status: 404 });
     }
 
-    const { config: c } = await configRes.json() as { config: any };
+    const { config: c, client: clientMeta } = await configRes.json() as { config: any; client?: any };
 
     // The SSR Worker needs to know the API Worker's public URL for image serving
     // (images are served from the API Worker's /api/image/ endpoint)
@@ -80,10 +80,12 @@ export const onRequest = defineMiddleware(async (context, next) => {
         stats: c.stats || {},
         credentials: c.credentials || [],
         guarantees: c.guarantees || [],
+        logoUrl: c.logoUrl || null,
       },
       services: c.services || [],
       servicePlans: c.servicePlans || [],
       faqs: c.faqs || [],
+      themeId: clientMeta?.theme_id || 'champion-blueprint',
       apiBase,
       apiKey,
       apiFetch: (input: RequestInfo | URL, init?: RequestInit) => {

@@ -12,6 +12,7 @@ import Footer from '../components/static/Footer.astro'
 import { MobileNavIsland, ContactFormIsland, FAQIsland } from '../components/interactive/AppIslands'
 import { getApprovedReviews } from '../lib/klyro-api'
 const { clientId, apiBase, apiKey, apiFetch, business, services, faqs } = Astro.locals.tenant
+const isGasChampion = clientId === 'gaschampion'
 
 let reviews: any[] = [];
 try {
@@ -94,9 +95,19 @@ try {
               </div>
             ))}
           </div>
-          <div class="rounded-theme-lg overflow-hidden" style="border: 1px solid var(--color-border)">
-            <img src="/images/service-map.svg" alt={`${business.shortName} service area — ${business.address.town} and surrounding areas`} class="w-full h-auto" width="800" height="400" />
-          </div>
+          {isGasChampion ? (
+            <div class="rounded-theme-lg overflow-hidden" style="border: 1px solid var(--color-border)">
+              <img src="/images/service-map.svg" alt={`${business.shortName} service area — ${business.address.town} and surrounding areas`} class="w-full h-auto" width="800" height="400" />
+            </div>
+          ) : (
+            <div class="rounded-theme-lg overflow-hidden flex items-center justify-center p-8" style={`background: linear-gradient(135deg, var(--color-primary), var(--color-secondary)); border: 1px solid var(--color-border); min-height: 200px;`}>
+              <div class="text-center">
+                <svg class="w-12 h-12 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="color: rgba(255,255,255,0.9);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                <p class="font-bold text-lg" style="color: rgba(255,255,255,0.95);">Serving {business.address.town} &amp; surrounding areas</p>
+                <p class="text-sm mt-1" style="color: rgba(255,255,255,0.7);">{business.serviceAreas.slice(0, 4).join(', ')}{business.serviceAreas.length > 4 ? ' & more' : ''}</p>
+              </div>
+            </div>
+          )}
         </div>
         <ContactFormIsland client:only="react" apiBase={apiBase} clientId={clientId} phone={business.phone} />
       </div>

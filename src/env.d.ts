@@ -27,6 +27,7 @@ interface TenantData {
     stats: Record<string, any>;
     credentials: Array<{ name: string; number: string | null }>;
     guarantees: string[];
+    logoUrl: string | null;
   };
   services: Array<{
     id: string;
@@ -48,6 +49,7 @@ interface TenantData {
     question: string;
     answer: string;
   }>;
+  themeId: string;
   apiBase: string;
   apiKey: string;
   apiFetch: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;

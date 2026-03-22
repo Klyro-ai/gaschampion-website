@@ -9,6 +9,7 @@ import Footer from '../components/static/Footer.astro'
 
 
 const { business, clientId, apiBase } = Astro.locals.tenant
+const isGasChampion = clientId === 'gaschampion'
 
 const contactItems = [
   { icon: 'M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z', label: 'Call or Text', value: business.phone, href: `tel:${business.phone.replace(/\s/g, '')}` },
@@ -52,9 +53,18 @@ const contactItems = [
                 )
               })}
             </div>
-            <div class="mt-8 rounded-theme-lg overflow-hidden" style="border: 1px solid var(--color-border)">
-              <img src="/images/service-map.svg" alt={`${business.shortName} service area map`} class="w-full h-auto" width="800" height="400" />
-            </div>
+            {isGasChampion ? (
+              <div class="mt-8 rounded-theme-lg overflow-hidden" style="border: 1px solid var(--color-border)">
+                <img src="/images/service-map.svg" alt={`${business.shortName} service area map`} class="w-full h-auto" width="800" height="400" />
+              </div>
+            ) : (
+              <div class="mt-8 rounded-theme-lg overflow-hidden flex items-center justify-center p-8" style={`background: linear-gradient(135deg, var(--color-primary), var(--color-secondary)); border: 1px solid var(--color-border); min-height: 200px;`}>
+                <div class="text-center">
+                  <svg class="w-12 h-12 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="color: rgba(255,255,255,0.9);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                  <p class="font-bold text-lg" style="color: rgba(255,255,255,0.95);">Serving {business.address.town} &amp; surrounding areas</p>
+                </div>
+              </div>
+            )}
           </div>
           <ContactFormIsland client:only="react" apiBase={apiBase} clientId={clientId} phone={business.phone} />
         </div>

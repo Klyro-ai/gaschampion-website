@@ -11,6 +11,7 @@ import Footer from '../components/static/Footer.astro'
 
 import { getApprovedReviews } from '../lib/klyro-api'
 const { clientId, apiBase, apiKey, apiFetch, business } = Astro.locals.tenant
+const isGasChampion = clientId === 'gaschampion'
 
 let displayReviews: any[] = [];
 try {
@@ -60,22 +61,24 @@ try {
           {displayReviews.map((r) => <ReviewCard name={r.name} rating={r.rating} text={r.text} source={r.source} email={business.email} />)}
         </div>
 
-        <div class="mt-16">
-          <h2 class="font-heading text-xl sm:text-2xl font-bold text-center mb-8">Straight From Google, MyBuilder & Local Heroes</h2>
-          <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {[1,2,3,4,5,6].map((n) => (
+        {isGasChampion && (
+          <div class="mt-16">
+            <h2 class="font-heading text-xl sm:text-2xl font-bold text-center mb-8">Straight From Google, MyBuilder & Local Heroes</h2>
+            <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {[1,2,3,4,5,6].map((n) => (
+                <div class="rounded-theme-lg overflow-hidden border shadow-theme" style="border-color: var(--color-card-border)">
+                  <img src={`/images/google-review-${n}.png`} alt={`Google Review ${n}`} class="w-full h-auto" width="400" height="300" loading="lazy" />
+                </div>
+              ))}
               <div class="rounded-theme-lg overflow-hidden border shadow-theme" style="border-color: var(--color-card-border)">
-                <img src={`/images/google-review-${n}.png`} alt={`Google Review ${n}`} class="w-full h-auto" width="400" height="300" loading="lazy" />
+                <img src="/images/mybuilder-review.png" alt="MyBuilder Review" class="w-full h-auto" width="400" height="300" loading="lazy" />
               </div>
-            ))}
-            <div class="rounded-theme-lg overflow-hidden border shadow-theme" style="border-color: var(--color-card-border)">
-              <img src="/images/mybuilder-review.png" alt="MyBuilder Review" class="w-full h-auto" width="400" height="300" loading="lazy" />
-            </div>
-            <div class="rounded-theme-lg overflow-hidden border shadow-theme" style="border-color: var(--color-card-border)">
-              <img src="/images/local-heroes-review.png" alt="Local Heroes Review" class="w-full h-auto" width="400" height="300" loading="lazy" />
+              <div class="rounded-theme-lg overflow-hidden border shadow-theme" style="border-color: var(--color-card-border)">
+                <img src="/images/local-heroes-review.png" alt="Local Heroes Review" class="w-full h-auto" width="400" height="300" loading="lazy" />
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
     </section>
 

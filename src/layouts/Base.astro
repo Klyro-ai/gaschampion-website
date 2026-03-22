@@ -3,8 +3,55 @@ import '../styles/global.css'
 import { generateLocalBusinessSchema, generateFAQSchema } from '../lib/schema'
 import Analytics from '../components/static/Analytics.astro'
 import CookieConsent from '../components/static/CookieConsent.astro'
+import { allThemes } from '../themes/all-themes'
 
-const { business, faqs } = Astro.locals.tenant
+const { business, faqs, themeId } = Astro.locals.tenant
+
+// Resolve theme — fall back to champion-blueprint (the first recommended theme)
+const theme = allThemes.find(t => t.id === themeId) || allThemes.find(t => t.id === 'champion-blueprint') || allThemes[0]
+
+// Build CSS custom properties from theme
+const themeVars = `:root {
+  --color-primary: ${theme.colors.primary};
+  --color-primary-light: ${theme.colors.primaryLight};
+  --color-primary-dark: ${theme.colors.primaryDark};
+  --color-secondary: ${theme.colors.secondary};
+  --color-secondary-light: ${theme.colors.secondaryLight};
+  --color-accent: ${theme.colors.accent};
+  --color-accent-light: ${theme.colors.accentLight};
+  --color-surface: ${theme.colors.surface};
+  --color-surface-alt: ${theme.colors.surfaceAlt};
+  --color-background: ${theme.colors.background};
+  --color-foreground: ${theme.colors.foreground};
+  --color-foreground-muted: ${theme.colors.foregroundMuted};
+  --color-border: ${theme.colors.border};
+  --color-success: ${theme.colors.success};
+  --color-warning: ${theme.colors.warning};
+  --color-error: ${theme.colors.error};
+  --color-cta-bg: ${theme.colors.ctaBg};
+  --color-cta-text: ${theme.colors.ctaText};
+  --color-cta-hover: ${theme.colors.ctaHover};
+  --color-nav-bg: ${theme.colors.navBg};
+  --color-nav-text: ${theme.colors.navText};
+  --color-hero-bg: ${theme.colors.heroBg};
+  --color-hero-text: ${theme.colors.heroText};
+  --color-card-bg: ${theme.colors.cardBg};
+  --color-card-border: ${theme.colors.cardBorder};
+  --color-footer-bg: ${theme.colors.footerBg};
+  --color-footer-text: ${theme.colors.footerText};
+  --font-heading: ${theme.fonts.heading};
+  --font-body: ${theme.fonts.body};
+  --font-ui: ${theme.fonts.ui};
+  --radius: ${theme.radius};
+  --radius-lg: ${theme.radiusLg};
+  --radius-full: ${theme.radiusFull};
+  --shadow: ${theme.shadow};
+  --shadow-lg: ${theme.shadowLg};
+  --shadow-glow: ${theme.shadowGlow};
+}`
+
+// Build Google Fonts import URL from theme
+const fontsUrl = `https://fonts.googleapis.com/css2?${theme.fonts.headingImport}&${theme.fonts.bodyImport}&display=swap`
 
 // Derive site origin from the request — no hardcoded domain
 const siteOrigin = Astro.url.origin
@@ -22,7 +69,7 @@ const pageDesc = description || business.description
 ---
 
 <!DOCTYPE html>
-<html lang="en-GB">
+<html lang="en-GB" data-theme={theme.id}>
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -32,6 +79,9 @@ const pageDesc = description || business.description
   <meta name="author" content={business.name} />
   <meta name="robots" content="index, follow" />
   <link rel="canonical" href={`${siteOrigin}${Astro.url.pathname}`} />
+
+  <!-- Theme CSS variables (server-rendered per tenant) -->
+  <style set:html={themeVars} />
 
   <!-- Open Graph -->
   <meta property="og:type" content="website" />
@@ -47,11 +97,11 @@ const pageDesc = description || business.description
   <meta name="twitter:title" content={pageTitle} />
   <meta name="twitter:description" content={pageDesc} />
 
-  <!-- Fonts — non-render-blocking -->
+  <!-- Fonts — loaded from theme config, non-render-blocking -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
+  <link rel="preload" as="style" href={fontsUrl} />
+  <link href={fontsUrl} rel="stylesheet" media="print" onload="this.media='all'" />
 
   <link rel="icon" href="/favicon.ico" />
 
