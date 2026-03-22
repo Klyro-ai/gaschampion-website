@@ -547,7 +547,7 @@ app.post('/telegram/webhook', async (c) => {
   try {
     // Deep link onboarding — /start <token>
     const startPayload = text.startsWith('/start ') ? text.slice(7).trim() : '';
-    if (startPayload && startPayload.length > 10) {
+    if (startPayload && startPayload.length > 10 && !startPayload.startsWith('demo')) {
       await handleOnboarding(bot, chatId, startPayload, null, wizard, onboardingDeps);
       return c.json({ ok: true });
     }
