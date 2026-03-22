@@ -11,18 +11,28 @@ const plausibleReady = analytics.plausible.enabled && analytics.plausible.domain
   <meta name="google-site-verification" content={analytics.searchConsole.verificationId} />
 )}
 
-{/* Microsoft Clarity — async, zero render-blocking */}
+{/* Microsoft Clarity — loaded ONLY after cookie consent */}
 {clarityReady && (
   <script
     type="text/javascript"
     is:inline
     define:vars={{ clarityId: analytics.clarity.projectId }}
   >
-    (function(c,l,a,r,i,t,y){
-      c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
-      t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
-      y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
-    })(window,document,"clarity","script",clarityId);
+    // Register loader — called by CookieConsent banner on accept
+    window.__klyroLoadAnalytics = function() {
+      if (window.__klyroAnalyticsLoaded) return;
+      window.__klyroAnalyticsLoaded = true;
+      (function(c,l,a,r,i,t,y){
+        c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+        t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+        y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+      })(window,document,"clarity","script",clarityId);
+    };
+
+    // Auto-load if consent was previously given
+    if (document.cookie.match(/(?:^|;\s*)klyro_consent=1/)) {
+      window.__klyroLoadAnalytics();
+    }
   </script>
 )}
 

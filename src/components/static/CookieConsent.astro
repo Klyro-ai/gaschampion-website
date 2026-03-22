@@ -1,0 +1,122 @@
+---
+// Cookie consent banner — shows on first visit, remembers choice
+// Consent cookie: klyro_consent=1 (accepted) or klyro_consent=0 (rejected)
+---
+
+<div id="cookie-banner" class="cookie-banner" role="dialog" aria-label="Cookie consent" style="display: none;">
+  <div class="cookie-inner">
+    <p class="cookie-text">
+      We use cookies to analyse website usage and improve your experience.
+      See our <a href="/privacy">privacy policy</a> for details.
+    </p>
+    <div class="cookie-actions">
+      <button id="cookie-reject" class="cookie-btn cookie-btn-reject" type="button">Reject</button>
+      <button id="cookie-accept" class="cookie-btn cookie-btn-accept" type="button">Accept</button>
+    </div>
+  </div>
+</div>
+
+<script is:inline>
+(function() {
+  // Check if consent already given
+  var match = document.cookie.match(/(?:^|;\s*)klyro_consent=([01])/);
+  if (match) {
+    if (match[1] === '1') {
+      // Consent was given — load analytics
+      window.__klyroLoadAnalytics && window.__klyroLoadAnalytics();
+    }
+    return; // Don't show banner
+  }
+
+  // Show banner
+  var banner = document.getElementById('cookie-banner');
+  if (banner) banner.style.display = 'block';
+
+  function setCookie(value) {
+    document.cookie = 'klyro_consent=' + value + ';path=/;max-age=31536000;SameSite=Lax';
+  }
+
+  document.getElementById('cookie-accept').addEventListener('click', function() {
+    setCookie('1');
+    banner.style.display = 'none';
+    window.__klyroLoadAnalytics && window.__klyroLoadAnalytics();
+  });
+
+  document.getElementById('cookie-reject').addEventListener('click', function() {
+    setCookie('0');
+    banner.style.display = 'none';
+  });
+})();
+</script>
+
+<style>
+  .cookie-banner {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 9999;
+    padding: 1rem;
+    background-color: var(--color-footer-bg, #1a1a2e);
+    color: var(--color-footer-text, #fff);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 -2px 16px rgba(0, 0, 0, 0.15);
+  }
+
+  .cookie-inner {
+    max-width: 72rem;
+    margin: 0 auto;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .cookie-text {
+    flex: 1;
+    min-width: 200px;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    margin: 0;
+    opacity: 0.9;
+  }
+
+  .cookie-text a {
+    color: var(--color-primary, #3b82f6);
+    text-decoration: underline;
+  }
+
+  .cookie-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-shrink: 0;
+  }
+
+  .cookie-btn {
+    padding: 0.5rem 1.25rem;
+    border-radius: var(--radius-md, 0.5rem);
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    min-height: 44px;
+    min-width: 44px;
+    transition: opacity 0.15s;
+  }
+
+  .cookie-btn:hover {
+    opacity: 0.85;
+  }
+
+  .cookie-btn-accept {
+    background-color: var(--color-primary, #3b82f6);
+    color: #fff;
+  }
+
+  .cookie-btn-reject {
+    background-color: transparent;
+    color: var(--color-footer-text, #fff);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+  }
+</style>
