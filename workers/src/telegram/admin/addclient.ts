@@ -5,6 +5,7 @@ import { createClient, createInviteToken, forClient } from '../../db/client';
 import { getAllTradeTypes, getTradeType } from '../../data/trade-catalog';
 import { generateSiteConfig } from '../../services/ai-onboarding';
 import { WorkersAiWriter } from '../../services/ai-writer';
+import { searchGoogleBusiness, downloadGooglePhotos } from '../../services/google-harvester';
 
 export async function handleAddClientStep(
   bot: TelegramBot,
@@ -180,7 +181,77 @@ export async function handleAddClientStep(
           const clientDb = forClient(env.DB, data.client_id);
           await clientDb.config.updateSiteConfig(siteConfig);
 
-          // 5. Generate invite link
+          // 5. Harvest Google Business data (if API key available)
+          let googleInfo = '';
+          if (env.GOOGLE_PLACES_API_KEY) {
+            try {
+              await bot.sendMessage(chatId, 'Searching Google for the business...');
+              const googleResult = await searchGoogleBusiness(data.business_name, data.town, env.GOOGLE_PLACES_API_KEY);
+
+              if (googleResult.found) {
+                // Import reviews
+                const db = forClient(env.DB, data.client_id);
+                for (const review of googleResult.reviews) {
+                  await db.reviews.upsert({
+                    source: 'google',
+                    author_name: review.authorName,
+                    rating: review.rating,
+                    text: review.text,
+                    review_date: review.publishTime,
+                    source_id: `google_${review.publishTime}`,
+                  });
+                  // Auto-approve 4-5 star reviews
+                  if (review.rating >= 4) {
+                    const pending = await db.reviews.getPending();
+                    const match = pending.find(r => r.text === review.text);
+                    if (match) await db.reviews.approve(match.id);
+                  }
+                }
+
+                // Download photos to R2
+                if (googleResult.photoRefs.length > 0) {
+                  const photos = await downloadGooglePhotos(
+                    googleResult.photoRefs.slice(0, 5),
+                    env.GOOGLE_PLACES_API_KEY,
+                    env.R2,
+                    `${data.client_id}/`,
+                  );
+                  for (const photo of photos) {
+                    await db.gallery.add({
+                      r2_key: photo.r2Key,
+                      alt_text: null,
+                      caption: null,
+                      width: null,
+                      height: null,
+                      srcset: null,
+                      source: 'upload',
+                      instagram_post_id: null,
+                    });
+                  }
+                }
+
+                // Enrich site_config with Google data
+                if (googleResult.rating || googleResult.description) {
+                  const enriched = { ...siteConfig };
+                  if (googleResult.rating) {
+                    enriched.stats = { ...enriched.stats, reviewCount: googleResult.reviewCount || 0, averageRating: googleResult.rating };
+                  }
+                  if (googleResult.description && !enriched.description) {
+                    enriched.description = googleResult.description;
+                  }
+                  await clientDb.config.updateSiteConfig(enriched);
+                }
+
+                googleInfo = `\nGoogle: ${googleResult.reviewCount || 0} reviews imported, ${googleResult.photoRefs.length} photos`;
+              } else {
+                googleInfo = '\nGoogle: business not found (can be connected later)';
+              }
+            } catch (e) {
+              googleInfo = `\nGoogle: harvest failed (${e instanceof Error ? e.message : 'unknown error'})`;
+            }
+          }
+
+          // 6. Generate invite link
           const token = await createInviteToken(env.DB, data.client_id);
           await wizard.clear(chatId);
 
@@ -190,7 +261,7 @@ export async function handleAddClientStep(
             `Trade: ${trade?.name || data.trade_type}\n` +
             `Theme: ${trade?.defaultTheme || 'default'}\n` +
             `Services: ${trade?.defaultServices.length || 0} pre-configured\n` +
-            `Site: ${data.client_id}.klyro.co.uk\n\n` +
+            `Site: ${data.client_id}.klyro.co.uk${googleInfo}\n\n` +
             `Send this link to the business owner to start their setup:\n\n` +
             `https://t.me/KlyroWebsiteBot?start=${token}\n\n` +
             `The invite expires in 7 days. Use /clients to see all your clients anytime.`
