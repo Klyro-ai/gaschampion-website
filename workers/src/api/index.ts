@@ -312,9 +312,9 @@ app.post('/telegram/admin-webhook', async (c) => {
   try {
     const wizState = await wizard.get(chatId);
     if (wizState?.type === 'addclient') {
-      await handleAddClientStep(bot, chatId, text || null, callbackData, wizard, c.env.DB);
+      await handleAddClientStep(bot, chatId, text || null, callbackData, wizard, c.env);
     } else if (callbackData === 'admin:addclient') {
-      await handleAddClientStep(bot, chatId, null, null, wizard, c.env.DB);
+      await handleAddClientStep(bot, chatId, null, null, wizard, c.env);
     } else if (callbackData?.startsWith('admin:')) {
       await handleAdminCallback(bot, chatId, update.callback_query?.message?.message_id, update.callback_query?.id, callbackData, c.env.DB, wizard);
     } else {

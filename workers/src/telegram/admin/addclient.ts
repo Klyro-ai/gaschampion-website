@@ -1,6 +1,10 @@
+import type { Env } from '../../types';
 import type { TelegramBot } from '../bot';
 import type { WizardManager } from '../wizard';
-import { createClient, createInviteToken } from '../../db/client';
+import { createClient, createInviteToken, forClient } from '../../db/client';
+import { getAllTradeTypes, getTradeType } from '../../data/trade-catalog';
+import { generateSiteConfig } from '../../services/ai-onboarding';
+import { WorkersAiWriter } from '../../services/ai-writer';
 
 export async function handleAddClientStep(
   bot: TelegramBot,
@@ -8,7 +12,7 @@ export async function handleAddClientStep(
   text: string | null,
   callbackData: string | null,
   wizard: WizardManager,
-  db: D1Database
+  env: Env
 ): Promise<void> {
   const state = await wizard.get(chatId);
 
@@ -35,7 +39,57 @@ export async function handleAddClientStep(
     case 'ask_id': {
       if (!text) return;
       const id = text.toLowerCase().replace(/\s+/g, '-');
-      await wizard.update(chatId, 'ask_project', { client_id: id });
+      await wizard.update(chatId, 'ask_trade', { client_id: id });
+
+      const trades = getAllTradeTypes();
+      const buttons = trades.map(t => ({
+        text: t.name,
+        callback_data: `addclient:trade:${t.id}`,
+      }));
+      // One button per row for clarity
+      await bot.sendMessage(
+        chatId,
+        "What type of trade is this business?",
+        { inline_keyboard: buttons.map(b => [b]) }
+      );
+      break;
+    }
+
+    case 'ask_trade': {
+      if (!callbackData?.startsWith('addclient:trade:')) return;
+      const tradeId = callbackData.replace('addclient:trade:', '');
+      const trade = getTradeType(tradeId);
+      if (!trade) return;
+
+      await wizard.update(chatId, 'ask_owner', { trade_type: tradeId });
+      await bot.sendMessage(chatId, `Selected: <b>${trade.name}</b>\n\nWhat's the owner's name?`);
+      break;
+    }
+
+    case 'ask_owner': {
+      if (!text) return;
+      await wizard.update(chatId, 'ask_phone', { owner_name: text });
+      await bot.sendMessage(chatId, "What's their phone number?");
+      break;
+    }
+
+    case 'ask_phone': {
+      if (!text) return;
+      await wizard.update(chatId, 'ask_email', { phone: text });
+      await bot.sendMessage(chatId, "What's their email address?");
+      break;
+    }
+
+    case 'ask_email': {
+      if (!text) return;
+      await wizard.update(chatId, 'ask_town', { email: text });
+      await bot.sendMessage(chatId, "What town are they based in?");
+      break;
+    }
+
+    case 'ask_town': {
+      if (!text) return;
+      await wizard.update(chatId, 'ask_project', { town: text });
       await bot.sendMessage(
         chatId,
         "What's their Cloudflare Pages project name?\n" +
@@ -48,16 +102,25 @@ export async function handleAddClientStep(
       if (!text) return;
       await wizard.update(chatId, 'confirm', { pages_project: text });
       const data = { ...state.data, pages_project: text };
+      const trade = getTradeType(data.trade_type);
       await bot.sendMessage(
         chatId,
         `Here's what I'll create:\n\n` +
         `  Business:      ${data.business_name}\n` +
         `  Client ID:     ${data.client_id}\n` +
+        `  Trade:         ${trade?.name || data.trade_type}\n` +
+        `  Owner:         ${data.owner_name}\n` +
+        `  Phone:         ${data.phone}\n` +
+        `  Email:         ${data.email}\n` +
+        `  Town:          ${data.town}\n` +
         `  Pages project: ${text}\n` +
+        `  Theme:         ${trade?.defaultTheme || 'default'}\n` +
         `  Storage prefix: ${data.client_id}/\n\n` +
         `This will:\n` +
         `- Create the client in the database\n` +
-        `- Set up their storage folder\n` +
+        `- Generate site_config with services, FAQs, credentials\n` +
+        `- Set theme from trade catalog\n` +
+        `- Site accessible at ${data.client_id}.klyro.co.uk\n` +
         `- Generate an invite link for the owner\n\n` +
         `Go ahead?`,
         {
@@ -82,19 +145,52 @@ export async function handleAddClientStep(
       if (callbackData === 'addclient:confirm') {
         const data = state.data;
         try {
-          await createClient(db, {
+          const trade = getTradeType(data.trade_type);
+
+          // 1. Create client DB record
+          await createClient(env.DB, {
             id: data.client_id,
             business_name: data.business_name,
             pages_project_name: data.pages_project,
             r2_bucket_prefix: `${data.client_id}/`,
           });
 
-          const token = await createInviteToken(db, data.client_id);
+          // 2. Set trade_type and theme_id on the client record
+          await env.DB
+            .prepare("UPDATE clients SET trade_type = ?, theme_id = ?, updated_at = datetime('now') WHERE id = ?")
+            .bind(data.trade_type, trade?.defaultTheme || 'default', data.client_id)
+            .run();
+
+          // 3. Generate site_config using AI onboarding
+          const aiWriter = new WorkersAiWriter(env.AI);
+          const siteConfig = await generateSiteConfig(
+            {
+              businessName: data.business_name,
+              ownerName: data.owner_name,
+              tradeType: data.trade_type,
+              town: data.town,
+              county: '',
+              phone: data.phone,
+              email: data.email,
+            },
+            aiWriter,
+          );
+
+          // 4. Save site_config to DB
+          const clientDb = forClient(env.DB, data.client_id);
+          await clientDb.config.updateSiteConfig(siteConfig);
+
+          // 5. Generate invite link
+          const token = await createInviteToken(env.DB, data.client_id);
           await wizard.clear(chatId);
 
           await bot.sendMessage(
             chatId,
             `Client created: <b>${data.business_name}</b>\n\n` +
+            `Trade: ${trade?.name || data.trade_type}\n` +
+            `Theme: ${trade?.defaultTheme || 'default'}\n` +
+            `Services: ${trade?.defaultServices.length || 0} pre-configured\n` +
+            `Site: ${data.client_id}.klyro.co.uk\n\n` +
             `Send this link to the business owner to start their setup:\n\n` +
             `https://t.me/KlyroWebsiteBot?start=${token}\n\n` +
             `The invite expires in 7 days. Use /clients to see all your clients anytime.`
