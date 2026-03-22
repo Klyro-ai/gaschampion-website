@@ -2,6 +2,7 @@ import type { TelegramBot } from '../bot';
 import type { WizardManager } from '../wizard';
 import type { AiWriter } from '../../services/ai-writer';
 import type { BlogDraftOutput } from '../../services/ai-prompts';
+import { validateBlogDraft } from '../../services/content-validator';
 
 interface BlogContextDeps {
   aiWriter: AiWriter;
@@ -132,6 +133,30 @@ export async function handleBlogContext(
 
     const uniqueSlug = await deps.ensureUniqueSlug(draft.slug);
 
+    // Validate before storing
+    const originalCaption = state.data.caption as string | undefined;
+    const validation = validateBlogDraft(
+      {
+        title: draft.title,
+        slug: uniqueSlug,
+        content: draft.content,
+        description: draft.description,
+        tags: draft.tags,
+        image_alt_text: draft.image_alt_text,
+      },
+      originalCaption,
+    );
+
+    if (!validation.passed) {
+      const errorList = validation.errors.map(e => `\u274c ${e}`).join('\n');
+      await wizard.clear(chatId);
+      await bot.sendMessage(
+        chatId,
+        `Draft blocked — content validation failed:\n\n${errorList}\n\nPlease retry with /newpost and adjust your caption.`,
+      );
+      return;
+    }
+
     const postId = await deps.createDraft({
       title: draft.title,
       slug: uniqueSlug,
@@ -146,6 +171,10 @@ export async function handleBlogContext(
 
     await wizard.update(chatId, 'preview', { draftPostId: postId });
 
+    const validationWarnings = validation.warnings.length > 0
+      ? '\n\n\u26a0\ufe0f ' + validation.warnings.join('\n\u26a0\ufe0f ')
+      : '';
+
     const preview = formatPreview(draft);
     const previewUrl = deps.previewBaseUrl
       ? `${deps.previewBaseUrl}/api/${state.clientId}/blog/preview/${postId}`
@@ -154,7 +183,7 @@ export async function handleBlogContext(
     const aiDisclaimer = state.data.aiProvider === 'workers-ai' || (!state.data.aiProvider)
       ? '\n\n\u26a0\ufe0f Generated with the free AI model. Please review for technical accuracy before approving.'
       : '';
-    await bot.sendMessage(chatId, preview + previewLink + aiDisclaimer, {
+    await bot.sendMessage(chatId, preview + previewLink + aiDisclaimer + validationWarnings, {
       inline_keyboard: [
         [
           { text: '✅ Approve', callback_data: 'blog:approve' },
