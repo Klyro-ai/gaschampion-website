@@ -1,0 +1,131 @@
+---
+import Base from '../layouts/Base.astro'
+import MobileNav from '../components/static/MobileNav.astro'
+import TopBar from '../components/static/TopBar.astro'
+import Header from '../components/static/Header.astro'
+import Footer from '../components/static/Footer.astro'
+
+const { business } = Astro.locals.tenant
+const lastUpdated = '22 March 2026'
+---
+
+<Base title="Terms of Service" description={`Terms of service for ${business.name}.`}>
+
+  <TopBar />
+  <Header><MobileNav /></Header>
+
+  <section class="py-16 md:py-24" style="background-color: var(--color-hero-bg); color: var(--color-hero-text)">
+    <div class="max-w-3xl mx-auto px-4">
+      <h1 class="font-heading text-3xl sm:text-4xl md:text-5xl font-bold mb-4">Terms of Service</h1>
+      <p class="text-sm" style="color: var(--color-foreground-muted)">Last updated: {lastUpdated}</p>
+    </div>
+  </section>
+
+  <section class="py-12 md:py-16">
+    <div class="max-w-3xl mx-auto px-4 prose-section">
+
+      <h2>1. About These Terms</h2>
+      <p>
+        These terms of service ("Terms") govern your use of the website operated by <strong>{business.name}</strong> ("{business.shortName}"). By accessing or using this website, you agree to be bound by these Terms. If you do not agree, please do not use the website.
+      </p>
+
+      <h2>2. About Us</h2>
+      <p>
+        {business.name} is a Gas Safe registered heating and gas engineering business based at {business.address.full}. You can contact us at <a href={`mailto:${business.email}`}>{business.email}</a> or <a href={`tel:${business.phone.replace(/\s/g, '')}`}>{business.phone}</a>.
+      </p>
+
+      <h2>3. Use of the Website</h2>
+      <p>This website is provided for informational purposes and to allow you to enquire about our services. You agree to:</p>
+      <ul>
+        <li>Use the website lawfully and not for any fraudulent or malicious purpose</li>
+        <li>Provide accurate information when using our contact or quote forms</li>
+        <li>Not attempt to interfere with the website's operation or security</li>
+      </ul>
+
+      <h2>4. Services and Quotes</h2>
+      <p>
+        Information about our services, including pricing shown on this website, is provided as a guide only and does not constitute a binding offer. All quotes are subject to survey and confirmation. A binding contract for services is only formed when we confirm acceptance of your booking in writing (including by email).
+      </p>
+
+      <h2>5. Intellectual Property</h2>
+      <p>
+        All content on this website, including text, images, logos, and design, is owned by {business.shortName} or its licensors and is protected by copyright and other intellectual property laws. You may not reproduce, distribute, or create derivative works from this content without our written permission.
+      </p>
+
+      <h2>6. Reviews and User Content</h2>
+      <p>
+        Customer reviews displayed on this website are sourced from third-party platforms including Google, MyBuilder, and Local Heroes. We display these in good faith but do not verify their authenticity. If you believe a review infringes your rights, please contact us at <a href={`mailto:${business.email}`}>{business.email}</a>.
+      </p>
+
+      <h2>7. Limitation of Liability</h2>
+      <p>
+        While we make reasonable efforts to ensure the information on this website is accurate and up-to-date, we do not guarantee its completeness or accuracy. To the fullest extent permitted by law:
+      </p>
+      <ul>
+        <li>The website is provided "as is" without warranties of any kind</li>
+        <li>We are not liable for any indirect, incidental, or consequential damages arising from your use of the website</li>
+        <li>Our total liability for any claim related to the website shall not exceed the amount you have paid us (if any) in the preceding 12 months</li>
+      </ul>
+      <p>Nothing in these Terms excludes or limits our liability for death or personal injury caused by negligence, fraud, or any other liability that cannot be excluded by law.</p>
+
+      <h2>8. Third-Party Links</h2>
+      <p>
+        This website may contain links to third-party websites. We are not responsible for the content, privacy practices, or availability of those sites.
+      </p>
+
+      <h2>9. Platform</h2>
+      <p>
+        This website is built on the Klyro platform. Klyro provides the technical infrastructure but is not a party to any contract between you and {business.shortName} for gas engineering services.
+      </p>
+
+      <h2>10. Changes to These Terms</h2>
+      <p>
+        We may update these Terms from time to time. The revised version will be posted on this page with an updated date. Continued use of the website after changes constitutes acceptance of the new Terms.
+      </p>
+
+      <h2>11. Governing Law</h2>
+      <p>
+        These Terms are governed by the laws of England and Wales. Any disputes arising from these Terms or your use of the website shall be subject to the exclusive jurisdiction of the courts of England and Wales.
+      </p>
+
+    </div>
+  </section>
+
+  <Footer />
+
+</Base>
+
+<style>
+  .prose-section h2 {
+    font-size: 1.35rem;
+    font-weight: 700;
+    margin-top: 2rem;
+    margin-bottom: 0.75rem;
+    color: var(--color-foreground);
+  }
+  .prose-section p {
+    margin-bottom: 0.75rem;
+    line-height: 1.7;
+    color: var(--color-foreground-muted);
+  }
+  .prose-section ul {
+    list-style: disc;
+    padding-left: 1.5rem;
+    margin-bottom: 0.75rem;
+  }
+  .prose-section li {
+    margin-bottom: 0.35rem;
+    line-height: 1.6;
+    color: var(--color-foreground-muted);
+  }
+  .prose-section a {
+    color: var(--color-primary);
+    text-decoration: underline;
+  }
+  .prose-section a:hover {
+    opacity: 0.8;
+  }
+  .prose-section strong {
+    color: var(--color-foreground);
+  }
+</style>

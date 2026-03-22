@@ -1,0 +1,193 @@
+---
+import Base from '../layouts/Base.astro'
+import MobileNav from '../components/static/MobileNav.astro'
+import TopBar from '../components/static/TopBar.astro'
+import Header from '../components/static/Header.astro'
+import Footer from '../components/static/Footer.astro'
+
+const { business } = Astro.locals.tenant
+const lastUpdated = '22 March 2026'
+---
+
+<Base title="Privacy Policy" description={`Privacy policy for ${business.name}. How we collect, use and protect your personal data.`}>
+
+  <TopBar />
+  <Header><MobileNav /></Header>
+
+  <section class="py-16 md:py-24" style="background-color: var(--color-hero-bg); color: var(--color-hero-text)">
+    <div class="max-w-3xl mx-auto px-4">
+      <h1 class="font-heading text-3xl sm:text-4xl md:text-5xl font-bold mb-4">Privacy Policy</h1>
+      <p class="text-sm" style="color: var(--color-foreground-muted)">Last updated: {lastUpdated}</p>
+    </div>
+  </section>
+
+  <section class="py-12 md:py-16">
+    <div class="max-w-3xl mx-auto px-4 prose-section">
+
+      <h2>1. Who We Are</h2>
+      <p>
+        This website is operated by <strong>{business.name}</strong> ("{business.shortName}"), a Gas Safe registered heating engineer based at {business.address.full}.
+      </p>
+      <p>
+        For data protection purposes, {business.shortName} is the <strong>data controller</strong>. You can contact us about any privacy matter at:
+      </p>
+      <ul>
+        <li>Email: <a href={`mailto:${business.email}`}>{business.email}</a></li>
+        <li>Phone: <a href={`tel:${business.phone.replace(/\s/g, '')}`}>{business.phone}</a></li>
+        <li>Post: {business.address.full}</li>
+      </ul>
+
+      <h2>2. Data Processor</h2>
+      <p>
+        This website is built and hosted on the <strong>Klyro</strong> platform. Klyro acts as a <strong>data processor</strong> on our behalf, processing personal data only as instructed by us and in accordance with a data processing agreement. Klyro does not use your data for its own purposes.
+      </p>
+
+      <h2>3. Infrastructure</h2>
+      <p>
+        This website is served via <strong>Cloudflare</strong>, which provides content delivery, DNS, and security services. Cloudflare may process limited technical data (such as your IP address) as part of delivering the website. Cloudflare acts as a sub-processor and is governed by its own privacy policy and our data processing arrangements.
+      </p>
+
+      <h2>4. What Data We Collect</h2>
+
+      <h3>4.1 Contact Form Submissions</h3>
+      <p>When you submit our contact or quote request form, we collect:</p>
+      <ul>
+        <li>Your name</li>
+        <li>Email address</li>
+        <li>Phone number (if provided)</li>
+        <li>Your message or service enquiry details</li>
+      </ul>
+      <p><strong>Lawful basis:</strong> Legitimate interest (responding to your enquiry) and, where you request a quote, performance of a contract or steps taken at your request prior to entering a contract (UK GDPR Article 6(1)(b) and 6(1)(f)).</p>
+
+      <h3>4.2 Customer Reviews</h3>
+      <p>
+        We display customer reviews sourced from third-party platforms including Google, MyBuilder, and Local Heroes. These reviews contain the reviewer's name and their review text. We display reviews in good faith to help prospective customers.
+      </p>
+      <p><strong>Lawful basis:</strong> Legitimate interest in promoting the quality of our services (UK GDPR Article 6(1)(f)).</p>
+
+      <h3>4.3 Cookies and Analytics</h3>
+      <p>
+        We use <strong>essential cookies</strong> only to remember your cookie consent preference. These do not require consent under the Privacy and Electronic Communications Regulations (PECR) as they are strictly necessary for the website to function.
+      </p>
+      <p>
+        With your consent, we may use <strong>Microsoft Clarity</strong> to understand how visitors interact with our website through heatmaps and session recordings. Clarity uses cookies and similar technologies. This data is anonymised and helps us improve the website experience. You can accept or reject analytics cookies via the cookie banner shown when you first visit the site.
+      </p>
+      <p><strong>Lawful basis for analytics:</strong> Consent (UK GDPR Article 6(1)(a) and PECR Regulation 6).</p>
+
+      <h3>4.4 Server Logs</h3>
+      <p>
+        Our hosting infrastructure automatically collects standard server log data including IP addresses, browser type, and pages visited. This data is used for security monitoring and is not linked to identifiable individuals.
+      </p>
+      <p><strong>Lawful basis:</strong> Legitimate interest in maintaining website security (UK GDPR Article 6(1)(f)).</p>
+
+      <h2>5. How We Use Your Data</h2>
+      <p>We use your personal data to:</p>
+      <ul>
+        <li>Respond to your enquiries and provide quotes</li>
+        <li>Deliver the services you have requested</li>
+        <li>Display customer reviews to prospective customers</li>
+        <li>Improve our website and services (with consent, via analytics)</li>
+        <li>Comply with legal obligations</li>
+      </ul>
+
+      <h2>6. Data Sharing</h2>
+      <p>We do not sell your personal data. We share data only with:</p>
+      <ul>
+        <li><strong>Klyro</strong> (data processor) — website platform and form handling</li>
+        <li><strong>Cloudflare</strong> (sub-processor) — website delivery and security</li>
+        <li><strong>Microsoft</strong> (sub-processor) — Clarity analytics (only with your consent)</li>
+      </ul>
+      <p>All processors are bound by appropriate data processing agreements and process data in accordance with UK GDPR.</p>
+
+      <h2>7. Data Retention</h2>
+      <ul>
+        <li><strong>Contact form submissions:</strong> Retained for up to 24 months after your last interaction, then deleted.</li>
+        <li><strong>Customer reviews:</strong> Displayed indefinitely or until removal is requested.</li>
+        <li><strong>Cookie consent preference:</strong> Stored for 365 days in your browser.</li>
+        <li><strong>Analytics data:</strong> Retained by Microsoft Clarity for up to 13 months.</li>
+        <li><strong>Server logs:</strong> Retained for up to 30 days.</li>
+      </ul>
+
+      <h2>8. Your Rights</h2>
+      <p>Under UK GDPR, you have the right to:</p>
+      <ul>
+        <li><strong>Access</strong> — request a copy of the personal data we hold about you</li>
+        <li><strong>Rectification</strong> — ask us to correct inaccurate data</li>
+        <li><strong>Erasure</strong> — ask us to delete your data ("right to be forgotten")</li>
+        <li><strong>Restrict processing</strong> — ask us to limit how we use your data</li>
+        <li><strong>Data portability</strong> — receive your data in a machine-readable format</li>
+        <li><strong>Object</strong> — object to processing based on legitimate interest</li>
+        <li><strong>Withdraw consent</strong> — where processing is based on consent, you can withdraw it at any time</li>
+      </ul>
+      <p>
+        To exercise any of these rights, email us at <a href={`mailto:${business.email}`}>{business.email}</a>. We will respond within one month.
+      </p>
+
+      <h2>9. Complaints</h2>
+      <p>
+        If you are unhappy with how we handle your data, you have the right to lodge a complaint with the <strong>Information Commissioner's Office (ICO)</strong>:
+      </p>
+      <ul>
+        <li>Website: <a href="https://ico.org.uk" target="_blank" rel="noopener noreferrer">ico.org.uk</a></li>
+        <li>Phone: 0303 123 1113</li>
+        <li>Post: Information Commissioner's Office, Wycliffe House, Water Lane, Wilmslow, Cheshire, SK9 5AF</li>
+      </ul>
+
+      <h2>10. Changes to This Policy</h2>
+      <p>
+        We may update this privacy policy from time to time. Any changes will be posted on this page with an updated revision date. We encourage you to review this page periodically.
+      </p>
+
+      <h2>11. Applicable Law</h2>
+      <p>
+        This privacy policy is governed by the laws of England and Wales, including the UK General Data Protection Regulation (UK GDPR) and the Data Protection Act 2018, as well as the Privacy and Electronic Communications Regulations 2003 (PECR).
+      </p>
+
+    </div>
+  </section>
+
+  <Footer />
+
+</Base>
+
+<style>
+  .prose-section h2 {
+    font-size: 1.35rem;
+    font-weight: 700;
+    margin-top: 2rem;
+    margin-bottom: 0.75rem;
+    color: var(--color-foreground);
+  }
+  .prose-section h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-top: 1.5rem;
+    margin-bottom: 0.5rem;
+    color: var(--color-foreground);
+  }
+  .prose-section p {
+    margin-bottom: 0.75rem;
+    line-height: 1.7;
+    color: var(--color-foreground-muted);
+  }
+  .prose-section ul {
+    list-style: disc;
+    padding-left: 1.5rem;
+    margin-bottom: 0.75rem;
+  }
+  .prose-section li {
+    margin-bottom: 0.35rem;
+    line-height: 1.6;
+    color: var(--color-foreground-muted);
+  }
+  .prose-section a {
+    color: var(--color-primary);
+    text-decoration: underline;
+  }
+  .prose-section a:hover {
+    opacity: 0.8;
+  }
+  .prose-section strong {
+    color: var(--color-foreground);
+  }
+</style>
