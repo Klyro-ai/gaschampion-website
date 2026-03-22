@@ -453,7 +453,7 @@ app.post('/telegram/admin-webhook', async (c) => {
           const clientBot = new TelegramBot(c.env.TELEGRAM_BOT_TOKEN);
           await clientBot.sendMessage(Number(request.telegram_chat_id),
             "Great news! Your Klyro website is ready.\n\n" +
-            `Your site: <b>${clientId}.klyro.co.uk</b>\n\n` +
+            "Your site is being set up and will be live shortly.\n\n" +
             "Type /help to see what you can do — send photos to create blog posts, manage your reviews, and more."
           );
 
