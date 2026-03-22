@@ -6,7 +6,7 @@ import Header from '../../components/static/Header.astro'
 import Footer from '../../components/static/Footer.astro'
 import { getPublishedBlogPosts, imageUrl } from '../../lib/klyro-api'
 
-const { clientId, apiBase, apiKey, apiFetch } = Astro.locals.tenant
+const { clientId, apiBase, apiKey, apiFetch, business } = Astro.locals.tenant
 const isGasChampion = clientId === 'gaschampion'
 const posts = await getPublishedBlogPosts(apiFetch, apiKey, clientId)
 ---
@@ -19,7 +19,7 @@ const posts = await getPublishedBlogPosts(apiFetch, apiKey, clientId)
     <section class="py-16 md:py-24" style="background-color: var(--color-hero-bg); color: var(--color-hero-text)">
       <div class="max-w-4xl mx-auto px-4 text-center">
         <h1 class="font-heading text-3xl sm:text-4xl md:text-5xl font-bold mb-4">Heating & Boiler Tips</h1>
-        <p class="text-lg" style="color: var(--color-foreground-muted)">Expert advice from a Gas Safe registered engineer with 18+ years of experience.</p>
+        <p class="text-lg" style="color: var(--color-foreground-muted)">Expert advice from a Gas Safe registered engineer{business.yearsExperience > 0 ? ` with ${business.yearsExperience}+ years of experience` : ''}.</p>
       </div>
     </section>
 

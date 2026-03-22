@@ -12,7 +12,7 @@ import Footer from '../../components/static/Footer.astro'
 const { business, services } = Astro.locals.tenant
 ---
 
-<Base title="Our Services" description={`Expert boiler and heating services from a Gas Safe registered engineer with ${business.yearsExperience}+ years experience.`}>
+<Base title="Our Services" description={business.yearsExperience > 0 ? `Expert boiler and heating services from a Gas Safe registered engineer with ${business.yearsExperience}+ years experience.` : `Expert boiler and heating services from a Gas Safe registered engineer in ${business.address.town}.`}>
   
     <TopBar />
     <Header><MobileNav /></Header>
@@ -20,7 +20,7 @@ const { business, services } = Astro.locals.tenant
     <section class="py-16 md:py-24" style="background-color: var(--color-hero-bg); color: var(--color-hero-text)">
       <div class="max-w-7xl mx-auto px-4 text-center">
         <h1 class="font-heading text-3xl sm:text-4xl md:text-5xl font-bold mb-4">Our Services</h1>
-        <p class="text-lg max-w-2xl mx-auto" style="color: var(--color-foreground-muted)">Expert boiler and heating services from a Gas Safe registered engineer with {business.yearsExperience}+ years of experience.</p>
+        <p class="text-lg max-w-2xl mx-auto" style="color: var(--color-foreground-muted)">Expert boiler and heating services from a Gas Safe registered engineer{business.yearsExperience > 0 ? ` with ${business.yearsExperience}+ years of experience` : ` serving ${business.address.town} and surrounding areas`}.</p>
       </div>
     </section>
 
