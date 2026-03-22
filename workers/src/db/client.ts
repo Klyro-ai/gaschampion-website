@@ -461,8 +461,8 @@ export async function getClientByHostname(
     .first();
   if (byHostname) return byHostname as any;
 
-  // Try subdomain pattern: {client-id}.klyro.co.uk
-  const subdomainMatch = hostname.match(/^([^.]+)\.klyro\.co\.uk$/);
+  // Try subdomain pattern: {client-id}.klyro.ai
+  const subdomainMatch = hostname.match(/^([^.]+)\.klyro\.ai$/);
   if (subdomainMatch) {
     const clientId = subdomainMatch[1];
     const byId = await db
