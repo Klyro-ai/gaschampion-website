@@ -446,15 +446,15 @@ app.post('/telegram/admin-webhook', async (c) => {
             }
           }
 
-          // 6. Generate invite link
-          const token = await createInviteToken(c.env.DB, clientId);
+          // 6. Auto-claim: link user's Telegram to the new client (skip invite link)
+          await claimInvite(c.env.DB, await createInviteToken(c.env.DB, clientId), request.telegram_chat_id);
 
-          // 7. Send invite to user via client bot
+          // 7. Notify user — they're already set up, no link needed
           const clientBot = new TelegramBot(c.env.TELEGRAM_BOT_TOKEN);
           await clientBot.sendMessage(Number(request.telegram_chat_id),
-            "Great news! Your Klyro website is ready to set up.\n\n" +
-            "Tap the link below to get started:\n\n" +
-            `https://t.me/KlyroWebsiteBot?start=${token}`
+            "Great news! Your Klyro website is ready.\n\n" +
+            `Your site: <b>${clientId}.klyro.co.uk</b>\n\n` +
+            "Type /help to see what you can do — send photos to create blog posts, manage your reviews, and more."
           );
 
           // 8. Update signup request status
@@ -561,6 +561,25 @@ app.post('/telegram/webhook', async (c) => {
 
     // Signup wizard — unknown user mid-flow
     if (wizState?.type === 'signup') {
+      // Google business confirmation from demo page
+      if (callbackData === 'signup:confirm_business') {
+        const data = wizState.data;
+        await wizard.update(chatId, 'ask_trade', { business_name: data.business_name });
+        await bot.sendMessage(chatId, 'What type of trade are you?', {
+          inline_keyboard: [
+            [{ text: 'Gas Engineer', callback_data: 'signup_trade:gas-engineer' }],
+            [{ text: 'Plumber', callback_data: 'signup_trade:plumber' }],
+            [{ text: 'Electrician', callback_data: 'signup_trade:electrician' }],
+            [{ text: 'Other', callback_data: 'signup_trade:other' }],
+          ],
+        });
+        return c.json({ ok: true });
+      }
+      if (callbackData === 'signup:not_me') {
+        await wizard.update(chatId, 'ask_name');
+        await bot.sendMessage(chatId, "No problem. What's your business name?");
+        return c.json({ ok: true });
+      }
       if (callbackData?.startsWith('signup_trade:')) {
         const tradeType = callbackData.replace('signup_trade:', '');
         await wizard.update(chatId, 'ask_town', { trade_type: tradeType });
@@ -965,8 +984,64 @@ app.post('/telegram/webhook', async (c) => {
       return c.json({ ok: true });
     }
 
+    // Check if user has a pending/approved signup request — don't restart wizard
+    const existingRequest = await c.env.DB.prepare(
+      "SELECT id, status FROM signup_requests WHERE telegram_chat_id = ? AND status IN ('pending', 'approved') ORDER BY created_at DESC LIMIT 1"
+    ).bind(String(chatId)).first<{ id: string; status: string }>();
+
+    if (existingRequest) {
+      if (existingRequest.status === 'pending') {
+        await bot.sendMessage(chatId, "Your signup request is being reviewed. I'll message you here as soon as it's approved!");
+      } else {
+        await bot.sendMessage(chatId, "Your site is being set up. You'll receive a setup link here shortly!");
+      }
+      return c.json({ ok: true });
+    }
+
     // Unknown user — start signup wizard
-    const isDemo = text === '/start demo';
+    const startPayloadRaw = text?.startsWith('/start ') ? text.slice(7).trim() : '';
+    const isDemo = startPayloadRaw.startsWith('demo');
+    const demoPlaceId = startPayloadRaw.startsWith('demo_') ? startPayloadRaw.slice(5) : null;
+
+    // If we have a Place ID from the demo page, auto-lookup the business
+    if (demoPlaceId && demoPlaceId !== 'new' && c.env.GOOGLE_PLACES_API_KEY) {
+      try {
+        const { searchGoogleBusiness } = await import('../services/google-harvester');
+        // Use the place ID to search (pass it as the business name — the API handles it)
+        const result = await searchGoogleBusiness(demoPlaceId, '', c.env.GOOGLE_PLACES_API_KEY);
+        if (result.found && result.businessName) {
+          // Pre-fill and show confirmation
+          await wizard.start(chatId, 'signup', 'confirm_google');
+          await wizard.update(chatId, 'confirm_google', {
+            business_name: result.businessName,
+            google_address: result.address || '',
+            google_rating: String(result.rating || ''),
+            google_reviews: String(result.reviewCount || 0),
+            google_place_id: result.placeId || demoPlaceId,
+          });
+
+          const stars = result.rating ? '⭐'.repeat(Math.round(result.rating)) : '';
+          await bot.sendMessage(chatId,
+            `Found you! Is this right?\n\n` +
+            `<b>${result.businessName}</b>\n` +
+            `${result.address || ''}\n` +
+            `${stars} ${result.rating || ''} (${result.reviewCount || 0} reviews)\n`,
+            {
+              inline_keyboard: [
+                [
+                  { text: "Yes, that's me!", callback_data: 'signup:confirm_business' },
+                  { text: "That's not me", callback_data: 'signup:not_me' },
+                ],
+              ],
+            }
+          );
+          return c.json({ ok: true });
+        }
+      } catch {
+        // Google lookup failed — fall through to manual flow
+      }
+    }
+
     await wizard.start(chatId, 'signup', 'ask_name');
     if (isDemo) {
       await bot.sendMessage(chatId,
