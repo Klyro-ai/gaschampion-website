@@ -14,12 +14,45 @@ export interface OnboardingInput {
   yearsExperience?: number;
   registrationNumber?: string;
   serviceAreas?: string[];
+  googleRating?: number;
+  googleReviewCount?: number;
+  googleReviews?: Array<{ text: string; rating: number; authorName: string }>;
+  googleDescription?: string;
 }
 
 // ============================================================
-// Direct Workers AI helper — lightweight JSON generation
+// AI helper — uses Gemini Flash (free, high quality) with Workers AI fallback
 // ============================================================
 async function generateJson<T>(ai: Ai, prompt: string): Promise<T | null> {
+  // Try Gemini Flash first (free tier, much better than Llama for structured output)
+  try {
+    const geminiRes = await fetch(
+      'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=AIzaSyDYgKfqJgNIipGeK99ZPmu9oO0RVUjJ1qY',
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { responseMimeType: 'application/json', maxOutputTokens: 2000 },
+        }),
+      }
+    );
+    if (geminiRes.ok) {
+      const data = await geminiRes.json() as any;
+      const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (text) {
+        let cleaned = text.trim();
+        if (cleaned.startsWith('```')) {
+          cleaned = cleaned.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '');
+        }
+        return JSON.parse(cleaned) as T;
+      }
+    }
+  } catch (err) {
+    console.error('Gemini generateJson failed, falling back to Workers AI:', err);
+  }
+
+  // Fallback to Workers AI (Llama 3.1 8b)
   try {
     const response = await ai.run('@cf/meta/llama-3.1-8b-instruct', {
       messages: [{ role: 'user', content: prompt }],
@@ -29,13 +62,12 @@ async function generateJson<T>(ai: Ai, prompt: string): Promise<T | null> {
     if (!response.response) return null;
 
     let cleaned = response.response.trim();
-    // Strip markdown code fences if present
     if (cleaned.startsWith('```')) {
       cleaned = cleaned.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '');
     }
     return JSON.parse(cleaned) as T;
   } catch (err) {
-    console.error('generateJson failed:', err);
+    console.error('Workers AI generateJson failed:', err);
     return null;
   }
 }
@@ -73,13 +105,18 @@ async function generateAboutContent(
   county: string,
   yearsExperience?: number,
 ): Promise<{ description: string; ownerBackground: string } | null> {
+  const ownerInfo = ownerName && ownerName !== '' ? `Owner: ${ownerName}.` : 'Do NOT mention an owner name — the owner has not provided their name.';
+  const expInfo = yearsExperience && yearsExperience > 0 ? `${yearsExperience} years experience.` : 'Do NOT mention years of experience — this was not provided.';
+
   const prompt = `Write a brief about page intro for ${businessName}, a ${tradeName.toLowerCase()} in ${town}${county ? ', ' + county : ''}.
-Owner: ${ownerName}.${yearsExperience ? ' ' + yearsExperience + ' years experience.' : ''}
+${ownerInfo} ${expInfo}
+
+IMPORTANT: Only mention facts that are provided above. Do NOT invent an owner name, years of experience, or any other details that were not given. If information is missing, write around it — focus on the business's approach, values, and service to the local area.
 
 Return ONLY valid JSON with no extra text:
-{"description":"3-4 sentence business description, first person, authentic, no marketing fluff","ownerBackground":"2-3 sentences about the owner's background and approach to the trade"}
+{"description":"3-4 sentence business description, first person, authentic, no marketing fluff","ownerBackground":"2-3 sentences about the business approach and values"}
 
-Write as if ${ownerName} is talking directly to a local customer. Mention ${town} naturally.`;
+Mention ${town} naturally. Write authentically, not like marketing copy.`;
 
   return generateJson<{ description: string; ownerBackground: string }>(ai, prompt);
 }
@@ -214,10 +251,16 @@ export async function generateSiteConfig(
       : { street: '', town: input.town, county: input.county, postcode: '', full: `${town}${county ? ', ' + county : ''}` },
     registrationNumber: input.registrationNumber || undefined,
     registrationBody: trade.registrationBody,
-    yearsExperience: input.yearsExperience || 0,
+    yearsExperience: input.yearsExperience && input.yearsExperience > 0 ? input.yearsExperience : 0,
     socialMedia: {},
     serviceAreas: input.serviceAreas || [input.town],
-    stats: { reviewCount: 0, averageRating: 0, completedJobs: 0, yearsInBusiness: input.yearsExperience || 0, responseSla: 'Same day' },
+    stats: {
+      reviewCount: input.googleReviewCount || 0,
+      averageRating: input.googleRating || 0,
+      completedJobs: 0,
+      yearsInBusiness: input.yearsExperience && input.yearsExperience > 0 ? input.yearsExperience : 0,
+      responseSla: 'Same day',
+    },
     credentials: trade.defaultCredentials.map(c => ({
       ...c,
       number: c.name.includes(trade.registrationBody || '') && input.registrationNumber ? input.registrationNumber : c.number,

@@ -388,32 +388,20 @@ app.post('/telegram/admin-webhook', async (c) => {
             .bind(tradeType, trade?.defaultTheme || 'default', clientId)
             .run();
 
-          // 3. Generate site_config using AI onboarding
-          const aiWriter = new WorkersAiWriter(c.env.AI);
-          const siteConfig = await generateSiteConfig(
-            {
-              businessName: request.business_name || clientId,
-              ownerName: request.telegram_first_name || '',
-              tradeType,
-              town: request.town || '',
-              county: '',
-              phone: '',
-              email: '',
-            },
-            aiWriter,
-            c.env.AI,
-          );
-
-          // 4. Save site_config to DB
-          const clientDb = forClient(c.env.DB, clientId);
-          await clientDb.config.updateSiteConfig(siteConfig);
-
-          // 5. Harvest Google Business data
+          // 3. Harvest Google Business data FIRST (so AI can use it)
           let googleInfo = '';
+          let googleData: { rating?: number; reviewCount?: number; reviews?: any[]; description?: string; phone?: string } = {};
           if (c.env.GOOGLE_PLACES_API_KEY && request.business_name && request.town) {
             try {
               const googleResult = await searchGoogleBusiness(request.business_name, request.town, c.env.GOOGLE_PLACES_API_KEY);
               if (googleResult.found) {
+                googleData = {
+                  rating: googleResult.rating,
+                  reviewCount: googleResult.reviewCount,
+                  reviews: googleResult.reviews,
+                  description: googleResult.description,
+                  phone: googleResult.phone,
+                };
                 const db = forClient(c.env.DB, clientId);
                 for (const review of googleResult.reviews) {
                   await db.reviews.upsert({
@@ -430,22 +418,36 @@ app.post('/telegram/admin-webhook', async (c) => {
                     if (match) await db.reviews.approve(match.id);
                   }
                 }
-                if (googleResult.rating || googleResult.description) {
-                  const enriched = { ...siteConfig };
-                  if (googleResult.rating) {
-                    enriched.stats = { ...enriched.stats, reviewCount: googleResult.reviewCount || 0, averageRating: googleResult.rating };
-                  }
-                  if (googleResult.description && !enriched.description) {
-                    enriched.description = googleResult.description;
-                  }
-                  await clientDb.config.updateSiteConfig(enriched);
-                }
                 googleInfo = ` | Google: ${googleResult.reviewCount || 0} reviews`;
               }
             } catch (e) {
               googleInfo = ' | Google: harvest failed';
             }
           }
+
+          // 4. Generate site_config using AI + Google data
+          const aiWriter = new WorkersAiWriter(c.env.AI);
+          const siteConfig = await generateSiteConfig(
+            {
+              businessName: request.business_name || clientId,
+              ownerName: request.telegram_first_name || '',
+              tradeType,
+              town: request.town || '',
+              county: '',
+              phone: googleData.phone || '',
+              email: '',
+              googleRating: googleData.rating,
+              googleReviewCount: googleData.reviewCount,
+              googleReviews: googleData.reviews,
+              googleDescription: googleData.description,
+            },
+            aiWriter,
+            c.env.AI,
+          );
+
+          // 5. Save site_config to DB
+          const clientDb = forClient(c.env.DB, clientId);
+          await clientDb.config.updateSiteConfig(siteConfig);
 
           // 6. Auto-claim: link user's Telegram to the new client (skip invite link)
           await claimInvite(c.env.DB, await createInviteToken(c.env.DB, clientId), request.telegram_chat_id);
