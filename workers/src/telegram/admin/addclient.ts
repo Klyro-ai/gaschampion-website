@@ -176,6 +176,7 @@ export async function handleAddClientStep(
             },
             aiWriter,
             env.AI,
+            env.GOOGLE_PLACES_API_KEY,
           );
 
           // 4. Save site_config to DB

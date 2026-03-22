@@ -443,6 +443,7 @@ app.post('/telegram/admin-webhook', async (c) => {
             },
             aiWriter,
             c.env.AI,
+            c.env.GOOGLE_PLACES_API_KEY,
           );
 
           // 5. Save site_config to DB

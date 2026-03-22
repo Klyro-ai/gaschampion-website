@@ -23,11 +23,13 @@ export interface OnboardingInput {
 // ============================================================
 // AI helper — uses Gemini Flash (free, high quality) with Workers AI fallback
 // ============================================================
-async function generateJson<T>(ai: Ai, prompt: string): Promise<T | null> {
+async function generateJson<T>(ai: Ai, prompt: string, googleApiKey?: string): Promise<T | null> {
   // Try Gemini Flash first (free tier, much better than Llama for structured output)
+  const geminiKey = googleApiKey || '';
+  if (geminiKey) {
   try {
     const geminiRes = await fetch(
-      'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=AIzaSyDYgKfqJgNIipGeK99ZPmu9oO0RVUjJ1qY',
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -51,6 +53,7 @@ async function generateJson<T>(ai: Ai, prompt: string): Promise<T | null> {
   } catch (err) {
     console.error('Gemini generateJson failed, falling back to Workers AI:', err);
   }
+  } // end if (geminiKey)
 
   // Fallback to Workers AI (Llama 3.1 8b)
   try {
@@ -75,7 +78,7 @@ async function generateJson<T>(ai: Ai, prompt: string): Promise<T | null> {
 // ============================================================
 // Generate unique service descriptions
 // ============================================================
-async function generateUniqueServices(
+async function generateUniqueServices(googleApiKey: string | undefined, 
   ai: Ai,
   businessName: string,
   tradeName: string,
@@ -90,13 +93,13 @@ Return ONLY valid JSON array with no extra text: [{"id":"${services[0].id}","des
 Use these exact IDs: ${services.map(s => `"${s.id}"`).join(', ')}
 Keep it authentic, like a real tradesperson wrote it. No marketing speak.`;
 
-  return generateJson<Array<{ id: string; description: string }>>(ai, prompt);
+  return generateJson(ai, prompt, googleApiKey) as any; //Array<{ id: string; description: string }>>(ai, prompt);
 }
 
 // ============================================================
 // Generate unique about page content
 // ============================================================
-async function generateAboutContent(
+async function generateAboutContent(googleApiKey: string | undefined, 
   ai: Ai,
   businessName: string,
   ownerName: string,
@@ -118,13 +121,13 @@ Return ONLY valid JSON with no extra text:
 
 Mention ${town} naturally. Write authentically, not like marketing copy.`;
 
-  return generateJson<{ description: string; ownerBackground: string }>(ai, prompt);
+  return generateJson(ai, prompt, googleApiKey) as any; //{ description: string; ownerBackground: string }>(ai, prompt);
 }
 
 // ============================================================
 // Generate unique FAQs
 // ============================================================
-async function generateUniqueFaqs(
+async function generateUniqueFaqs(googleApiKey: string | undefined, 
   ai: Ai,
   businessName: string,
   tradeName: string,
@@ -136,13 +139,13 @@ Keep answers concise (1-2 sentences each). First person ("I" not "we").
 
 Return ONLY valid JSON array with no extra text: [{"question":"...","answer":"..."},...]`;
 
-  return generateJson<Array<{ question: string; answer: string }>>(ai, prompt);
+  return generateJson(ai, prompt, googleApiKey) as any; //Array<{ question: string; answer: string }>>(ai, prompt);
 }
 
 // ============================================================
 // Generate unique tagline and subtitle
 // ============================================================
-async function generateTagline(
+async function generateTagline(googleApiKey: string | undefined, 
   ai: Ai,
   businessName: string,
   tradeName: string,
@@ -158,7 +161,7 @@ The subtitle should be one line that builds trust (mention registration, locatio
 Return ONLY valid JSON with no extra text: {"tagline":"...","subtitle":"..."}
 No generic marketing phrases like "your trusted partner". Write like a real person.`;
 
-  return generateJson<{ tagline: string; subtitle: string }>(ai, prompt);
+  return generateJson(ai, prompt, googleApiKey) as any; //{ tagline: string; subtitle: string }>(ai, prompt);
 }
 
 // ============================================================
@@ -168,6 +171,7 @@ export async function generateSiteConfig(
   input: OnboardingInput,
   aiWriter: AiWriter,
   ai?: Ai,
+  googleApiKey?: string,
 ): Promise<SiteConfig> {
   const trade = getTradeType(input.tradeType);
   if (!trade) throw new Error(`Unknown trade type: ${input.tradeType}`);
@@ -189,10 +193,10 @@ export async function generateSiteConfig(
     console.log(`[ai-onboarding] Generating unique content for ${input.businessName} in ${town}`);
 
     const [taglineResult, aboutResult, faqResult, serviceResult] = await Promise.all([
-      generateTagline(ai, input.businessName, tradeName, town, trade.registrationBody).catch(() => null),
-      generateAboutContent(ai, input.businessName, input.ownerName, tradeName, town, county, input.yearsExperience).catch(() => null),
-      generateUniqueFaqs(ai, input.businessName, tradeName, town).catch(() => null),
-      generateUniqueServices(ai, input.businessName, tradeName, town, trade.defaultServices).catch(() => null),
+      generateTagline(googleApiKey, ai, input.businessName, tradeName, town, trade.registrationBody).catch(() => null),
+      generateAboutContent(googleApiKey, ai, input.businessName, input.ownerName, tradeName, town, county, input.yearsExperience).catch(() => null),
+      generateUniqueFaqs(googleApiKey, ai, input.businessName, tradeName, town).catch(() => null),
+      generateUniqueServices(googleApiKey, ai, input.businessName, tradeName, town, trade.defaultServices).catch(() => null),
     ]);
 
     if (taglineResult?.tagline) {
