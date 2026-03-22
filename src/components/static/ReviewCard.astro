@@ -4,9 +4,15 @@ interface Props {
   rating: number
   text: string
   source: string
+  email?: string
 }
 
-const { name, rating, text, source } = Astro.props
+const { name, rating, text, source, email } = Astro.props
+const reportSubject = `Review removal request — ${name}`
+const reportBody = `I would like to request the removal of the following review:\n\nReviewer: ${name}\nSource: ${source}\nReview text: "${text}"\n\nReason for removal:\n`
+const reportHref = email
+  ? `mailto:${email}?subject=${encodeURIComponent(reportSubject)}&body=${encodeURIComponent(reportBody)}`
+  : undefined
 ---
 
 <div
@@ -46,11 +52,23 @@ const { name, rating, text, source } = Astro.props
     <span class="font-semibold text-sm" style="color: var(--color-foreground);">
       {name}
     </span>
-    <span
-      class="text-xs font-medium px-2.5 py-1 rounded-full"
-      style="background-color: var(--color-surface-alt); color: var(--color-foreground-muted);"
-    >
-      {source}
-    </span>
+    <div class="flex items-center gap-2">
+      {reportHref && (
+        <a
+          href={reportHref}
+          class="text-xs opacity-40 hover:opacity-70 transition-opacity"
+          title="Report this review"
+          aria-label={`Report review by ${name}`}
+        >
+          Report
+        </a>
+      )}
+      <span
+        class="text-xs font-medium px-2.5 py-1 rounded-full"
+        style="background-color: var(--color-surface-alt); color: var(--color-foreground-muted);"
+      >
+        {source}
+      </span>
+    </div>
   </div>
 </div>
