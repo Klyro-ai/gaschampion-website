@@ -401,6 +401,7 @@ app.post('/telegram/admin-webhook', async (c) => {
               email: '',
             },
             aiWriter,
+            c.env.AI,
           );
 
           // 4. Save site_config to DB

@@ -175,6 +175,7 @@ export async function handleAddClientStep(
               email: data.email,
             },
             aiWriter,
+            env.AI,
           );
 
           // 4. Save site_config to DB
