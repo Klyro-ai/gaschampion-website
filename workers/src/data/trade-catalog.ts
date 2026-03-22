@@ -19,7 +19,7 @@ export const tradeCatalog: Record<string, TradeType> = {
   'gas-engineer': {
     id: 'gas-engineer',
     name: 'Gas & Heating Engineer',
-    defaultTheme: 'champion-blueprint',
+    defaultTheme: 'emergency-ready',
     registrationBody: 'Gas Safe Register',
     defaultServices: [
       { id: 'boiler-repair', name: 'Boiler Repair', shortDesc: 'Fast, reliable boiler fault diagnosis and repair', icon: 'wrench', features: ['All major brands', 'Same-day emergency callouts', 'No fix, no fee'] },

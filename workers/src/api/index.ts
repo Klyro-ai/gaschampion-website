@@ -453,9 +453,10 @@ app.post('/telegram/admin-webhook', async (c) => {
           // 7. Notify user — they're already set up, no link needed
           const clientBot = new TelegramBot(c.env.TELEGRAM_BOT_TOKEN);
           await clientBot.sendMessage(Number(request.telegram_chat_id),
-            "Great news! Your Klyro website is ready.\n\n" +
-            "Your site is being set up and will be live shortly.\n\n" +
-            "Type /help to see what you can do — send photos to create blog posts, manage your reviews, and more."
+            `Great news! Your website is live!\n\n` +
+            `<b>${request.business_name}</b>\n` +
+            `https://${clientId}.klyro.ai\n\n` +
+            `Type /help to see what you can do — send photos to create blog posts, manage your reviews, and more.`
           );
 
           // 8. Update signup request status
