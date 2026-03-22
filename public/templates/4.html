@@ -1,0 +1,1002 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smith Heating Services | 24/7 Emergency Heating | Bury St Edmunds</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #1a1014;
+    --bg-card: #241820;
+    --bg-lighter: #2d1f27;
+    --red: #ef4444;
+    --red-dark: #dc2626;
+    --red-glow: rgba(239, 68, 68, 0.3);
+    --orange: #f97316;
+    --yellow: #fbbf24;
+    --text: #ffffff;
+    --text-light: #b8a0aa;
+    --border: rgba(255,255,255,0.08);
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  /* TOP BAR - GIANT PHONE */
+  .top-bar {
+    background: var(--red);
+    padding: 12px 0;
+    text-align: center;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    animation: pulseBar 3s ease-in-out infinite;
+  }
+
+  @keyframes pulseBar {
+    0%, 100% { background: var(--red); }
+    50% { background: var(--red-dark); }
+  }
+
+  .top-bar a {
+    color: #fff;
+    text-decoration: none;
+    font-weight: 900;
+    font-size: clamp(1.2rem, 3vw, 1.8rem);
+    letter-spacing: 1px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+  }
+
+  .top-bar .phone-icon {
+    display: inline-flex;
+    animation: ring 1.5s ease-in-out infinite;
+  }
+
+  @keyframes ring {
+    0%, 100% { transform: rotate(0); }
+    10% { transform: rotate(15deg); }
+    20% { transform: rotate(-15deg); }
+    30% { transform: rotate(10deg); }
+    40% { transform: rotate(-10deg); }
+    50% { transform: rotate(0); }
+  }
+
+  /* NAV */
+  nav {
+    padding: 16px 0;
+    border-bottom: 1px solid var(--border);
+    background: rgba(26, 16, 20, 0.95);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+
+  nav .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .logo {
+    font-weight: 900;
+    font-size: 1.3rem;
+    color: #fff;
+    text-decoration: none;
+  }
+
+  .logo span { color: var(--red); }
+
+  .nav-links {
+    display: flex;
+    gap: 24px;
+    list-style: none;
+    align-items: center;
+  }
+
+  .nav-links a {
+    color: var(--text-light);
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: color 0.3s;
+  }
+
+  .nav-links a:hover { color: #fff; }
+
+  .nav-emergency {
+    background: var(--red) !important;
+    color: #fff !important;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 700 !important;
+    font-size: 0.85rem !important;
+    animation: emergencyPulse 2s ease-in-out infinite;
+  }
+
+  @keyframes emergencyPulse {
+    0%, 100% { box-shadow: 0 0 0 0 var(--red-glow); }
+    50% { box-shadow: 0 0 0 8px transparent; }
+  }
+
+  /* HERO */
+  .hero {
+    padding: 80px 0 60px;
+    text-align: center;
+    position: relative;
+    background: radial-gradient(ellipse at top center, rgba(239, 68, 68, 0.08) 0%, transparent 60%);
+  }
+
+  .emergency-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(239, 68, 68, 0.15);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    padding: 10px 24px;
+    border-radius: 50px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--red);
+    margin-bottom: 32px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+  }
+
+  .emergency-badge .pulse-dot {
+    width: 10px;
+    height: 10px;
+    background: var(--red);
+    border-radius: 50%;
+    animation: pulseDot 1.5s ease-in-out infinite;
+  }
+
+  @keyframes pulseDot {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.8); }
+  }
+
+  .hero h1 {
+    font-size: clamp(2.5rem, 6vw, 4.5rem);
+    font-weight: 900;
+    line-height: 1.1;
+    letter-spacing: -2px;
+    margin-bottom: 20px;
+  }
+
+  .hero h1 .red { color: var(--red); }
+
+  .hero p {
+    color: var(--text-light);
+    font-size: 1.15rem;
+    max-width: 550px;
+    margin: 0 auto 40px;
+  }
+
+  .hero-phone {
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-weight: 900;
+    color: #fff;
+    text-decoration: none;
+    display: block;
+    margin-bottom: 32px;
+    letter-spacing: -1px;
+    transition: color 0.3s;
+  }
+
+  .hero-phone:hover { color: var(--red); }
+
+  .hero-buttons {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .btn-emergency {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--red);
+    color: #fff;
+    padding: 18px 40px;
+    border-radius: 12px;
+    font-weight: 800;
+    font-size: 1.05rem;
+    text-decoration: none;
+    transition: all 0.3s;
+    border: none;
+    cursor: pointer;
+  }
+
+  .btn-emergency:hover {
+    background: var(--red-dark);
+    transform: translateY(-3px);
+    box-shadow: 0 12px 40px var(--red-glow);
+  }
+
+  .btn-outline {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: transparent;
+    color: #fff;
+    padding: 18px 40px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 1.05rem;
+    text-decoration: none;
+    border: 2px solid rgba(255,255,255,0.2);
+    transition: all 0.3s;
+  }
+
+  .btn-outline:hover {
+    border-color: var(--red);
+    background: rgba(239, 68, 68, 0.05);
+  }
+
+  /* TRUST BADGES */
+  .trust-badges {
+    padding: 60px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .badges-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+  }
+
+  .badge-item {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px 20px;
+    text-align: center;
+    transition: all 0.3s;
+  }
+
+  .badge-item:hover {
+    border-color: rgba(239, 68, 68, 0.3);
+    transform: translateY(-4px);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+  }
+
+  .badge-icon {
+    font-size: 2.2rem;
+    margin-bottom: 12px;
+    display: block;
+  }
+
+  .badge-title {
+    font-weight: 800;
+    font-size: 1.1rem;
+    margin-bottom: 4px;
+  }
+
+  .badge-text {
+    color: var(--text-light);
+    font-size: 0.8rem;
+  }
+
+  /* SERVICES */
+  .services {
+    padding: 80px 0;
+  }
+
+  .section-title {
+    font-size: clamp(1.8rem, 3.5vw, 2.5rem);
+    font-weight: 900;
+    letter-spacing: -1px;
+    text-align: center;
+    margin-bottom: 12px;
+  }
+
+  .section-subtitle {
+    text-align: center;
+    color: var(--text-light);
+    font-size: 1rem;
+    margin-bottom: 48px;
+  }
+
+  .services-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 20px;
+  }
+
+  .service-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px 28px;
+    transition: all 0.3s;
+    position: relative;
+  }
+
+  .service-card:hover {
+    border-color: rgba(239, 68, 68, 0.2);
+    transform: translateY(-4px);
+    box-shadow: 0 12px 36px rgba(0,0,0,0.3);
+  }
+
+  .service-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+  }
+
+  .service-card h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+  }
+
+  .service-price {
+    background: rgba(249, 115, 22, 0.15);
+    color: var(--orange);
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  .service-card p {
+    color: var(--text-light);
+    font-size: 0.9rem;
+    line-height: 1.7;
+  }
+
+  /* REVIEWS */
+  .reviews {
+    padding: 80px 0;
+    background: var(--bg-card);
+  }
+
+  .reviews-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 20px;
+    margin-top: 48px;
+  }
+
+  .review-card {
+    background: var(--bg-lighter);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px;
+    transition: all 0.3s;
+  }
+
+  .review-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 36px rgba(0,0,0,0.3);
+  }
+
+  .review-stars {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 16px;
+  }
+
+  .review-stars .star {
+    width: 28px;
+    height: 28px;
+    background: var(--yellow);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    color: #000;
+    font-weight: 700;
+  }
+
+  .review-text {
+    font-size: 0.95rem;
+    line-height: 1.7;
+    margin-bottom: 20px;
+    color: #e0d0d8;
+  }
+
+  .review-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .review-author {
+    font-weight: 700;
+    font-size: 0.9rem;
+  }
+
+  .review-location {
+    color: var(--text-light);
+    font-size: 0.8rem;
+  }
+
+  .review-verified {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: #34d399;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+
+  /* OVERALL RATING */
+  .rating-banner {
+    background: linear-gradient(135deg, var(--red-dark), #991b1b);
+    padding: 40px;
+    border-radius: 16px;
+    text-align: center;
+    margin-bottom: 32px;
+  }
+
+  .rating-big {
+    font-size: 4rem;
+    font-weight: 900;
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+
+  .rating-stars-big {
+    font-size: 1.5rem;
+    letter-spacing: 4px;
+    color: var(--yellow);
+    margin-bottom: 8px;
+  }
+
+  .rating-count {
+    color: rgba(255,255,255,0.8);
+    font-size: 0.9rem;
+  }
+
+  /* ABOUT */
+  .about-section {
+    padding: 80px 0;
+  }
+
+  .about-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+    align-items: center;
+  }
+
+  .about-content h2 {
+    font-size: clamp(1.8rem, 3.5vw, 2.2rem);
+    font-weight: 900;
+    letter-spacing: -1px;
+    margin-bottom: 20px;
+  }
+
+  .about-content p {
+    color: var(--text-light);
+    font-size: 1rem;
+    line-height: 1.8;
+    margin-bottom: 16px;
+  }
+
+  .about-checklist {
+    list-style: none;
+    margin-top: 24px;
+  }
+
+  .about-checklist li {
+    padding: 8px 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 500;
+  }
+
+  .about-checklist .check {
+    width: 24px;
+    height: 24px;
+    background: rgba(52, 211, 153, 0.15);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #34d399;
+    font-size: 0.8rem;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .about-visual {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 48px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .about-visual::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--red), var(--orange), var(--yellow));
+  }
+
+  .coverage-title {
+    font-weight: 800;
+    font-size: 1.3rem;
+    margin-bottom: 20px;
+  }
+
+  .coverage-list {
+    list-style: none;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    text-align: left;
+  }
+
+  .coverage-list li {
+    color: var(--text-light);
+    font-size: 0.9rem;
+    padding: 6px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .coverage-list .dot {
+    width: 6px;
+    height: 6px;
+    background: var(--red);
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  /* CTA */
+  .cta-section {
+    padding: 80px 0;
+    text-align: center;
+    background: radial-gradient(ellipse at center, rgba(239, 68, 68, 0.08) 0%, transparent 60%);
+  }
+
+  .cta-emergency-box {
+    background: var(--bg-card);
+    border: 2px solid var(--red);
+    border-radius: 24px;
+    padding: 60px 40px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .cta-emergency-box::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--red), var(--orange));
+  }
+
+  .cta-icon {
+    font-size: 3rem;
+    margin-bottom: 16px;
+    display: block;
+  }
+
+  .cta-emergency-box h2 {
+    font-size: clamp(1.8rem, 4vw, 2.5rem);
+    font-weight: 900;
+    letter-spacing: -1px;
+    margin-bottom: 12px;
+  }
+
+  .cta-emergency-box p {
+    color: var(--text-light);
+    font-size: 1.05rem;
+    margin-bottom: 32px;
+    max-width: 480px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .cta-phone-big {
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 900;
+    color: var(--red);
+    text-decoration: none;
+    display: block;
+    margin-bottom: 24px;
+    transition: transform 0.3s;
+  }
+
+  .cta-phone-big:hover { transform: scale(1.05); }
+
+  /* FOOTER */
+  footer {
+    background: var(--bg-card);
+    border-top: 1px solid var(--border);
+    padding: 48px 0 32px;
+  }
+
+  .footer-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 48px;
+    margin-bottom: 32px;
+  }
+
+  .footer-brand .logo {
+    display: block;
+    font-size: 1.2rem;
+    margin-bottom: 12px;
+  }
+
+  .footer-brand p {
+    color: var(--text-light);
+    font-size: 0.85rem;
+    line-height: 1.7;
+  }
+
+  .footer-col h4 {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--text-light);
+    margin-bottom: 16px;
+  }
+
+  .footer-col ul { list-style: none; }
+  .footer-col li { margin-bottom: 8px; }
+
+  .footer-col a {
+    color: var(--text-light);
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: color 0.3s;
+  }
+
+  .footer-col a:hover { color: var(--red); }
+
+  .footer-bottom {
+    border-top: 1px solid var(--border);
+    padding-top: 20px;
+    display: flex;
+    justify-content: space-between;
+    color: var(--text-light);
+    font-size: 0.8rem;
+  }
+
+  /* MOBILE */
+  @media (max-width: 768px) {
+    .nav-links { display: none; }
+
+    .badges-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .services-grid,
+    .reviews-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .about-grid {
+      grid-template-columns: 1fr;
+      gap: 32px;
+    }
+
+    .footer-grid {
+      grid-template-columns: 1fr;
+      gap: 24px;
+    }
+
+    .footer-bottom {
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .cta-emergency-box { padding: 40px 24px; }
+  }
+
+  @media (max-width: 375px) {
+    .container { padding: 0 16px; }
+
+    .badges-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .hero-buttons { flex-direction: column; align-items: center; }
+    .btn-emergency, .btn-outline { width: 100%; justify-content: center; }
+
+    .coverage-list { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="top-bar">
+  <a href="tel:07700900000">
+    <span class="phone-icon">&#128222;</span>
+    CALL NOW: 07700 900000
+  </a>
+</div>
+
+<!-- NAV -->
+<nav>
+  <div class="container">
+    <a href="#" class="logo">Smith <span>Heating</span></a>
+    <ul class="nav-links">
+      <li><a href="#services">Services</a></li>
+      <li><a href="#about">About</a></li>
+      <li><a href="#reviews">Reviews</a></li>
+      <li><a href="tel:07700900000" class="nav-emergency">&#128293; Emergency</a></li>
+    </ul>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="container">
+    <div class="emergency-badge">
+      <span class="pulse-dot"></span>
+      24/7 Emergency Callout
+    </div>
+    <h1>No heating?<br><span class="red">We're on our way.</span></h1>
+    <p>24/7 emergency heating repairs in Bury St Edmunds and across Suffolk. Gas Safe registered, fast response, fair prices.</p>
+    <a href="tel:07700900000" class="hero-phone">07700 900000</a>
+    <div class="hero-buttons">
+      <a href="tel:07700900000" class="btn-emergency">&#128222; Emergency Callout</a>
+      <a href="#services" class="btn-outline">View Services &#8594;</a>
+    </div>
+  </div>
+</section>
+
+<!-- TRUST BADGES -->
+<section class="trust-badges">
+  <div class="container">
+    <div class="badges-grid">
+      <div class="badge-item">
+        <span class="badge-icon">&#9745;</span>
+        <div class="badge-title">Gas Safe</div>
+        <div class="badge-text">Fully Registered #123456</div>
+      </div>
+      <div class="badge-item">
+        <span class="badge-icon">&#11088;</span>
+        <div class="badge-title">4.9 / 5 Stars</div>
+        <div class="badge-text">Based on 200+ reviews</div>
+      </div>
+      <div class="badge-item">
+        <span class="badge-icon">&#128170;</span>
+        <div class="badge-title">15+ Years</div>
+        <div class="badge-text">Trusted experience</div>
+      </div>
+      <div class="badge-item">
+        <span class="badge-icon">&#9201;</span>
+        <div class="badge-title">1 Hour Response</div>
+        <div class="badge-text">Average callout time</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SERVICES -->
+<section class="services" id="services">
+  <div class="container">
+    <h2 class="section-title">Our Services</h2>
+    <p class="section-subtitle">Fair, transparent pricing with no hidden costs</p>
+    <div class="services-grid">
+      <div class="service-card">
+        <div class="service-header">
+          <h3>&#128293; Boiler Installation</h3>
+          <span class="service-price">From &pound;1,800</span>
+        </div>
+        <p>New energy-efficient boilers from Worcester Bosch, Vaillant, and more. Includes removal of old boiler, full system flush, and up to 12 years warranty.</p>
+      </div>
+      <div class="service-card">
+        <div class="service-header">
+          <h3>&#128295; Boiler Repairs</h3>
+          <span class="service-price">From &pound;65</span>
+        </div>
+        <p>Fast, reliable fault diagnosis and repair for all boiler makes and models. Emergency and same-day repairs available 7 days a week.</p>
+      </div>
+      <div class="service-card">
+        <div class="service-header">
+          <h3>&#9989; Annual Servicing</h3>
+          <span class="service-price">From &pound;75</span>
+        </div>
+        <p>Full boiler service including safety checks, efficiency test, and certificate. Keeps your warranty valid and prevents costly breakdowns.</p>
+      </div>
+      <div class="service-card">
+        <div class="service-header">
+          <h3>&#127777; Central Heating</h3>
+          <span class="service-price">From &pound;350</span>
+        </div>
+        <p>Radiator installations, powerflush, zone controls, and complete system upgrades. Smart thermostat installation included on request.</p>
+      </div>
+      <div class="service-card">
+        <div class="service-header">
+          <h3>&#128167; Plumbing</h3>
+          <span class="service-price">From &pound;55</span>
+        </div>
+        <p>General plumbing repairs, bathroom installations, tap replacements, leak repairs, and cylinder work. No job too small.</p>
+      </div>
+      <div class="service-card">
+        <div class="service-header">
+          <h3>&#128196; Gas Safety Certificates</h3>
+          <span class="service-price">From &pound;55</span>
+        </div>
+        <p>CP12 landlord gas safety certificates. Same-day inspection and certification. Competitive rates for multiple properties.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- REVIEWS -->
+<section class="reviews" id="reviews">
+  <div class="container">
+    <div class="rating-banner">
+      <div class="rating-big">4.9</div>
+      <div class="rating-stars-big">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+      <div class="rating-count">Based on 200+ verified reviews</div>
+    </div>
+    <div class="reviews-grid">
+      <div class="review-card">
+        <div class="review-stars">
+          <span class="star">&#9733;</span>
+          <span class="star">&#9733;</span>
+          <span class="star">&#9733;</span>
+          <span class="star">&#9733;</span>
+          <span class="star">&#9733;</span>
+        </div>
+        <p class="review-text">"Boiler broke down at 10pm on a Friday night with a newborn in the house. John answered immediately, was at our door in 40 minutes, and had the heating back on within the hour. Absolute lifesaver."</p>
+        <div class="review-footer">
+          <div>
+            <div class="review-author">Sarah B.</div>
+            <div class="review-location">Bury St Edmunds</div>
+          </div>
+          <div class="review-verified">&#9745; Verified</div>
+        </div>
+      </div>
+      <div class="review-card">
+        <div class="review-stars">
+          <span class="star">&#9733;</span>
+          <span class="star">&#9733;</span>
+          <span class="star">&#9733;</span>
+          <span class="star">&#9733;</span>
+          <span class="star">&#9733;</span>
+        </div>
+        <p class="review-text">"New Worcester Bosch boiler installed in a day. Price was the best quote we had by a long way, and the quality of work was outstanding. Clean, professional, and everything explained clearly."</p>
+        <div class="review-footer">
+          <div>
+            <div class="review-author">Mark T.</div>
+            <div class="review-location">Stowmarket</div>
+          </div>
+          <div class="review-verified">&#9745; Verified</div>
+        </div>
+      </div>
+      <div class="review-card">
+        <div class="review-stars">
+          <span class="star">&#9733;</span>
+          <span class="star">&#9733;</span>
+          <span class="star">&#9733;</span>
+          <span class="star">&#9733;</span>
+          <span class="star">&#9733;</span>
+        </div>
+        <p class="review-text">"Used Smith Heating for 5 years now. Annual service, repairs, even fitted a new bathroom. Always reliable, always fairly priced. The only heating engineer I'd ever recommend."</p>
+        <div class="review-footer">
+          <div>
+            <div class="review-author">Janet W.</div>
+            <div class="review-location">Sudbury</div>
+          </div>
+          <div class="review-verified">&#9745; Verified</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section class="about-section" id="about">
+  <div class="container">
+    <div class="about-grid">
+      <div class="about-content">
+        <h2>Your local emergency heating specialists.</h2>
+        <p>When your heating breaks down, you need someone who answers the phone, turns up fast, and gets the job done right. That's us.</p>
+        <p>Smith Heating Services has been Bury St Edmunds' trusted emergency heating provider for over 15 years. We're Gas Safe registered, fully insured, and committed to getting your home warm again as quickly as possible.</p>
+        <ul class="about-checklist">
+          <li><span class="check">&#10003;</span> 24/7 emergency callout available</li>
+          <li><span class="check">&#10003;</span> Average response time under 1 hour</li>
+          <li><span class="check">&#10003;</span> Gas Safe registered (Reg. 123456)</li>
+          <li><span class="check">&#10003;</span> Fixed price quotes - no surprises</li>
+          <li><span class="check">&#10003;</span> 500+ jobs completed</li>
+        </ul>
+      </div>
+      <div class="about-visual">
+        <div class="coverage-title">Areas We Cover</div>
+        <ul class="coverage-list">
+          <li><span class="dot"></span> Bury St Edmunds</li>
+          <li><span class="dot"></span> Stowmarket</li>
+          <li><span class="dot"></span> Sudbury</li>
+          <li><span class="dot"></span> Newmarket</li>
+          <li><span class="dot"></span> Thetford</li>
+          <li><span class="dot"></span> Haverhill</li>
+          <li><span class="dot"></span> Mildenhall</li>
+          <li><span class="dot"></span> Lavenham</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section" id="contact">
+  <div class="container">
+    <div class="cta-emergency-box">
+      <span class="cta-icon">&#128293;</span>
+      <h2>Need a heating engineer <span style="color: var(--red);">now?</span></h2>
+      <p>Don't sit in the cold. Call us right now for fast, reliable emergency heating repairs across Suffolk.</p>
+      <a href="tel:07700900000" class="cta-phone-big">07700 900000</a>
+      <a href="tel:07700900000" class="btn-emergency">&#128222; Call Now - Free Quote</a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="#" class="logo">Smith <span>Heating</span></a>
+        <p>24/7 emergency heating and plumbing services in Bury St Edmunds and across Suffolk. Gas Safe registered, fully insured, trusted by hundreds.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Services</h4>
+        <ul>
+          <li><a href="#">Emergency Callout</a></li>
+          <li><a href="#">Boiler Installation</a></li>
+          <li><a href="#">Boiler Repairs</a></li>
+          <li><a href="#">Annual Servicing</a></li>
+          <li><a href="#">Central Heating</a></li>
+          <li><a href="#">Gas Safety Certs</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Contact</h4>
+        <ul>
+          <li><a href="tel:07700900000">07700 900000</a></li>
+          <li><a href="mailto:info@smithheating.co.uk">info@smithheating.co.uk</a></li>
+          <li><a href="#">Bury St Edmunds, Suffolk</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>&copy; 2026 Smith Heating Services</span>
+      <span>Gas Safe Reg. 123456</span>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
