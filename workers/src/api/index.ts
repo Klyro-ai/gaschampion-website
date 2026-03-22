@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
 import type { Env } from '../types';
-import { forClient, claimInvite, getClientByAuthorizedUser, updateGooglePlaceId, updateSocialIds, updateQuietHours, getClientByHostname } from '../db/client';
+import { forClient, claimInvite, createClient, createInviteToken, getClientByAuthorizedUser, updateGooglePlaceId, updateSocialIds, updateQuietHours, getClientByHostname } from '../db/client';
 import { TelegramBot } from '../telegram/bot';
 import { WizardManager } from '../telegram/wizard';
 import { handleAdminMessage, handleAdminCallback } from '../telegram/admin/menu';
@@ -14,11 +14,13 @@ import { handleBlogCaption, handleBlogContext, handleBlogApprove, handleBlogReje
 import { handleAiSettings, handleAiCallback, handleAiKeyInput } from '../telegram/client/ai-settings';
 import { handleCtaSettings, handleCtaCallback, handleCtaTextInput } from '../telegram/client/cta-settings';
 import { handleDomainCommand, handleDomainCallback, handleDomainInput } from '../telegram/client/domain-settings';
-import { createAiWriter } from '../services/ai-writer';
+import { createAiWriter, WorkersAiWriter } from '../services/ai-writer';
 import type { AiProvider } from '../services/ai-prompts';
 import { downloadAndStorePhoto } from '../services/photo-upload';
 import { searchGooglePlaces, fetchGoogleReviews } from '../services/google-reviews';
 import { searchGoogleBusiness } from '../services/google-harvester';
+import { getTradeType } from '../data/trade-catalog';
+import { generateSiteConfig } from '../services/ai-onboarding';
 import { fetchFacebookReviews } from '../services/facebook-reviews';
 import { setToken, getToken } from '../utils/tokens';
 
@@ -312,8 +314,188 @@ app.post('/telegram/admin-webhook', async (c) => {
 
   try {
     const wizState = await wizard.get(chatId);
+
+    // Signup message wizard — admin is replying to a user
+    if (wizState?.type === 'signup_msg' && text && !text.startsWith('/')) {
+      const targetChatId = wizState.data.target_chat_id;
+      const requestId = wizState.data.request_id;
+      if (targetChatId) {
+        const clientBot = new TelegramBot(c.env.TELEGRAM_BOT_TOKEN);
+        await clientBot.sendMessage(Number(targetChatId), `<b>Message from Klyro:</b>\n\n${text}`);
+        await bot.sendMessage(chatId, 'Message sent.');
+        // Update admin_notes
+        if (requestId) {
+          await c.env.DB.prepare(
+            "UPDATE signup_requests SET admin_notes = COALESCE(admin_notes || '\n', '') || ? WHERE id = ?"
+          ).bind(`[msg] ${text}`, requestId).run();
+        }
+      }
+      await wizard.clear(chatId);
+      return c.json({ ok: true });
+    }
+
     if (wizState?.type === 'addclient') {
       await handleAddClientStep(bot, chatId, text || null, callbackData, wizard, c.env);
+    } else if (callbackData?.startsWith('signup:')) {
+      // Handle signup approval/denial/message callbacks
+      const parts = callbackData.split(':');
+      const action = parts[1];
+      const requestId = parts[2];
+
+      const request = await c.env.DB.prepare(
+        'SELECT * FROM signup_requests WHERE id = ?'
+      ).bind(requestId).first<{
+        id: string; telegram_chat_id: string; telegram_username: string | null;
+        telegram_first_name: string | null; business_name: string | null;
+        trade_type: string | null; town: string | null; status: string;
+      }>();
+
+      if (!request) {
+        await bot.sendMessage(chatId, 'Signup request not found.');
+        return c.json({ ok: true });
+      }
+
+      if (action === 'approve') {
+        if (request.status !== 'pending') {
+          await bot.sendMessage(chatId, `This request has already been ${request.status}.`);
+          return c.json({ ok: true });
+        }
+
+        await bot.sendMessage(chatId, 'Setting up client...');
+
+        try {
+          // 1. Create client ID from business name
+          const clientId = (request.business_name || 'client')
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/^-|-$/g, '')
+            .slice(0, 40);
+
+          const tradeType = request.trade_type && request.trade_type !== 'other' ? request.trade_type : 'gas-engineer';
+          const trade = getTradeType(tradeType);
+
+          // 2. Create client DB record
+          await createClient(c.env.DB, {
+            id: clientId,
+            business_name: request.business_name || clientId,
+            pages_project_name: clientId,
+            r2_bucket_prefix: `${clientId}/`,
+          });
+
+          // Set trade_type and theme_id
+          await c.env.DB
+            .prepare("UPDATE clients SET trade_type = ?, theme_id = ?, updated_at = datetime('now') WHERE id = ?")
+            .bind(tradeType, trade?.defaultTheme || 'default', clientId)
+            .run();
+
+          // 3. Generate site_config using AI onboarding
+          const aiWriter = new WorkersAiWriter(c.env.AI);
+          const siteConfig = await generateSiteConfig(
+            {
+              businessName: request.business_name || clientId,
+              ownerName: request.telegram_first_name || '',
+              tradeType,
+              town: request.town || '',
+              county: '',
+              phone: '',
+              email: '',
+            },
+            aiWriter,
+          );
+
+          // 4. Save site_config to DB
+          const clientDb = forClient(c.env.DB, clientId);
+          await clientDb.config.updateSiteConfig(siteConfig);
+
+          // 5. Harvest Google Business data
+          let googleInfo = '';
+          if (c.env.GOOGLE_PLACES_API_KEY && request.business_name && request.town) {
+            try {
+              const googleResult = await searchGoogleBusiness(request.business_name, request.town, c.env.GOOGLE_PLACES_API_KEY);
+              if (googleResult.found) {
+                const db = forClient(c.env.DB, clientId);
+                for (const review of googleResult.reviews) {
+                  await db.reviews.upsert({
+                    source: 'google',
+                    author_name: review.authorName,
+                    rating: review.rating,
+                    text: review.text,
+                    review_date: review.publishTime,
+                    source_id: `google_${review.publishTime}`,
+                  });
+                  if (review.rating >= 4) {
+                    const pending = await db.reviews.getPending();
+                    const match = pending.find(r => r.text === review.text);
+                    if (match) await db.reviews.approve(match.id);
+                  }
+                }
+                if (googleResult.rating || googleResult.description) {
+                  const enriched = { ...siteConfig };
+                  if (googleResult.rating) {
+                    enriched.stats = { ...enriched.stats, reviewCount: googleResult.reviewCount || 0, averageRating: googleResult.rating };
+                  }
+                  if (googleResult.description && !enriched.description) {
+                    enriched.description = googleResult.description;
+                  }
+                  await clientDb.config.updateSiteConfig(enriched);
+                }
+                googleInfo = ` | Google: ${googleResult.reviewCount || 0} reviews`;
+              }
+            } catch (e) {
+              googleInfo = ' | Google: harvest failed';
+            }
+          }
+
+          // 6. Generate invite link
+          const token = await createInviteToken(c.env.DB, clientId);
+
+          // 7. Send invite to user via client bot
+          const clientBot = new TelegramBot(c.env.TELEGRAM_BOT_TOKEN);
+          await clientBot.sendMessage(Number(request.telegram_chat_id),
+            "Great news! Your Klyro website is ready to set up.\n\n" +
+            "Tap the link below to get started:\n\n" +
+            `https://t.me/KlyroWebsiteBot?start=${token}`
+          );
+
+          // 8. Update signup request status
+          await c.env.DB.prepare(
+            "UPDATE signup_requests SET status = 'approved', processed_at = datetime('now') WHERE id = ?"
+          ).bind(requestId).run();
+
+          await bot.sendMessage(chatId,
+            `Approved! Client <b>${request.business_name}</b> created as <code>${clientId}</code>.\n` +
+            `Invite link sent to user.${googleInfo}`
+          );
+        } catch (e) {
+          const message = e instanceof Error ? e.message : String(e);
+          await bot.sendMessage(chatId, `Error approving signup: ${message}`);
+        }
+      } else if (action === 'deny') {
+        if (request.status !== 'pending') {
+          await bot.sendMessage(chatId, `This request has already been ${request.status}.`);
+          return c.json({ ok: true });
+        }
+
+        await c.env.DB.prepare(
+          "UPDATE signup_requests SET status = 'denied', processed_at = datetime('now') WHERE id = ?"
+        ).bind(requestId).run();
+
+        // Notify user via client bot
+        const clientBot = new TelegramBot(c.env.TELEGRAM_BOT_TOKEN);
+        await clientBot.sendMessage(Number(request.telegram_chat_id),
+          "Thanks for your interest in Klyro! Unfortunately we're not able to take on new clients right now.\n\n" +
+          "We'll keep your details on file and reach out if a spot opens up."
+        );
+
+        await bot.sendMessage(chatId, `Denied signup from ${request.business_name || 'Unknown'}.`);
+      } else if (action === 'msg') {
+        await wizard.start(chatId, 'signup_msg', 'awaiting_message');
+        await wizard.update(chatId, 'awaiting_message', {
+          target_chat_id: request.telegram_chat_id,
+          request_id: requestId,
+        });
+        await bot.sendMessage(chatId, `Type your message for ${request.telegram_first_name || 'the user'}:`);
+      }
     } else if (callbackData === 'admin:addclient') {
       await handleAddClientStep(bot, chatId, null, null, wizard, c.env);
     } else if (callbackData?.startsWith('admin:')) {
@@ -374,6 +556,85 @@ app.post('/telegram/webhook', async (c) => {
     const wizState = await wizard.get(chatId);
     if (wizState?.type === 'onboarding') {
       await handleOnboarding(bot, chatId, text || null, callbackData, wizard, onboardingDeps);
+      return c.json({ ok: true });
+    }
+
+    // Signup wizard — unknown user mid-flow
+    if (wizState?.type === 'signup') {
+      if (callbackData?.startsWith('signup_trade:')) {
+        const tradeType = callbackData.replace('signup_trade:', '');
+        await wizard.update(chatId, 'ask_town', { trade_type: tradeType });
+        await bot.sendMessage(chatId, 'Last one — what town or area are you based in?');
+        return c.json({ ok: true });
+      }
+      if (wizState.step === 'ask_name' && text && !text.startsWith('/')) {
+        await wizard.update(chatId, 'ask_trade', { business_name: text });
+        await bot.sendMessage(chatId, 'What type of trade are you?', {
+          inline_keyboard: [
+            [{ text: 'Gas Engineer', callback_data: 'signup_trade:gas-engineer' }],
+            [{ text: 'Plumber', callback_data: 'signup_trade:plumber' }],
+            [{ text: 'Electrician', callback_data: 'signup_trade:electrician' }],
+            [{ text: 'Other', callback_data: 'signup_trade:other' }],
+          ],
+        });
+        return c.json({ ok: true });
+      }
+      if (wizState.step === 'ask_town' && text && !text.startsWith('/')) {
+        const data: Record<string, string> = { ...wizState.data, town: text };
+        const requestId = crypto.randomUUID();
+        const from = update.message?.from;
+
+        // Store signup request in D1
+        await c.env.DB.prepare(
+          'INSERT INTO signup_requests (id, telegram_chat_id, telegram_username, telegram_first_name, business_name, trade_type, town) VALUES (?, ?, ?, ?, ?, ?, ?)'
+        ).bind(
+          requestId,
+          String(chatId),
+          from?.username || null,
+          from?.first_name || null,
+          data.business_name || null,
+          data.trade_type || null,
+          data.town || null,
+        ).run();
+
+        await wizard.clear(chatId);
+
+        // Confirm to user
+        await bot.sendMessage(chatId,
+          'Thanks! Your request has been submitted.\n\n' +
+          "I'll message you here once your site is ready — usually within 24 hours."
+        );
+
+        // Notify admin via admin bot
+        const adminBot = new TelegramBot(c.env.TELEGRAM_ADMIN_BOT_TOKEN);
+        const tradeLabel = data.trade_type === 'gas-engineer' ? 'Gas Engineer'
+          : data.trade_type === 'plumber' ? 'Plumber'
+          : data.trade_type === 'electrician' ? 'Electrician'
+          : data.trade_type || 'Unknown';
+        const usernameStr = from?.username ? `@${from.username}` : 'no username';
+        const nameStr = from?.first_name || 'Unknown';
+
+        await adminBot.sendMessage(Number(c.env.ADMIN_CHAT_ID),
+          `<b>New signup request!</b>\n\n` +
+          `<b>Business:</b> ${data.business_name || 'Not provided'}\n` +
+          `<b>Trade:</b> ${tradeLabel}\n` +
+          `<b>Area:</b> ${data.town || 'Not provided'}\n` +
+          `<b>From:</b> ${usernameStr} (${nameStr})\n`,
+          {
+            inline_keyboard: [
+              [
+                { text: 'Approve', callback_data: `signup:approve:${requestId}` },
+                { text: 'Deny', callback_data: `signup:deny:${requestId}` },
+              ],
+              [
+                { text: 'Message', callback_data: `signup:msg:${requestId}` },
+              ],
+            ],
+          }
+        );
+        return c.json({ ok: true });
+      }
+      // If they sent something unexpected during signup wizard, ignore
       return c.json({ ok: true });
     }
 
@@ -704,8 +965,20 @@ app.post('/telegram/webhook', async (c) => {
       return c.json({ ok: true });
     }
 
-    // Unknown user
-    await bot.sendMessage(chatId, 'Contact your Klyro admin to get set up.');
+    // Unknown user — start signup wizard
+    const isDemo = text === '/start demo';
+    await wizard.start(chatId, 'signup', 'ask_name');
+    if (isDemo) {
+      await bot.sendMessage(chatId,
+        "Hey! Looks like you want a website built.\n\n" +
+        "Let me grab a few details:\nWhat's your business name?"
+      );
+    } else {
+      await bot.sendMessage(chatId,
+        "Hey! I'm Klyro — I build websites for tradespeople.\n\n" +
+        "Want to see what I can build for you? Just tell me:\nWhat's your business name?"
+      );
+    }
   } catch (e) {
     const errMsg = e instanceof Error ? e.message : String(e);
     const stack = e instanceof Error ? e.stack : '';
