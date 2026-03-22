@@ -990,7 +990,24 @@ app.post('/telegram/webhook', async (c) => {
     ).bind(String(chatId)).first<{ id: string; status: string }>();
 
     if (existingRequest) {
-      if (existingRequest.status === 'pending') {
+      if (text && !text.startsWith('/')) {
+        // Forward user's message to admin as a reply
+        const adminBot = new TelegramBot(c.env.TELEGRAM_ADMIN_BOT_TOKEN);
+        const from = update.message?.from;
+        const nameStr = from?.first_name || 'User';
+        const usernameStr = from?.username ? `@${from.username}` : '';
+        await adminBot.sendMessage(Number(c.env.ADMIN_CHAT_ID),
+          `<b>Reply from ${nameStr}</b> ${usernameStr}\n` +
+          `(re: signup ${existingRequest.id.slice(0, 8)})\n\n` +
+          `${text}`,
+          {
+            inline_keyboard: [[
+              { text: 'Reply', callback_data: `signup:msg:${existingRequest.id}` },
+            ]],
+          }
+        );
+        await bot.sendMessage(chatId, "Message sent to the team.");
+      } else if (existingRequest.status === 'pending') {
         await bot.sendMessage(chatId, "Your signup request is being reviewed. I'll message you here as soon as it's approved!");
       } else {
         await bot.sendMessage(chatId, "Your site is being set up. You'll receive a setup link here shortly!");
