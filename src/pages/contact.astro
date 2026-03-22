@@ -19,14 +19,14 @@ const contactItems = [
 ]
 ---
 
-<Base title="Contact" description="Get in touch with Gas Champion for a free, no-obligation quote.">
+<Base title="Contact" description={`Get in touch with ${business.shortName} for a free, no-obligation quote.`}>
   
     <TopBar />
-    <Header><MobileNavIsland client:only="react" /></Header>
+    <Header><MobileNavIsland client:only="react" phone={business.phone} gasSafeNumber={business.gasSafeNumber} /></Header>
 
     <section class="py-16 md:py-24" style="background-color: var(--color-hero-bg); color: var(--color-hero-text)">
       <div class="max-w-4xl mx-auto px-4 text-center">
-        <h1 class="font-heading text-3xl sm:text-4xl md:text-5xl font-bold mb-4">Contact Gas Champion</h1>
+        <h1 class="font-heading text-3xl sm:text-4xl md:text-5xl font-bold mb-4">Contact {business.shortName}</h1>
         <p class="text-lg" style="color: var(--color-foreground-muted)">Get in touch for a free, no-obligation quote. We respond within 2 hours.</p>
       </div>
     </section>
@@ -53,10 +53,10 @@ const contactItems = [
               })}
             </div>
             <div class="mt-8 rounded-theme-lg overflow-hidden" style="border: 1px solid var(--color-border)">
-              <img src="/images/service-map.svg" alt="Gas Champion service area map" class="w-full h-auto" width="800" height="400" />
+              <img src="/images/service-map.svg" alt={`${business.shortName} service area map`} class="w-full h-auto" width="800" height="400" />
             </div>
           </div>
-          <ContactFormIsland client:only="react" apiBase={apiBase} clientId={clientId} />
+          <ContactFormIsland client:only="react" apiBase={apiBase} clientId={clientId} phone={business.phone} />
         </div>
       </div>
     </section>

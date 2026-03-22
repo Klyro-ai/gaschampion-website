@@ -10,7 +10,7 @@ const { clientId, apiBase, apiKey, apiFetch } = Astro.locals.tenant
 const images = await getGalleryImages(apiFetch, apiKey, clientId)
 ---
 
-<Base title="Gallery" description="Photos of our heating and plumbing work across Suffolk — boiler installations, repairs, and more.">
+<Base title="Gallery" description={`Photos of our heating and plumbing work across ${Astro.locals.tenant.business.address.county} — boiler installations, repairs, and more.`}>
 
     <TopBar />
     <Header><MobileNav /></Header>
@@ -18,7 +18,7 @@ const images = await getGalleryImages(apiFetch, apiKey, clientId)
     <section class="py-16 md:py-24" style="background-color: var(--color-hero-bg); color: var(--color-hero-text)">
       <div class="max-w-4xl mx-auto px-4 text-center">
         <h1 class="font-heading text-3xl sm:text-4xl md:text-5xl font-bold mb-4">Our Work</h1>
-        <p class="text-lg" style="color: var(--color-foreground-muted)">Photos from recent heating and plumbing jobs across Suffolk.</p>
+        <p class="text-lg" style="color: var(--color-foreground-muted)">Photos from recent heating and plumbing jobs across {Astro.locals.tenant.business.address.county}.</p>
       </div>
     </section>
 

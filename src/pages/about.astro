@@ -12,7 +12,7 @@ import Footer from '../components/static/Footer.astro'
 const { business } = Astro.locals.tenant
 ---
 
-<Base title="About" description={`Meet ${business.owner}, your local Gas Safe registered engineer in Haverhill.`}>
+<Base title="About" description={`Meet ${business.owner}, your local Gas Safe registered engineer in ${business.address.town}.`}>
   
     <TopBar />
     <Header><MobileNav /></Header>
@@ -22,8 +22,8 @@ const { business } = Astro.locals.tenant
         <div class="grid lg:grid-cols-2 gap-12 items-center">
           <div>
             <h1 class="font-heading text-[1.65rem] sm:text-4xl md:text-5xl font-bold mb-6">Meet {business.owner}, Your Local Gas Engineer</h1>
-            <p class="text-base sm:text-lg mb-4" style="color: var(--color-foreground-muted)">{business.ownerBackground}. After more than a decade at British Gas, I founded Gas Champion to bring the same high standards of service to my local community — but with the personal touch that only a small, dedicated business can provide.</p>
-            <p class="text-base sm:text-lg mb-6" style="color: var(--color-foreground-muted)">I believe in honest advice, fair pricing, and doing the job right first time. Every customer gets my personal attention — no call centres, no subcontractors, just a qualified Gas Safe engineer who cares about your home's heating.</p>
+            <p class="text-base sm:text-lg mb-4" style="color: var(--color-foreground-muted)">{business.ownerBackground}</p>
+            <p class="text-base sm:text-lg mb-6" style="color: var(--color-foreground-muted)">{business.description}</p>
             <div class="flex flex-wrap gap-2 sm:gap-4">
               {business.credentials.map((c) => (
                 <div class="flex items-center gap-2 px-4 py-2 rounded-theme-full text-sm font-medium" style="background-color: color-mix(in srgb, var(--color-primary) 10%, transparent); color: var(--color-primary)">
@@ -35,13 +35,13 @@ const { business } = Astro.locals.tenant
           </div>
           <div class="space-y-6">
             <div class="rounded-theme-lg overflow-hidden" style="border: 1px solid var(--color-border)">
-              <img src="/images/about-engineer.svg" alt="Meet Lee — Gas Safe registered engineer" class="w-full h-auto" width="500" height="600" />
+              <img src="/images/about-engineer.svg" alt={`Meet ${business.owner} — Gas Safe registered engineer`} class="w-full h-auto" width="500" height="600" />
             </div>
             <div class="rounded-theme-lg overflow-hidden" style="border: 1px solid var(--color-border)">
-              <img src="/images/engineer-on-way.png" alt="Gas Champion - Your engineer is on their way" class="w-full h-auto" width="500" height="400" />
+              <img src="/images/engineer-on-way.png" alt={`${business.shortName} - Your engineer is on their way`} class="w-full h-auto" width="500" height="400" />
             </div>
             <div class="rounded-theme-lg overflow-hidden p-8 flex items-center justify-center" style="background-color: var(--color-surface-alt); border: 1px solid var(--color-border)">
-              <img src="/images/logo-full.png" alt="Gas Champion Logo" width="130" height="192" style="height: 192px; width: auto; object-fit: contain; display: block;" />
+              <img src="/images/logo-full.png" alt={`${business.shortName} Logo`} width="130" height="192" style="height: 192px; width: auto; object-fit: contain; display: block;" />
             </div>
           </div>
         </div>

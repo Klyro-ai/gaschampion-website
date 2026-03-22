@@ -19,7 +19,7 @@ if (!service) return Astro.redirect('/services')
 <Base title={service.name} description={service.description}>
   
     <TopBar />
-    <Header><MobileNavIsland client:only="react" /></Header>
+    <Header><MobileNavIsland client:only="react" phone={business.phone} gasSafeNumber={business.gasSafeNumber} /></Header>
 
     <section class="py-16 md:py-24" style="background-color: var(--color-hero-bg); color: var(--color-hero-text)">
       <div class="max-w-7xl mx-auto px-4">
@@ -48,7 +48,7 @@ if (!service) return Astro.redirect('/services')
               ))}
             </div>
             <div class="mt-8 space-y-4">
-              <h3 class="font-heading text-xl font-bold">Why choose Gas Champion?</h3>
+              <h3 class="font-heading text-xl font-bold">Why choose {business.shortName}?</h3>
               <ul class="space-y-2">
                 {business.guarantees.map((g) => (
                   <li class="flex items-start gap-2 text-sm" style="color: var(--color-foreground-muted)">
@@ -59,7 +59,7 @@ if (!service) return Astro.redirect('/services')
               </ul>
             </div>
           </div>
-          <ContactFormIsland client:only="react" apiBase={apiBase} clientId={clientId} />
+          <ContactFormIsland client:only="react" apiBase={apiBase} clientId={clientId} phone={business.phone} />
         </div>
       </div>
     </section>

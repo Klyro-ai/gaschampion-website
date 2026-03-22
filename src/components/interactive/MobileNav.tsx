@@ -31,7 +31,7 @@ const itemVariants = {
   open: { opacity: 1, x: 0 },
 }
 
-export default function MobileNav() {
+export default function MobileNav({ phone, gasSafeNumber }: { phone?: string; gasSafeNumber?: string }) {
   const { theme } = useTheme()
   const c = theme.colors
   const [open, setOpen] = useState(false)
@@ -185,7 +185,7 @@ export default function MobileNav() {
               {/* Call CTA */}
               <motion.a
                 variants={itemVariants}
-                href="tel:07828943186"
+                href={`tel:${(phone || '').replace(/\s/g, '')}`}
                 className="rounded-theme-full"
                 style={{
                   display: 'flex',
@@ -204,7 +204,7 @@ export default function MobileNav() {
                 }}
               >
                 <Icon name="phone" size={20} />
-                07828 943 186
+                {phone}
               </motion.a>
 
               {/* Secondary: Gas Safe badge */}
@@ -222,7 +222,7 @@ export default function MobileNav() {
                 }}
               >
                 <Icon name="gas-safe" size={18} style={{ color: c.primary }} />
-                Gas Safe Registered: 636427
+                Gas Safe Registered: {gasSafeNumber}
               </motion.div>
             </div>
           </motion.nav>

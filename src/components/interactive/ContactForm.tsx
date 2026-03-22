@@ -29,7 +29,7 @@ const stepVariants = {
   exit: { opacity: 0, x: -40 },
 }
 
-export default function ContactForm() {
+export default function ContactForm({ phone }: { phone?: string }) {
   const { theme } = useTheme()
   const c = theme.colors
 
@@ -125,7 +125,7 @@ export default function ContactForm() {
         <p style={{ fontSize: 15, color: c.foregroundMuted, margin: 0, lineHeight: 1.6 }}>
           Thanks {name}! We&apos;ll get back to you about your {service.toLowerCase()} request
           as soon as possible. For emergencies, call us directly at{' '}
-          <strong style={{ color: c.primary }}>07828 943 186</strong>.
+          <strong style={{ color: c.primary }}>{phone}</strong>.
         </p>
       </motion.div>
     )

@@ -23,7 +23,7 @@ function fire(event: string, props?: Record<string, string>) {
 }
 
 export function trackPhoneClick(number?: string) {
-  fire('Phone Click', { number: number || '07828 943 186' })
+  fire('Phone Click', { number: number || 'unknown' })
 }
 
 export function trackFormSubmit(service?: string) {

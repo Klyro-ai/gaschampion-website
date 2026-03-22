@@ -183,7 +183,7 @@ const navLinks = [
   { href: '/contact', label: 'Contact' },
 ]
 
-export function MobileNavIsland() {
+export function MobileNavIsland({ phone, gasSafeNumber }: { phone?: string; gasSafeNumber?: string }) {
   const [open, setOpen] = useState(false)
 
   return (
@@ -225,11 +225,11 @@ export function MobileNavIsland() {
                   </a>
                 ))}
                 <div className="pt-3">
-                  <a href="tel:07828943186" onClick={() => trackPhoneClick()}
+                  <a href={`tel:${(phone || '').replace(/\s/g, '')}`} onClick={() => trackPhoneClick(phone)}
                     className="flex items-center justify-center gap-2 w-full px-4 py-4 rounded-theme-full font-bold text-base"
                     style={{ backgroundColor: 'var(--color-cta-bg)', color: 'var(--color-cta-text)', minHeight: '52px' }}>
                     <Icon name="phone" size={18} />
-                    07828 943 186
+                    {phone}
                   </a>
                 </div>
               </div>
@@ -245,7 +245,7 @@ export function MobileNavIsland() {
 
 const serviceOptions = ['Boiler Repair', 'Boiler Installation', 'Boiler Servicing', 'Gas Safety Certificate', 'Powerflush', 'Smart Thermostat', 'Radiator Installation', 'Hot Water Cylinder', 'Gas Fire Servicing', 'General Plumbing', 'Other']
 
-export function ContactFormIsland({ apiBase, clientId }: { apiBase: string; clientId: string }) {
+export function ContactFormIsland({ apiBase, clientId, phone }: { apiBase: string; clientId: string; phone?: string }) {
   const [step, setStep] = useState(1)
   const [form, setForm] = useState({ service: '', urgency: '', name: '', phone: '', email: '', postcode: '', message: '' })
   const [submitting, setSubmitting] = useState(false)

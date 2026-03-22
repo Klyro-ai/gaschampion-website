@@ -23,7 +23,7 @@ try {
 }
 ---
 
-<Base title="Reviews" description={`${business.stats.reviewCount}+ five-star reviews. See what customers say about Gas Champion.`}>
+<Base title="Reviews" description={`${business.stats.reviewCount}+ five-star reviews. See what customers say about ${business.shortName}.`}>
   
     <TopBar />
     <Header><MobileNav /></Header>
@@ -36,7 +36,7 @@ try {
           ))}
         </div>
         <h1 class="font-heading text-3xl sm:text-4xl md:text-5xl font-bold mb-4">{business.stats.reviewCount}+ Five-Star Reviews</h1>
-        <p class="text-lg" style="color: var(--color-foreground-muted)">Don't just take our word for it — here's what our customers say about Gas Champion.</p>
+        <p class="text-lg" style="color: var(--color-foreground-muted)">Don't just take our word for it — here's what our customers say about {business.shortName}.</p>
         <div class="grid grid-cols-3 gap-3 sm:gap-6 mt-12 max-w-lg mx-auto">
           <div><div class="font-heading text-2xl sm:text-3xl font-bold" style="color: var(--color-primary)">{business.stats.averageRating}</div><div class="text-xs sm:text-sm" style="color: var(--color-foreground-muted)">Average Rating</div></div>
           <div><div class="font-heading text-2xl sm:text-3xl font-bold" style="color: var(--color-primary)">{business.stats.reviewCount}+</div><div class="text-xs sm:text-sm" style="color: var(--color-foreground-muted)">Total Reviews</div></div>

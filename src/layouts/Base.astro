@@ -17,7 +17,7 @@ interface Props {
 const { title, description } = Astro.props
 const pageTitle = title
   ? `${title} | ${business.shortName}`
-  : `${business.name} | Expert Boiler & Heating Services in Haverhill, Suffolk`
+  : `${business.name} | ${business.tagline}`
 const pageDesc = description || business.description
 ---
 
@@ -28,7 +28,7 @@ const pageDesc = description || business.description
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>{pageTitle}</title>
   <meta name="description" content={pageDesc} />
-  <meta name="keywords" content="gas engineer Haverhill, boiler repair Suffolk, boiler servicing Haverhill, Gas Safe engineer, heating engineer Saffron Walden, boiler installation Bury St Edmunds, emergency boiler repair" />
+  <meta name="keywords" content={`gas engineer ${business.address.town}, boiler repair ${business.address.county}, boiler servicing ${business.address.town}, Gas Safe engineer, ${business.serviceAreas.slice(0, 3).map(a => `heating engineer ${a}`).join(', ')}, emergency boiler repair`} />
   <meta name="author" content={business.name} />
   <meta name="robots" content="index, follow" />
   <link rel="canonical" href={`${siteOrigin}${Astro.url.pathname}`} />

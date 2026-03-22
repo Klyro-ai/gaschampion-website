@@ -27,7 +27,7 @@ try {
 <Base>
   <TopBar />
   <Header>
-    <MobileNavIsland client:only="react" />
+    <MobileNavIsland client:only="react" phone={business.phone} gasSafeNumber={business.gasSafeNumber} />
   </Header>
 
   <Hero />
@@ -95,10 +95,10 @@ try {
             ))}
           </div>
           <div class="rounded-theme-lg overflow-hidden" style="border: 1px solid var(--color-border)">
-            <img src="/images/service-map.svg" alt="Gas Champion service area — Haverhill and surrounding areas" class="w-full h-auto" width="800" height="400" />
+            <img src="/images/service-map.svg" alt={`${business.shortName} service area — ${business.address.town} and surrounding areas`} class="w-full h-auto" width="800" height="400" />
           </div>
         </div>
-        <ContactFormIsland client:only="react" apiBase={apiBase} clientId={clientId} />
+        <ContactFormIsland client:only="react" apiBase={apiBase} clientId={clientId} phone={business.phone} />
       </div>
     </div>
   </section>
