@@ -1,0 +1,1595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smith Heating Services | Gas Safe Registered Engineers in Bury St Edmunds</title>
+    <style>
+        /* ============================================
+           RESET & BASE
+           ============================================ */
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            font-size: 16px;
+        }
+
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+            background: #0a0e1a;
+            color: #c8d6e5;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        a {
+            color: #00a2ff;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        a:hover {
+            color: #00d4ff;
+        }
+
+        img {
+            max-width: 100%;
+            display: block;
+        }
+
+        /* ============================================
+           TYPOGRAPHY
+           ============================================ */
+        h1, h2, h3, h4 {
+            color: #ffffff;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+
+        h1 {
+            font-size: clamp(2.2rem, 5vw, 4rem);
+            letter-spacing: -0.02em;
+        }
+
+        h2 {
+            font-size: clamp(1.8rem, 3.5vw, 2.8rem);
+            margin-bottom: 1rem;
+        }
+
+        h3 {
+            font-size: 1.3rem;
+            margin-bottom: 0.5rem;
+        }
+
+        p {
+            margin-bottom: 1rem;
+        }
+
+        /* ============================================
+           UTILITY
+           ============================================ */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+
+        .section {
+            padding: 5rem 0;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 3.5rem;
+        }
+
+        .section-header p {
+            color: #7eb8e0;
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0.5rem auto 0;
+        }
+
+        .section-label {
+            display: inline-block;
+            color: #00a2ff;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            margin-bottom: 0.5rem;
+        }
+
+        /* ============================================
+           NAVIGATION
+           ============================================ */
+        .nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+            padding: 1rem 0;
+            background: rgba(10, 14, 26, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(0, 162, 255, 0.1);
+        }
+
+        .nav .container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .nav-logo {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-logo-icon {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, #005eb8, #00a2ff);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: #a0b4c8;
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: #ffffff;
+        }
+
+        .nav-cta {
+            background: linear-gradient(135deg, #005eb8, #00a2ff);
+            color: #ffffff !important;
+            padding: 0.6rem 1.4rem;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: transform 0.3s, box-shadow 0.3s !important;
+        }
+
+        .nav-cta:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 20px rgba(0, 162, 255, 0.4);
+        }
+
+        .nav-mobile-toggle {
+            display: none;
+            flex-direction: column;
+            gap: 5px;
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        .nav-mobile-toggle span {
+            width: 24px;
+            height: 2px;
+            background: #ffffff;
+            border-radius: 2px;
+            transition: 0.3s;
+        }
+
+        /* ============================================
+           HERO SECTION
+           ============================================ */
+        .hero {
+            position: relative;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            background: #0a0a1a;
+        }
+
+        .hero-bg-gradient {
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse at 50% 80%, rgba(0, 60, 140, 0.25) 0%, rgba(10, 10, 26, 0) 60%),
+                        radial-gradient(ellipse at 50% 100%, rgba(0, 100, 200, 0.15) 0%, rgba(10, 10, 26, 0) 50%);
+            z-index: 1;
+        }
+
+        /* ============================================
+           GAS FLAME EFFECT
+           ============================================ */
+        .flame-container {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 320px;
+            z-index: 2;
+            filter: contrast(25);
+            background: #0a0a1a;
+            overflow: hidden;
+        }
+
+        .flame-row {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 110%;
+            height: 100%;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            gap: 0;
+        }
+
+        .flame {
+            position: relative;
+            bottom: 0;
+            flex-shrink: 0;
+            border-radius: 50% 50% 20% 20%;
+            filter: blur(10px);
+            will-change: transform, opacity;
+        }
+
+        /* Burner base - the blue metal strip */
+        .burner-base {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 8px;
+            background: linear-gradient(to top, #0d1b33, #152a4a);
+            z-index: 10;
+            filter: blur(1px);
+        }
+
+        /* --- Individual Flame Tongues --- */
+
+        /* Flame 1 */
+        .flame-1 {
+            width: 45px;
+            height: 130px;
+            background: linear-gradient(to top, #001a3d, #003d80, #0077cc, #00a2ff, #00d4ff, #c0ecff);
+            animation: flicker1 0.75s ease-in-out infinite alternate;
+        }
+        @keyframes flicker1 {
+            0%   { transform: scaleY(1) scaleX(1) translateX(0); opacity: 0.85; border-radius: 50% 50% 20% 20%; }
+            25%  { transform: scaleY(1.18) scaleX(0.88) translateX(-2px); opacity: 1; border-radius: 48% 52% 22% 18%; }
+            50%  { transform: scaleY(0.88) scaleX(1.08) translateX(1px); opacity: 0.9; border-radius: 52% 48% 18% 22%; }
+            75%  { transform: scaleY(1.12) scaleX(0.92) translateX(-1px); opacity: 0.95; border-radius: 46% 54% 20% 20%; }
+            100% { transform: scaleY(0.92) scaleX(1.04) translateX(2px); opacity: 0.88; border-radius: 54% 46% 22% 18%; }
+        }
+
+        /* Flame 2 */
+        .flame-2 {
+            width: 35px;
+            height: 105px;
+            background: linear-gradient(to top, #001530, #003870, #006fbf, #009ae6, #00ccff, #d0f0ff);
+            animation: flicker2 0.9s ease-in-out infinite alternate;
+            animation-delay: -0.15s;
+        }
+        @keyframes flicker2 {
+            0%   { transform: scaleY(0.92) scaleX(1.05) translateX(1px); opacity: 0.9; border-radius: 52% 48% 18% 22%; }
+            30%  { transform: scaleY(1.15) scaleX(0.9) translateX(-2px); opacity: 1; border-radius: 46% 54% 22% 18%; }
+            60%  { transform: scaleY(0.85) scaleX(1.1) translateX(2px); opacity: 0.88; border-radius: 54% 46% 20% 20%; }
+            100% { transform: scaleY(1.08) scaleX(0.95) translateX(-1px); opacity: 0.92; border-radius: 50% 50% 20% 20%; }
+        }
+
+        /* Flame 3 - tall */
+        .flame-3 {
+            width: 50px;
+            height: 145px;
+            background: linear-gradient(to top, #001e4d, #004499, #0088dd, #00b0ff, #00ddff, #e0f7ff);
+            animation: flicker3 0.65s ease-in-out infinite alternate;
+            animation-delay: -0.3s;
+        }
+        @keyframes flicker3 {
+            0%   { transform: scaleY(1) scaleX(1) translateX(0); opacity: 0.88; border-radius: 50% 50% 20% 20%; }
+            20%  { transform: scaleY(1.22) scaleX(0.85) translateX(-3px); opacity: 1; border-radius: 44% 56% 24% 16%; }
+            50%  { transform: scaleY(0.82) scaleX(1.12) translateX(2px); opacity: 0.86; border-radius: 56% 44% 16% 24%; }
+            80%  { transform: scaleY(1.15) scaleX(0.9) translateX(-1px); opacity: 0.95; border-radius: 48% 52% 22% 18%; }
+            100% { transform: scaleY(0.88) scaleX(1.06) translateX(1px); opacity: 0.9; border-radius: 52% 48% 18% 22%; }
+        }
+
+        /* Flame 4 - small pilot */
+        .flame-4 {
+            width: 22px;
+            height: 70px;
+            background: linear-gradient(to top, #001233, #003366, #0066aa, #0099dd, #00ccff, #b0e8ff);
+            animation: flicker4 1.1s ease-in-out infinite alternate;
+            animation-delay: -0.5s;
+        }
+        @keyframes flicker4 {
+            0%   { transform: scaleY(1) scaleX(1) translateX(0); opacity: 0.8; }
+            33%  { transform: scaleY(1.25) scaleX(0.85) translateX(-1px); opacity: 0.95; }
+            66%  { transform: scaleY(0.8) scaleX(1.15) translateX(1px); opacity: 0.85; }
+            100% { transform: scaleY(1.1) scaleX(0.9) translateX(-1px); opacity: 0.9; }
+        }
+
+        /* Flame 5 */
+        .flame-5 {
+            width: 42px;
+            height: 120px;
+            background: linear-gradient(to top, #001940, #004080, #007acc, #00aaee, #00d4ff, #d5f2ff);
+            animation: flicker5 0.8s ease-in-out infinite alternate;
+            animation-delay: -0.1s;
+        }
+        @keyframes flicker5 {
+            0%   { transform: scaleY(0.95) scaleX(1.02) translateX(1px); opacity: 0.87; border-radius: 52% 48% 20% 20%; }
+            25%  { transform: scaleY(1.2) scaleX(0.88) translateX(-2px); opacity: 1; border-radius: 46% 54% 22% 18%; }
+            50%  { transform: scaleY(0.85) scaleX(1.1) translateX(0); opacity: 0.9; border-radius: 54% 46% 18% 22%; }
+            75%  { transform: scaleY(1.1) scaleX(0.94) translateX(-1px); opacity: 0.93; border-radius: 48% 52% 20% 20%; }
+            100% { transform: scaleY(0.9) scaleX(1.06) translateX(2px); opacity: 0.86; border-radius: 50% 50% 22% 18%; }
+        }
+
+        /* Flame 6 - tall */
+        .flame-6 {
+            width: 48px;
+            height: 140px;
+            background: linear-gradient(to top, #001b45, #003f8a, #0080cc, #00b0ff, #00ddff, #e8faff);
+            animation: flicker6 0.7s ease-in-out infinite alternate;
+            animation-delay: -0.4s;
+        }
+        @keyframes flicker6 {
+            0%   { transform: scaleY(1.05) scaleX(0.95) translateX(-1px); opacity: 0.9; border-radius: 48% 52% 22% 18%; }
+            20%  { transform: scaleY(0.85) scaleX(1.1) translateX(2px); opacity: 0.85; border-radius: 56% 44% 16% 24%; }
+            45%  { transform: scaleY(1.2) scaleX(0.87) translateX(-2px); opacity: 1; border-radius: 44% 56% 24% 16%; }
+            70%  { transform: scaleY(0.9) scaleX(1.05) translateX(1px); opacity: 0.92; border-radius: 52% 48% 18% 22%; }
+            100% { transform: scaleY(1.12) scaleX(0.92) translateX(0); opacity: 0.88; border-radius: 50% 50% 20% 20%; }
+        }
+
+        /* Flame 7 - pilot */
+        .flame-7 {
+            width: 20px;
+            height: 65px;
+            background: linear-gradient(to top, #001030, #002d5e, #005a99, #0088cc, #00bbee, #a0e0ff);
+            animation: flicker7 1.3s ease-in-out infinite alternate;
+            animation-delay: -0.2s;
+        }
+        @keyframes flicker7 {
+            0%   { transform: scaleY(1) scaleX(1) translateX(0); opacity: 0.78; }
+            50%  { transform: scaleY(1.3) scaleX(0.8) translateX(-1px); opacity: 0.95; }
+            100% { transform: scaleY(0.85) scaleX(1.1) translateX(1px); opacity: 0.82; }
+        }
+
+        /* Flame 8 */
+        .flame-8 {
+            width: 40px;
+            height: 115px;
+            background: linear-gradient(to top, #001840, #003d80, #0075bf, #00a5ee, #00d0ff, #ccf0ff);
+            animation: flicker8 0.85s ease-in-out infinite alternate;
+            animation-delay: -0.55s;
+        }
+        @keyframes flicker8 {
+            0%   { transform: scaleY(0.9) scaleX(1.05) translateX(2px); opacity: 0.86; border-radius: 54% 46% 18% 22%; }
+            30%  { transform: scaleY(1.18) scaleX(0.88) translateX(-1px); opacity: 1; border-radius: 46% 54% 22% 18%; }
+            60%  { transform: scaleY(0.88) scaleX(1.08) translateX(0); opacity: 0.89; border-radius: 50% 50% 20% 20%; }
+            100% { transform: scaleY(1.05) scaleX(0.96) translateX(1px); opacity: 0.92; border-radius: 48% 52% 20% 20%; }
+        }
+
+        /* Flame 9 - tall */
+        .flame-9 {
+            width: 52px;
+            height: 150px;
+            background: linear-gradient(to top, #002050, #004d99, #0088dd, #00b8ff, #00e0ff, #e0f7ff);
+            animation: flicker9 0.6s ease-in-out infinite alternate;
+            animation-delay: -0.35s;
+        }
+        @keyframes flicker9 {
+            0%   { transform: scaleY(1) scaleX(1) translateX(0); opacity: 0.9; border-radius: 50% 50% 20% 20%; }
+            15%  { transform: scaleY(1.25) scaleX(0.82) translateX(-3px); opacity: 1; border-radius: 42% 58% 26% 14%; }
+            40%  { transform: scaleY(0.8) scaleX(1.15) translateX(2px); opacity: 0.85; border-radius: 58% 42% 14% 26%; }
+            65%  { transform: scaleY(1.18) scaleX(0.88) translateX(-1px); opacity: 0.97; border-radius: 46% 54% 22% 18%; }
+            85%  { transform: scaleY(0.9) scaleX(1.05) translateX(1px); opacity: 0.88; border-radius: 52% 48% 18% 22%; }
+            100% { transform: scaleY(1.08) scaleX(0.95) translateX(0); opacity: 0.92; border-radius: 50% 50% 20% 20%; }
+        }
+
+        /* Flame 10 - small pilot */
+        .flame-10 {
+            width: 18px;
+            height: 58px;
+            background: linear-gradient(to top, #000e28, #002550, #004d88, #0080bb, #00b0dd, #90d8f0);
+            animation: flicker10 1.4s ease-in-out infinite alternate;
+            animation-delay: -0.7s;
+        }
+        @keyframes flicker10 {
+            0%   { transform: scaleY(0.9) scaleX(1.1) translateX(1px); opacity: 0.75; }
+            40%  { transform: scaleY(1.2) scaleX(0.85) translateX(-1px); opacity: 0.9; }
+            100% { transform: scaleY(1) scaleX(1) translateX(0); opacity: 0.8; }
+        }
+
+        /* Flame 11 */
+        .flame-11 {
+            width: 44px;
+            height: 125px;
+            background: linear-gradient(to top, #001c48, #004190, #007dd4, #00aaf0, #00d8ff, #d0f4ff);
+            animation: flicker11 0.78s ease-in-out infinite alternate;
+            animation-delay: -0.25s;
+        }
+        @keyframes flicker11 {
+            0%   { transform: scaleY(1.05) scaleX(0.98) translateX(-1px); opacity: 0.88; border-radius: 48% 52% 20% 20%; }
+            25%  { transform: scaleY(0.85) scaleX(1.12) translateX(2px); opacity: 0.84; border-radius: 56% 44% 16% 24%; }
+            50%  { transform: scaleY(1.2) scaleX(0.86) translateX(-2px); opacity: 1; border-radius: 44% 56% 24% 16%; }
+            75%  { transform: scaleY(0.92) scaleX(1.04) translateX(1px); opacity: 0.9; border-radius: 52% 48% 18% 22%; }
+            100% { transform: scaleY(1.1) scaleX(0.94) translateX(0); opacity: 0.86; border-radius: 50% 50% 22% 18%; }
+        }
+
+        /* Flame 12 */
+        .flame-12 {
+            width: 38px;
+            height: 110px;
+            background: linear-gradient(to top, #001535, #003670, #006cb5, #009de0, #00caff, #c5edff);
+            animation: flicker12 0.95s ease-in-out infinite alternate;
+            animation-delay: -0.6s;
+        }
+        @keyframes flicker12 {
+            0%   { transform: scaleY(1) scaleX(1) translateX(0); opacity: 0.87; border-radius: 50% 50% 20% 20%; }
+            35%  { transform: scaleY(1.15) scaleX(0.9) translateX(-2px); opacity: 0.98; border-radius: 46% 54% 22% 18%; }
+            65%  { transform: scaleY(0.88) scaleX(1.08) translateX(1px); opacity: 0.85; border-radius: 54% 46% 18% 22%; }
+            100% { transform: scaleY(1.06) scaleX(0.97) translateX(-1px); opacity: 0.9; border-radius: 50% 50% 20% 20%; }
+        }
+
+        /* Flame 13 - tall */
+        .flame-13 {
+            width: 46px;
+            height: 138px;
+            background: linear-gradient(to top, #001d4a, #004590, #0085d0, #00b5ff, #00ddff, #e5f9ff);
+            animation: flicker13 0.68s ease-in-out infinite alternate;
+            animation-delay: -0.45s;
+        }
+        @keyframes flicker13 {
+            0%   { transform: scaleY(0.88) scaleX(1.06) translateX(1px); opacity: 0.86; border-radius: 54% 46% 18% 22%; }
+            20%  { transform: scaleY(1.22) scaleX(0.84) translateX(-3px); opacity: 1; border-radius: 42% 58% 26% 14%; }
+            45%  { transform: scaleY(0.9) scaleX(1.1) translateX(2px); opacity: 0.88; border-radius: 56% 44% 16% 24%; }
+            70%  { transform: scaleY(1.15) scaleX(0.9) translateX(-1px); opacity: 0.96; border-radius: 48% 52% 22% 18%; }
+            100% { transform: scaleY(1) scaleX(1) translateX(0); opacity: 0.9; border-radius: 50% 50% 20% 20%; }
+        }
+
+        /* Flame 14 - pilot */
+        .flame-14 {
+            width: 24px;
+            height: 75px;
+            background: linear-gradient(to top, #001230, #002e60, #005c9a, #008acc, #00bae8, #a5e2ff);
+            animation: flicker14 1.2s ease-in-out infinite alternate;
+            animation-delay: -0.15s;
+        }
+        @keyframes flicker14 {
+            0%   { transform: scaleY(1.05) scaleX(0.95) translateX(0); opacity: 0.8; }
+            50%  { transform: scaleY(0.8) scaleX(1.15) translateX(1px); opacity: 0.92; }
+            100% { transform: scaleY(1.2) scaleX(0.85) translateX(-1px); opacity: 0.82; }
+        }
+
+        /* Flame 15 */
+        .flame-15 {
+            width: 42px;
+            height: 118px;
+            background: linear-gradient(to top, #001738, #003975, #0072bb, #00a0e8, #00cdff, #cceeff);
+            animation: flicker15 0.82s ease-in-out infinite alternate;
+            animation-delay: -0.5s;
+        }
+        @keyframes flicker15 {
+            0%   { transform: scaleY(1) scaleX(1) translateX(0); opacity: 0.86; border-radius: 50% 50% 20% 20%; }
+            20%  { transform: scaleY(1.18) scaleX(0.88) translateX(-2px); opacity: 1; border-radius: 46% 54% 22% 18%; }
+            45%  { transform: scaleY(0.84) scaleX(1.12) translateX(2px); opacity: 0.84; border-radius: 56% 44% 16% 24%; }
+            70%  { transform: scaleY(1.12) scaleX(0.92) translateX(-1px); opacity: 0.94; border-radius: 48% 52% 20% 20%; }
+            100% { transform: scaleY(0.92) scaleX(1.04) translateX(1px); opacity: 0.88; border-radius: 52% 48% 18% 22%; }
+        }
+
+        /* Flame 16 - tall */
+        .flame-16 {
+            width: 50px;
+            height: 148px;
+            background: linear-gradient(to top, #002055, #004d9e, #008ae0, #00baff, #00e2ff, #e0f7ff);
+            animation: flicker16 0.62s ease-in-out infinite alternate;
+            animation-delay: -0.3s;
+        }
+        @keyframes flicker16 {
+            0%   { transform: scaleY(1.02) scaleX(0.98) translateX(0); opacity: 0.9; border-radius: 50% 50% 20% 20%; }
+            18%  { transform: scaleY(1.24) scaleX(0.83) translateX(-3px); opacity: 1; border-radius: 43% 57% 25% 15%; }
+            42%  { transform: scaleY(0.82) scaleX(1.14) translateX(2px); opacity: 0.84; border-radius: 57% 43% 15% 25%; }
+            68%  { transform: scaleY(1.16) scaleX(0.88) translateX(-1px); opacity: 0.96; border-radius: 46% 54% 22% 18%; }
+            100% { transform: scaleY(0.9) scaleX(1.05) translateX(1px); opacity: 0.88; border-radius: 52% 48% 18% 22%; }
+        }
+
+        /* Flame 17 - pilot */
+        .flame-17 {
+            width: 20px;
+            height: 62px;
+            background: linear-gradient(to top, #000d25, #002348, #004a80, #0078b5, #00a8dd, #88d4f0);
+            animation: flicker17 1.35s ease-in-out infinite alternate;
+            animation-delay: -0.8s;
+        }
+        @keyframes flicker17 {
+            0%   { transform: scaleY(0.95) scaleX(1.05) translateX(1px); opacity: 0.76; }
+            45%  { transform: scaleY(1.25) scaleX(0.82) translateX(-1px); opacity: 0.92; }
+            100% { transform: scaleY(0.88) scaleX(1.08) translateX(0); opacity: 0.78; }
+        }
+
+        /* Flame 18 */
+        .flame-18 {
+            width: 36px;
+            height: 100px;
+            background: linear-gradient(to top, #001432, #003265, #0065a8, #0095d8, #00c2ff, #bbeaff);
+            animation: flicker18 1.0s ease-in-out infinite alternate;
+            animation-delay: -0.4s;
+        }
+        @keyframes flicker18 {
+            0%   { transform: scaleY(1) scaleX(1) translateX(0); opacity: 0.84; border-radius: 50% 50% 20% 20%; }
+            30%  { transform: scaleY(1.16) scaleX(0.9) translateX(-2px); opacity: 0.97; border-radius: 46% 54% 22% 18%; }
+            60%  { transform: scaleY(0.86) scaleX(1.1) translateX(1px); opacity: 0.86; border-radius: 54% 46% 18% 22%; }
+            100% { transform: scaleY(1.08) scaleX(0.96) translateX(-1px); opacity: 0.9; border-radius: 50% 50% 20% 20%; }
+        }
+
+        /* Flame 19 */
+        .flame-19 {
+            width: 40px;
+            height: 122px;
+            background: linear-gradient(to top, #001a42, #003e85, #007acc, #00a8f0, #00d5ff, #d2f2ff);
+            animation: flicker19 0.73s ease-in-out infinite alternate;
+            animation-delay: -0.65s;
+        }
+        @keyframes flicker19 {
+            0%   { transform: scaleY(0.92) scaleX(1.04) translateX(1px); opacity: 0.87; border-radius: 52% 48% 18% 22%; }
+            22%  { transform: scaleY(1.2) scaleX(0.86) translateX(-2px); opacity: 1; border-radius: 44% 56% 24% 16%; }
+            48%  { transform: scaleY(0.86) scaleX(1.1) translateX(2px); opacity: 0.85; border-radius: 56% 44% 16% 24%; }
+            72%  { transform: scaleY(1.14) scaleX(0.9) translateX(-1px); opacity: 0.95; border-radius: 48% 52% 22% 18%; }
+            100% { transform: scaleY(0.96) scaleX(1.02) translateX(0); opacity: 0.88; border-radius: 50% 50% 20% 20%; }
+        }
+
+        /* Flame 20 - pilot */
+        .flame-20 {
+            width: 22px;
+            height: 68px;
+            background: linear-gradient(to top, #001128, #002a55, #005590, #0082c0, #00b2e5, #98dcf5);
+            animation: flicker20 1.25s ease-in-out infinite alternate;
+            animation-delay: -0.9s;
+        }
+        @keyframes flicker20 {
+            0%   { transform: scaleY(1) scaleX(1) translateX(0); opacity: 0.77; }
+            35%  { transform: scaleY(1.22) scaleX(0.84) translateX(-1px); opacity: 0.93; }
+            70%  { transform: scaleY(0.82) scaleX(1.12) translateX(1px); opacity: 0.8; }
+            100% { transform: scaleY(1.08) scaleX(0.94) translateX(0); opacity: 0.82; }
+        }
+
+        /* Ambient glow above flames */
+        .flame-glow {
+            position: absolute;
+            bottom: 80px;
+            left: 0;
+            width: 100%;
+            height: 250px;
+            background: radial-gradient(ellipse at 50% 100%, rgba(0, 140, 255, 0.12) 0%, rgba(0, 80, 200, 0.06) 40%, transparent 70%);
+            z-index: 3;
+            pointer-events: none;
+        }
+
+        .flame-glow-inner {
+            position: absolute;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60%;
+            height: 180px;
+            background: radial-gradient(ellipse at 50% 100%, rgba(0, 180, 255, 0.08) 0%, transparent 70%);
+            z-index: 3;
+            pointer-events: none;
+            animation: glowPulse 3s ease-in-out infinite alternate;
+        }
+
+        @keyframes glowPulse {
+            0%   { opacity: 0.6; }
+            50%  { opacity: 1; }
+            100% { opacity: 0.7; }
+        }
+
+        /* ============================================
+           HERO CONTENT
+           ============================================ */
+        .hero-content {
+            position: relative;
+            z-index: 10;
+            text-align: center;
+            padding: 8rem 1.5rem 14rem;
+            max-width: 800px;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(0, 162, 255, 0.12);
+            border: 1px solid rgba(0, 162, 255, 0.3);
+            padding: 0.5rem 1.2rem;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #00d4ff;
+            margin-bottom: 1.5rem;
+            backdrop-filter: blur(8px);
+        }
+
+        .hero-badge-dot {
+            width: 8px;
+            height: 8px;
+            background: #00ff88;
+            border-radius: 50%;
+            animation: badgePulse 2s ease-in-out infinite;
+        }
+
+        @keyframes badgePulse {
+            0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(0, 255, 136, 0.4); }
+            50%      { opacity: 0.7; box-shadow: 0 0 0 6px rgba(0, 255, 136, 0); }
+        }
+
+        .hero h1 {
+            margin-bottom: 1rem;
+            text-shadow: 0 2px 30px rgba(0, 120, 255, 0.3);
+        }
+
+        .hero h1 span {
+            background: linear-gradient(135deg, #00a2ff, #00d4ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-tagline {
+            font-size: clamp(1.05rem, 2vw, 1.3rem);
+            color: #8aa8c4;
+            margin-bottom: 2.5rem;
+            max-width: 550px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .hero-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.9rem 2rem;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #005eb8, #00a2ff);
+            color: #ffffff;
+            box-shadow: 0 4px 25px rgba(0, 162, 255, 0.35);
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 6px 35px rgba(0, 162, 255, 0.55);
+            color: #ffffff;
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: #ffffff;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-outline:hover {
+            border-color: rgba(0, 162, 255, 0.5);
+            box-shadow: 0 4px 20px rgba(0, 162, 255, 0.15);
+            color: #ffffff;
+        }
+
+        /* ============================================
+           STATS BAR
+           ============================================ */
+        .stats-bar {
+            background: linear-gradient(135deg, #0d1a30, #0f2240);
+            border-top: 1px solid rgba(0, 162, 255, 0.15);
+            border-bottom: 1px solid rgba(0, 162, 255, 0.08);
+            padding: 3rem 0;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 2rem;
+            text-align: center;
+        }
+
+        .stat-item {
+            position: relative;
+        }
+
+        .stat-item:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            right: -1rem;
+            top: 10%;
+            height: 80%;
+            width: 1px;
+            background: linear-gradient(to bottom, transparent, rgba(0, 162, 255, 0.2), transparent);
+        }
+
+        .stat-number {
+            font-size: clamp(2rem, 4vw, 3rem);
+            font-weight: 800;
+            background: linear-gradient(135deg, #00a2ff, #00d4ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1.1;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: #6a8eaa;
+            margin-top: 0.3rem;
+        }
+
+        /* ============================================
+           SERVICES
+           ============================================ */
+        .services {
+            background: #0a0e1a;
+        }
+
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+        }
+
+        .service-card {
+            background: linear-gradient(145deg, #0f1724, #121d30);
+            border: 1px solid rgba(0, 162, 255, 0.08);
+            border-radius: 16px;
+            padding: 2rem;
+            transition: transform 0.4s, box-shadow 0.4s, border-color 0.4s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .service-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, #00a2ff, transparent);
+            opacity: 0;
+            transition: opacity 0.4s;
+        }
+
+        .service-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 40px rgba(0, 100, 200, 0.15), 0 0 60px rgba(0, 162, 255, 0.05);
+            border-color: rgba(0, 162, 255, 0.2);
+        }
+
+        .service-card:hover::before {
+            opacity: 1;
+        }
+
+        .service-icon {
+            width: 52px;
+            height: 52px;
+            background: linear-gradient(135deg, rgba(0, 94, 184, 0.2), rgba(0, 162, 255, 0.1));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 1.2rem;
+            border: 1px solid rgba(0, 162, 255, 0.15);
+        }
+
+        .service-card h3 {
+            color: #ffffff;
+            margin-bottom: 0.6rem;
+        }
+
+        .service-card p {
+            color: #7a98b4;
+            font-size: 0.95rem;
+            margin-bottom: 0;
+            line-height: 1.6;
+        }
+
+        /* ============================================
+           ABOUT
+           ============================================ */
+        .about {
+            background: linear-gradient(180deg, #0a0e1a 0%, #0d1524 100%);
+        }
+
+        .about-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+        }
+
+        .about-image {
+            position: relative;
+            border-radius: 20px;
+            overflow: hidden;
+            aspect-ratio: 4/3;
+            background: linear-gradient(145deg, #0f1a2e, #162540);
+            border: 1px solid rgba(0, 162, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .about-image-placeholder {
+            font-size: 4rem;
+            opacity: 0.3;
+        }
+
+        .about-image::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 20px;
+            box-shadow: inset 0 0 40px rgba(0, 80, 160, 0.1);
+        }
+
+        .about-content h2 {
+            margin-bottom: 1.5rem;
+        }
+
+        .about-content p {
+            color: #8aa8c4;
+            line-height: 1.8;
+        }
+
+        .about-features {
+            list-style: none;
+            margin-top: 1.5rem;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.8rem;
+        }
+
+        .about-features li {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #a0c0d8;
+            font-size: 0.95rem;
+        }
+
+        .about-features li::before {
+            content: '';
+            width: 20px;
+            height: 20px;
+            min-width: 20px;
+            background: linear-gradient(135deg, rgba(0, 94, 184, 0.3), rgba(0, 162, 255, 0.15));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(0, 162, 255, 0.2);
+        }
+
+        /* ============================================
+           REVIEWS
+           ============================================ */
+        .reviews {
+            background: #0a0e1a;
+        }
+
+        .reviews-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+        }
+
+        .review-card {
+            background: linear-gradient(145deg, #0f1724, #121d30);
+            border: 1px solid rgba(0, 162, 255, 0.08);
+            border-radius: 16px;
+            padding: 2rem;
+            transition: transform 0.3s;
+        }
+
+        .review-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .review-stars {
+            display: flex;
+            gap: 3px;
+            margin-bottom: 1rem;
+        }
+
+        .review-star {
+            color: #ffaa00;
+            font-size: 1.1rem;
+        }
+
+        .review-text {
+            color: #8aa8c4;
+            font-size: 0.95rem;
+            line-height: 1.7;
+            font-style: italic;
+            margin-bottom: 1.2rem;
+        }
+
+        .review-author {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .review-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #005eb8, #00a2ff);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: #ffffff;
+            font-size: 1rem;
+        }
+
+        .review-author-name {
+            color: #ffffff;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .review-author-detail {
+            color: #6a8eaa;
+            font-size: 0.8rem;
+        }
+
+        /* ============================================
+           CTA SECTION
+           ============================================ */
+        .cta-section {
+            background: linear-gradient(180deg, #0a0e1a 0%, #0d1524 50%, #0a0e1a 100%);
+            text-align: center;
+        }
+
+        .cta-box {
+            background: linear-gradient(145deg, #0f1a2e, #162540);
+            border: 1px solid rgba(0, 162, 255, 0.15);
+            border-radius: 24px;
+            padding: 4rem 3rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cta-box::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 50% 50%, rgba(0, 162, 255, 0.05) 0%, transparent 50%);
+            animation: ctaGlow 6s ease-in-out infinite;
+        }
+
+        @keyframes ctaGlow {
+            0%, 100% { transform: translate(0, 0); }
+            50%      { transform: translate(5%, 5%); }
+        }
+
+        .cta-box > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        .cta-box h2 {
+            margin-bottom: 1rem;
+        }
+
+        .cta-box p {
+            color: #7eb8e0;
+            font-size: 1.1rem;
+            max-width: 500px;
+            margin: 0 auto 2rem;
+        }
+
+        .cta-phone {
+            font-size: clamp(1.5rem, 3vw, 2.2rem);
+            font-weight: 800;
+            color: #ffffff;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .cta-phone a {
+            color: #ffffff;
+            transition: color 0.3s;
+        }
+
+        .cta-phone a:hover {
+            color: #00d4ff;
+        }
+
+        /* ============================================
+           FOOTER
+           ============================================ */
+        .footer {
+            background: #070a14;
+            border-top: 1px solid rgba(0, 162, 255, 0.08);
+            padding: 3.5rem 0 1.5rem;
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1.5fr;
+            gap: 3rem;
+            margin-bottom: 3rem;
+        }
+
+        .footer-brand p {
+            color: #5a7a94;
+            font-size: 0.9rem;
+            line-height: 1.7;
+            margin-top: 1rem;
+        }
+
+        .footer h4 {
+            font-size: 1rem;
+            margin-bottom: 1.2rem;
+            color: #ffffff;
+        }
+
+        .footer-links {
+            list-style: none;
+        }
+
+        .footer-links li {
+            margin-bottom: 0.6rem;
+        }
+
+        .footer-links a {
+            color: #5a7a94;
+            font-size: 0.9rem;
+            transition: color 0.3s;
+        }
+
+        .footer-links a:hover {
+            color: #00a2ff;
+        }
+
+        .footer-contact-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.6rem;
+            margin-bottom: 0.8rem;
+            color: #5a7a94;
+            font-size: 0.9rem;
+        }
+
+        .footer-contact-icon {
+            font-size: 1rem;
+            min-width: 20px;
+            text-align: center;
+            margin-top: 2px;
+        }
+
+        .footer-bottom {
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            padding-top: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.8rem;
+            color: #3a5570;
+        }
+
+        .footer-gas-safe {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(0, 162, 255, 0.08);
+            border: 1px solid rgba(0, 162, 255, 0.15);
+            padding: 0.4rem 1rem;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            color: #00a2ff;
+            font-weight: 600;
+        }
+
+        /* ============================================
+           MOBILE RESPONSIVE
+           ============================================ */
+        @media (max-width: 1024px) {
+            .services-grid,
+            .reviews-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .footer-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 2rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+
+            .nav-mobile-toggle {
+                display: flex;
+            }
+
+            .hero-content {
+                padding: 7rem 1.5rem 16rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 1.5rem;
+            }
+
+            .stat-item:not(:last-child)::after {
+                display: none;
+            }
+
+            .services-grid,
+            .reviews-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .about-grid {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+
+            .about-image {
+                order: -1;
+            }
+
+            .about-features {
+                grid-template-columns: 1fr;
+            }
+
+            .cta-box {
+                padding: 3rem 1.5rem;
+            }
+
+            .footer-grid {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+
+            .footer-bottom {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+
+            .flame-container {
+                height: 220px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero-actions {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+                max-width: 280px;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .flame-container {
+                height: 180px;
+            }
+        }
+
+        /* ============================================
+           REDUCED MOTION
+           ============================================ */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ============================================
+         NAVIGATION
+         ============================================ -->
+    <nav class="nav">
+        <div class="container">
+            <a href="#" class="nav-logo">
+                <div class="nav-logo-icon">&#9670;</div>
+                Smith Heating
+            </a>
+            <ul class="nav-links">
+                <li><a href="#services">Services</a></li>
+                <li><a href="#about">About</a></li>
+                <li><a href="#reviews">Reviews</a></li>
+                <li><a href="#contact" class="nav-cta">Call Now</a></li>
+            </ul>
+            <div class="nav-mobile-toggle" aria-label="Toggle navigation">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ============================================
+         HERO SECTION WITH GAS FLAME
+         ============================================ -->
+    <section class="hero">
+        <div class="hero-bg-gradient"></div>
+
+        <!-- Hero Content -->
+        <div class="hero-content">
+            <div class="hero-badge">
+                <span class="hero-badge-dot"></span>
+                Gas Safe Registered &mdash; Reg. 567890
+            </div>
+            <h1>
+                <span>Smith Heating</span><br>
+                Services
+            </h1>
+            <p class="hero-tagline">
+                Professional gas and heating engineers serving Bury St Edmunds and surrounding Suffolk villages. Trusted by homeowners for over 15 years.
+            </p>
+            <div class="hero-actions">
+                <a href="tel:01284555123" class="btn btn-primary">
+                    &#9742; 01284 555 123
+                </a>
+                <a href="#services" class="btn btn-outline">
+                    Our Services
+                </a>
+            </div>
+        </div>
+
+        <!-- Ambient glow -->
+        <div class="flame-glow"></div>
+        <div class="flame-glow-inner"></div>
+
+        <!-- Gas Flame Effect -->
+        <div class="flame-container">
+            <div class="flame-row">
+                <div class="flame flame-4"></div>
+                <div class="flame flame-1"></div>
+                <div class="flame flame-7"></div>
+                <div class="flame flame-3"></div>
+                <div class="flame flame-10"></div>
+                <div class="flame flame-5"></div>
+                <div class="flame flame-2"></div>
+                <div class="flame flame-14"></div>
+                <div class="flame flame-9"></div>
+                <div class="flame flame-17"></div>
+                <div class="flame flame-6"></div>
+                <div class="flame flame-4"></div>
+                <div class="flame flame-11"></div>
+                <div class="flame flame-20"></div>
+                <div class="flame flame-8"></div>
+                <div class="flame flame-13"></div>
+                <div class="flame flame-7"></div>
+                <div class="flame flame-16"></div>
+                <div class="flame flame-10"></div>
+                <div class="flame flame-12"></div>
+                <div class="flame flame-4"></div>
+                <div class="flame flame-15"></div>
+                <div class="flame flame-17"></div>
+                <div class="flame flame-19"></div>
+                <div class="flame flame-20"></div>
+                <div class="flame flame-18"></div>
+                <div class="flame flame-7"></div>
+                <div class="flame flame-2"></div>
+                <div class="flame flame-14"></div>
+                <div class="flame flame-6"></div>
+            </div>
+            <div class="burner-base"></div>
+        </div>
+    </section>
+
+    <!-- ============================================
+         STATS BAR
+         ============================================ -->
+    <section class="stats-bar">
+        <div class="container">
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-number">15+</div>
+                    <div class="stat-label">Years Experience</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">500+</div>
+                    <div class="stat-label">Jobs Completed</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">4.9</div>
+                    <div class="stat-label">Average Rating</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">24hr</div>
+                    <div class="stat-label">Emergency Callout</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================
+         SERVICES
+         ============================================ -->
+    <section class="services section" id="services">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-label">What We Do</span>
+                <h2>Our Services</h2>
+                <p>Comprehensive gas and heating solutions for homes and businesses across Bury St Edmunds.</p>
+            </div>
+            <div class="services-grid">
+                <div class="service-card">
+                    <div class="service-icon">&#128293;</div>
+                    <h3>Boiler Installation</h3>
+                    <p>Expert installation of all major boiler brands including Worcester Bosch, Vaillant, and Baxi. We help you choose the right system for your home and budget.</p>
+                </div>
+                <div class="service-card">
+                    <div class="service-icon">&#128295;</div>
+                    <h3>Boiler Repairs</h3>
+                    <p>Fast, reliable boiler repairs when you need them most. We diagnose and fix faults on all makes and models, often on the same day.</p>
+                </div>
+                <div class="service-card">
+                    <div class="service-icon">&#9989;</div>
+                    <h3>Annual Servicing</h3>
+                    <p>Keep your boiler running safely and efficiently with our thorough annual service. Maintains your manufacturer warranty and gives peace of mind.</p>
+                </div>
+                <div class="service-card">
+                    <div class="service-icon">&#127777;&#65039;</div>
+                    <h3>Central Heating</h3>
+                    <p>Full central heating system design and installation, radiator upgrades, powerflush treatments, and smart thermostat fitting.</p>
+                </div>
+                <div class="service-card">
+                    <div class="service-icon">&#128167;</div>
+                    <h3>Gas Safety Checks</h3>
+                    <p>Landlord gas safety certificates (CP12) and home gas safety inspections. Fully compliant with current regulations.</p>
+                </div>
+                <div class="service-card">
+                    <div class="service-icon">&#9888;&#65039;</div>
+                    <h3>Emergency Callouts</h3>
+                    <p>Gas leak? No heating? No hot water? We offer rapid 24-hour emergency callouts across Bury St Edmunds and surrounding areas.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================
+         ABOUT
+         ============================================ -->
+    <section class="about section" id="about">
+        <div class="container">
+            <div class="about-grid">
+                <div class="about-image">
+                    <div class="about-image-placeholder">&#128736;&#65039;</div>
+                </div>
+                <div class="about-content">
+                    <span class="section-label">About Us</span>
+                    <h2>Your Local Gas Safe<br>Registered Engineer</h2>
+                    <p>
+                        Smith Heating Services has been providing reliable, professional gas and heating services to Bury St Edmunds and surrounding Suffolk villages since 2009. As a Gas Safe registered engineer, every job we do meets the highest safety standards.
+                    </p>
+                    <p>
+                        We pride ourselves on honest advice, transparent pricing, and workmanship you can trust. Whether it is a simple boiler service or a full central heating installation, we treat every home as if it were our own.
+                    </p>
+                    <ul class="about-features">
+                        <li>Gas Safe Registered</li>
+                        <li>Free Quotes</li>
+                        <li>No Call-Out Fee</li>
+                        <li>Fully Insured</li>
+                        <li>5-Year Guarantee</li>
+                        <li>Local & Trusted</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================
+         REVIEWS
+         ============================================ -->
+    <section class="reviews section" id="reviews">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-label">Testimonials</span>
+                <h2>What Our Customers Say</h2>
+                <p>Rated 4.9 out of 5 stars across Google and Checkatrade.</p>
+            </div>
+            <div class="reviews-grid">
+                <div class="review-card">
+                    <div class="review-stars">
+                        <span class="review-star">&#9733;</span>
+                        <span class="review-star">&#9733;</span>
+                        <span class="review-star">&#9733;</span>
+                        <span class="review-star">&#9733;</span>
+                        <span class="review-star">&#9733;</span>
+                    </div>
+                    <p class="review-text">"Brilliant service from start to finish. Our old boiler packed in on a freezing Saturday evening and they had us back up and running by Sunday morning. Cannot recommend highly enough."</p>
+                    <div class="review-author">
+                        <div class="review-avatar">JT</div>
+                        <div>
+                            <div class="review-author-name">James Thompson</div>
+                            <div class="review-author-detail">Bury St Edmunds</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="review-card">
+                    <div class="review-stars">
+                        <span class="review-star">&#9733;</span>
+                        <span class="review-star">&#9733;</span>
+                        <span class="review-star">&#9733;</span>
+                        <span class="review-star">&#9733;</span>
+                        <span class="review-star">&#9733;</span>
+                    </div>
+                    <p class="review-text">"We had a new Worcester Bosch combi installed and the whole experience was excellent. Tidy work, fair price, and the heating has never been better. Very professional team."</p>
+                    <div class="review-author">
+                        <div class="review-avatar">SW</div>
+                        <div>
+                            <div class="review-author-name">Sarah Williams</div>
+                            <div class="review-author-detail">Stowmarket</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="review-card">
+                    <div class="review-stars">
+                        <span class="review-star">&#9733;</span>
+                        <span class="review-star">&#9733;</span>
+                        <span class="review-star">&#9733;</span>
+                        <span class="review-star">&#9733;</span>
+                        <span class="review-star">&#9733;</span>
+                    </div>
+                    <p class="review-text">"Used Smith Heating for our landlord gas safety certificates for three years now. Always on time, thorough, and the paperwork is done properly. Makes life easy as a landlord."</p>
+                    <div class="review-author">
+                        <div class="review-avatar">MP</div>
+                        <div>
+                            <div class="review-author-name">Mark Palmer</div>
+                            <div class="review-author-detail">Sudbury</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================
+         CTA SECTION
+         ============================================ -->
+    <section class="cta-section section" id="contact">
+        <div class="container">
+            <div class="cta-box">
+                <span class="section-label">Get In Touch</span>
+                <h2>Need a Gas Engineer?</h2>
+                <p>Call us today for a free, no-obligation quote. We cover Bury St Edmunds and all surrounding villages within 20 miles.</p>
+                <div class="cta-phone">
+                    &#9742; <a href="tel:01284555123">01284 555 123</a>
+                </div>
+                <div>
+                    <a href="tel:01284555123" class="btn btn-primary">
+                        Book a Callout
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================
+         FOOTER
+         ============================================ -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <div class="nav-logo" style="margin-bottom: 0.5rem;">
+                        <div class="nav-logo-icon">&#9670;</div>
+                        Smith Heating
+                    </div>
+                    <p>Professional gas and heating services for Bury St Edmunds and surrounding Suffolk areas. Gas Safe registered, fully insured, and trusted by hundreds of local homeowners.</p>
+                    <div class="footer-gas-safe" style="margin-top: 1rem;">
+                        &#9745; Gas Safe Reg. 567890
+                    </div>
+                </div>
+                <div>
+                    <h4>Services</h4>
+                    <ul class="footer-links">
+                        <li><a href="#services">Boiler Installation</a></li>
+                        <li><a href="#services">Boiler Repairs</a></li>
+                        <li><a href="#services">Annual Servicing</a></li>
+                        <li><a href="#services">Central Heating</a></li>
+                        <li><a href="#services">Gas Safety Checks</a></li>
+                        <li><a href="#services">Emergency Callouts</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4>Areas Covered</h4>
+                    <ul class="footer-links">
+                        <li><a href="#">Bury St Edmunds</a></li>
+                        <li><a href="#">Stowmarket</a></li>
+                        <li><a href="#">Sudbury</a></li>
+                        <li><a href="#">Newmarket</a></li>
+                        <li><a href="#">Thetford</a></li>
+                        <li><a href="#">Mildenhall</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4>Contact</h4>
+                    <div class="footer-contact-item">
+                        <span class="footer-contact-icon">&#9742;</span>
+                        <span><a href="tel:01284555123">01284 555 123</a></span>
+                    </div>
+                    <div class="footer-contact-item">
+                        <span class="footer-contact-icon">&#9993;</span>
+                        <span><a href="mailto:info@smithheating.co.uk">info@smithheating.co.uk</a></span>
+                    </div>
+                    <div class="footer-contact-item">
+                        <span class="footer-contact-icon">&#128205;</span>
+                        <span>Bury St Edmunds, Suffolk, IP32</span>
+                    </div>
+                    <div class="footer-contact-item">
+                        <span class="footer-contact-icon">&#128337;</span>
+                        <span>Mon&ndash;Fri: 8am&ndash;6pm<br>Sat: 9am&ndash;1pm<br>Emergency: 24/7</span>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <span>&copy; 2026 Smith Heating Services. All rights reserved.</span>
+                <span>Gas Safe Registered | Fully Insured | Serving Suffolk</span>
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>
