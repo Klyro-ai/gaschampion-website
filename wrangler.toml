@@ -3,8 +3,9 @@ compatibility_date = "2025-04-01"
 compatibility_flags = ["nodejs_compat"]
 account_id = "3a7d786ecf0b37fed098a78df2dfbf2b"
 
-[vars]
-KLYRO_API_KEY = "f90cecf50e88091412d6e608eaaebc4491c8a433931e4084112776308bb0e711"
+# KLYRO_API_KEY is set as a Cloudflare secret, not a plaintext var.
+# Set it with: wrangler secret put KLYRO_API_KEY
+# Local dev: put it in .dev.vars (gitignored)
 
 # Service binding to the API Worker
 [[services]]

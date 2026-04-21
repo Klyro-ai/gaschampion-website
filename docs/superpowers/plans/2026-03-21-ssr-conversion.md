@@ -159,7 +159,7 @@ compatibility_flags = ["nodejs_compat"]
 
 [vars]
 KLYRO_API_URL = "https://klyro-worker.dark-grass-ae74.workers.dev"
-KLYRO_API_KEY = "f90cecf50e88091412d6e608eaaebc4491c8a433931e4084112776308bb0e711"
+KLYRO_API_KEY = "<set via wrangler secret put>"
 
 [assets]
 binding = "ASSETS"
